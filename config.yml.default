@@ -1,0 +1,12 @@
+#this yaml file contains basic configuration and may be adjusted to accomadate users' local environments
+analyzers:
+  mplus:
+    templates:./templates/mplus
+paths:
+    output_root_dir:~/junk
+open_path_on_launch:
+  ~/mastergui/defaultinput.xlsx
+open_mplus_model_on_launch:
+  ~/mastergui/templates/mplus/model1.inp
+output_dir:
+  ~/mastergui/mastergui/output

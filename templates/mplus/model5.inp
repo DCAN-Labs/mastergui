@@ -1,0 +1,64 @@
+TITLE: XL_G_and_S_cingul_Ant
+
+DATA: FILE is missing.csv;
+
+VARIABLE: Names are nummber
+ scan participant age sex iq meanFD group XL_G_and_S_frontomargin 
+ XL_G_and_S_occipital_inf XL_G_and_S_paracentral XL_G_and_S_subcentral 
+ XL_G_and_S_transv_frontopol XL_G_and_S_cingul_Ant XL_G_and_S_cingul_Mid_Ant 
+ XL_G_and_S_cingul_Mid_Post XL_G_cingul_Post_dorsal XL_G_cingul_Post_ventral 
+ XL_G_cuneus XL_G_front_inf_Opercular XL_G_front_inf_Orbital 
+ XL_G_front_inf_Triangul XL_G_front_middle XL_G_front_sup 
+ XL_G_Ins_lg_and_S_cent_ins XL_G_insular_short XL_G_occipital_middle 
+ XL_G_occipital_sup XL_G_oc_temp_lat_fusifor XL_G_oc_temp_med_Lingual 
+ XL_G_oc_temp_med_Parahip XL_G_orbital XL_G_pariet_inf_Angular 
+ XL_G_pariet_inf_Supramar XL_G_parietal_sup XL_G_postcentral XL_G_precentral 
+ XL_G_precuneus XL_G_rectus XL_G_subcallosal XL_G_temp_sup_G_T_transv 
+ XL_G_temp_sup_Lateral XL_G_temp_sup_Plan_polar XL_G_temp_sup_Plan_tempo 
+ XL_G_temporal_inf XL_G_temporal_middle XL_Lat_Fis_ant_Horizont 
+ XL_Lat_Fis_ant_Vertical XL_Lat_Fis_post XL_Pole_occipital XL_Pole_temporal 
+ XL_S_calcarine XL_S_central XL_S_cingul_Marginalis XL_S_circular_insula_ant 
+ XL_S_circular_insula_inf XL_S_circular_insula_sup XL_S_collat_transv_ant 
+ XL_S_collat_transv_post XL_S_front_inf XL_S_front_middle XL_S_front_sup 
+ XL_S_interm_prim_Jensen XL_S_intrapariet_and_P_trans XL_S_oc_middle_and_Lunatus 
+ XL_S_oc_sup_and_transversal XL_S_occipital_ant XL_S_oc_temp_lat 
+ XL_S_oc_temp_med_and_Lingual XL_S_orbital_lateral XL_S_orbital_med_olfact 
+ XL_S_orbital_H_Shaped XL_S_parieto_occipital XL_S_pericallosal XL_S_postcentral 
+ XL_S_precentral_inf_part XL_S_precentral_sup_part XL_S_suborbital XL_S_subparietal 
+ XL_S_temporal_inf XL_S_temporal_sup XL_S_temporal_transverse XR_G_and_S_frontomargin
+ XR_G_and_S_occipital_inf XR_G_and_S_paracentral XR_G_and_S_subcentral 
+ XR_G_and_S_transv_frontopol XR_G_and_S_cingul_Ant XR_G_and_S_cingul_Mid_Ant 
+ XR_G_and_S_cingul_Mid_Post XR_G_cingul_Post_dorsal XR_G_cingul_Post_ventral 
+ XR_G_cuneus XR_G_front_inf_Opercular XR_G_front_inf_Orbital XR_G_front_inf_Triangul 
+ XR_G_front_middle XR_G_front_sup XR_G_Ins_lg_and_S_cent_ins XR_G_insular_short 
+ XR_G_occipital_middle XR_G_occipital_sup XR_G_oc_temp_lat_fusifor 
+XR_G_oc_temp_med_Lingual XR_G_oc_temp_med_Parahip XR_G_orbital 
+XR_G_pariet_inf_Angular XR_G_pariet_inf_Supramar XR_G_parietal_sup 
+XR_G_postcentral XR_G_precentral XR_G_precuneus XR_G_rectus XR_G_subcallosal 
+XR_G_temp_sup_G_T_transv XR_G_temp_sup_Lateral XR_G_temp_sup_Plan_polar 
+XR_G_temp_sup_Plan_tempo XR_G_temporal_inf XR_G_temporal_middle 
+XR_Lat_Fis_ant_Horizont XR_Lat_Fis_ant_Vertical XR_Lat_Fis_post 
+XR_Pole_occipital XR_Pole_temporal XR_S_calcarine XR_S_central 
+XR_S_cingul_Marginalis XR_S_circular_insula_ant XR_S_circular_insula_inf 
+XR_S_circular_insula_sup XR_S_collat_transv_ant XR_S_collat_transv_post 
+XR_S_front_inf XR_S_front_middle XR_S_front_sup XR_S_interm_prim_Jensen 
+XR_S_intrapariet_and_P_trans XR_S_oc_middle_and_Lunatus 
+XR_S_oc_sup_and_transversal XR_S_occipital_ant XR_S_oc_temp_lat 
+XR_S_oc_temp_med_and_Lingual XR_S_orbital_lateral XR_S_orbital_med_olfact 
+XR_S_orbital_H_Shaped XR_S_parieto_occipital XR_S_pericallosal XR_S_postcentral 
+XR_S_precentral_inf_part XR_S_precentral_sup_part XR_S_suborbital 
+XR_S_subparietal 
+XR_S_temporal_inf XR_S_temporal_sup XR_S_temporal_transverse famid;
+USEVARIABLES = group XL_G_and_S_cingul_Ant;
+!auxiliary = (m) sex iq;
+MISSING= .; 
+cluster = famid; 
+ANALYSIS: type=complex;
+          estimator=MLR;
+
+MODEL:
+
+XL_G_and_S_cingul_Ant on group; 
+group;
+
+OUTPUT: stdyx ;
