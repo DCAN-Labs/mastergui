@@ -38,10 +38,13 @@ class AnalysisWindow(QWidget):
     def open_input_file(self, path):
         try:
             self.input = InputSpreadsheet(path)
-
+            self.updateUIAfterInput()
             self.render_dataframe(self.input._data)
         except:
             print("error")
+
+    def updateUIAfterInput(self):
+        print("override in subclasses")
 
     def render_dataframe(self, data):
         t = self.inputTable

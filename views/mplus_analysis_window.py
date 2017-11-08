@@ -16,6 +16,20 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.model = models.mplus_model.MplusModel(path)
         self.modelTemplateViewer.setText(str(self.model._raw))
 
+    def createColumnNameListWidget(self):
+        model = QStandardItemModel()
+        cols = self.input.columnnames()
+        for col in cols:
+            item = QStandardItem('Item %s' % col)
+            check = Qt.Checked if 1 == 1 else Qt.Unchecked
+            item.setCheckState(check)
+            item.setCheckable(True)
+            model.appendRow(item)
+
+        view = QListView()
+        view.setModel(model)
+        return view
+
     def initUISpecific(self):
         self.analysisOptionsLayout.addWidget(QLabel("Missing Data Tokens:"))
         self.missingDataTokens = QLineEdit()
@@ -24,6 +38,10 @@ class MplusAnalysisWindow(AnalysisWindow):
 
         self.modelTemplateViewer = QTextEdit()
         self.generatedModelViewer = QTextEdit()
+        self.modelBuilder = QWidget()
+        self.modelBuilderLayout = QVBoxLayout()
+        self.modelBuilderLayout.addWidget(QLabel("Select Covariates"))
+        self.modelBuilder.setLayout(self.modelBuilderLayout)
         self.inputTable = QTableWidget()
 
         self.tabs = QTabWidget()
@@ -36,8 +54,12 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.tabs.resize(300, 200)
         self.tabs.addTab(self.inputTable, "Input Data Review")
         self.tabs.addTab(self.modelTemplateViewer, "Model Template")
+        self.tabs.addTab(self.modelBuilder, "Model Builder")
         self.tabs.addTab(x, "New Mplus Model")
         self.grid.addWidget(self.tabs)
+
+    def updateUIAfterInput(self):
+        self.modelBuilderLayout.addWidget(self.createColumnNameListWidget())
 
     def Go(self):
         # make data file with characters replaced
@@ -46,11 +68,10 @@ class MplusAnalysisWindow(AnalysisWindow):
         # make mplus analysi file
         self.alert(output_path + " successfully saved.")
 
-
         columns = self.input.columnnames()
 
         self.model.set_column_names(columns)
 
-        generated_mplus_model =self.model.to_string()
+        generated_mplus_model = self.model.to_string()
         self.generatedModelViewer.setText(generated_mplus_model)
         # launch mplus

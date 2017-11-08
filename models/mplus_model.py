@@ -31,14 +31,15 @@ class MplusModel():
         self.key_order = key_order
         self.mplus_data = mplus_data
 
-    def set_column_names(self,names):
+    def set_column_names(self, names):
         print(self.key_order)
-        self.mplus_data["VARIABLE:"] = "Names are " + " ".join(names)
+        self.mplus_data["VARIABLE:"] = ("Names are " + "\n\t".join(names) +
+                                        "\nUSEVARAIABLES = #todo;\n!auxillary = #todo, \nMISSING=.;\ncluster= #todo")
 
     def to_string(self):
         output_str = ""
         for key in self.key_order:
-            output_str += key + "\n"
+            output_str += "\n" + key + "\n"
             output_str += self.mplus_data[key]
 
         return output_str
