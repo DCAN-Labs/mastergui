@@ -9,6 +9,9 @@ class InputSpreadsheet():
     def data(self):
         return self._data
 
+    def columnnames(self):
+        return list(self._data)
+
     def cleanMissingValues(self, list_of_missingvalues, standard_missing_char="."):
         output = self._data.copy(deep=True)
         # todo possibly need column specifc missing values?

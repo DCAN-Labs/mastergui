@@ -13,7 +13,7 @@ class MplusModel():
 
     def parseMplus(self, raw):
 
-        p = re.compile('^[^\:]+\:', flags=re.MULTILINE)
+        p = re.compile('^[^\:\n]+\:', flags=re.MULTILINE)
 
         key_positions = [(m.start(0), m.end(0)) for m in re.finditer(p, raw)]
 
@@ -22,7 +22,6 @@ class MplusModel():
         for i in range(len(key_positions)):
             k = key_positions[i]
             key = raw[k[0]:k[1]]
-
             if i < len(key_positions) - 1:
                 value = raw[k[1]:key_positions[i + 1][0]]
             else:
@@ -32,10 +31,14 @@ class MplusModel():
         self.key_order = key_order
         self.mplus_data = mplus_data
 
+    def set_column_names(self,names):
+        print(self.key_order)
+        self.mplus_data["VARIABLE:"] = "Names are " + " ".join(names)
+
     def to_string(self):
         output_str = ""
         for key in self.key_order:
-            output_str += key + ":\n"
+            output_str += key + "\n"
             output_str += self.mplus_data[key]
 
         return output_str

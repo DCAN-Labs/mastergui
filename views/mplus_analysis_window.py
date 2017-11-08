@@ -45,4 +45,12 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.input.save_cleaned_data(output_path, self.default_missing_tokens_list)
         # make mplus analysi file
         self.alert(output_path + " successfully saved.")
+
+
+        columns = self.input.columnnames()
+
+        self.model.set_column_names(columns)
+
+        generated_mplus_model =self.model.to_string()
+        self.generatedModelViewer.setText(generated_mplus_model)
         # launch mplus
