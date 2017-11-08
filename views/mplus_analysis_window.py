@@ -16,19 +16,55 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.model = models.mplus_model.MplusModel(path)
         self.modelTemplateViewer.setText(str(self.model._raw))
 
-    def createColumnNameListWidget(self):
+    def createColumnNameListWidget(self, single_selection=False):
         model = QStandardItemModel()
-        cols = self.input.columnnames()
+        cols = self.input.columnnames() + ["i", "q", "s", "r"]
         for col in cols:
-            item = QStandardItem('Item %s' % col)
-            check = Qt.Checked if 1 == 1 else Qt.Unchecked
-            item.setCheckState(check)
+            item = QStandardItem(col)
+            # check = Qt.Checked if 1 == 1 else Qt.Unchecked
+            # item.setCheckState(check)
             item.setCheckable(True)
             model.appendRow(item)
 
         view = QListView()
+
         view.setModel(model)
+
+        if single_selection:
+            view.setSelectionMode(QAbstractItemView.SingleSelection)
+
         return view
+
+    def btnstate(self, b):
+        print(b.isChecked())
+
+    def add_rule(self):
+        print("rule added")
+        print(self.columnSelectA.selectedIndexes())
+
+    def createRuleOperatorWidget(self):
+        group = QWidget()
+
+        layout = QVBoxLayout()
+        b1 = QRadioButton("on")
+        b1.setChecked(True)
+        b1.toggled.connect(lambda: self.btnstate(b1))
+        layout.addWidget(b1)
+
+        b2 = QRadioButton("with")
+        b2.toggled.connect(lambda: self.btnstate(b2))
+        layout.addWidget(b2)
+
+        b3 = QRadioButton("restricted")
+        b3.toggled.connect(lambda: self.btnstate(b3))
+        layout.addWidget(b3)
+
+        addBtn = QPushButton("Add Rule")
+        addBtn.clicked.connect(self.add_rule)
+        layout.addWidget(addBtn)
+
+        group.setLayout(layout)
+        return group
 
     def initUISpecific(self):
         self.analysisOptionsLayout.addWidget(QLabel("Missing Data Tokens:"))
@@ -59,7 +95,27 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.grid.addWidget(self.tabs)
 
     def updateUIAfterInput(self):
-        self.modelBuilderLayout.addWidget(self.createColumnNameListWidget())
+
+        rulePanel = QWidget()
+        ruleLayout = QHBoxLayout()
+
+        self.columnSelectA = self.createColumnNameListWidget()
+        self.columnSelectB = self.createColumnNameListWidget(True)
+
+        self.ruleDisplay = QTextEdit()
+
+        self.operationSelector = self.createRuleOperatorWidget()
+
+        ruleLayout.addWidget(self.columnSelectA)
+        ruleLayout.addWidget(self.operationSelector)
+        ruleLayout.addWidget(self.columnSelectB)
+
+        rulePanel.setLayout(ruleLayout)
+        self.modelBuilderLayout.addWidget(rulePanel)
+        # self.modelBuilderLayout.addWidget(self.operationSelector)
+        # self.modelBuilderLayout.addWidget(self.columnSelectB)
+
+        self.modelBuilderLayout.addWidget(self.ruleDisplay)
 
     def Go(self):
         # make data file with characters replaced

@@ -80,29 +80,11 @@ class AnalysisWindow(QWidget):
     def submitCommand(self):
         eval('self.' + str(self.sender().objectName()) + '()')
 
-    def plot3(self):
-        self.draw_graph()
-
     def center(self):
         qr = self.frameGeometry()
         cp = QDesktopWidget().availableGeometry().center()
         qr.moveCenter(cp)
         self.move(qr.topLeft())
-
-    def width_needed_for_node(self, node, levels_to_go=0, single_node_width=150):
-        # todo add memoization http://www.python-course.eu/python3_memoization.php
-        spacer = 100
-        if levels_to_go == 0:
-            return single_node_width
-        pred = self.g.predecessors(node)
-        if len(pred) == 0:
-            return single_node_width
-        else:
-            total = 0
-            for n in pred:
-                total += self.width_needed_for_node(n, levels_to_go - 1, 1.0 * single_node_width)
-            total += (len(pred) - 1) * spacer
-            return total
 
     def alert(self, txt):
         errorbox = QMessageBox()
