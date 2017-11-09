@@ -4,6 +4,7 @@ from PyQt5.QtGui import *
 from views.analysis_window_base import *
 import os
 import models
+import subprocess
 
 
 class MplusAnalysisWindow(AnalysisWindow):
@@ -79,6 +80,7 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.modelBuilderLayout.addWidget(QLabel("Select Covariates"))
         self.modelBuilder.setLayout(self.modelBuilderLayout)
         self.inputTable = QTableWidget()
+        self.modelOutput = QTextEdit()
 
         self.tabs = QTabWidget()
 
@@ -92,6 +94,7 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.tabs.addTab(self.modelTemplateViewer, "Model Template")
         self.tabs.addTab(self.modelBuilder, "Model Builder")
         self.tabs.addTab(x, "New Mplus Model")
+        self.tabs.addTab(self.modelOutput, "Raw MPlus Output")
         self.grid.addWidget(self.tabs)
 
     def updateUIAfterInput(self):
@@ -131,3 +134,32 @@ class MplusAnalysisWindow(AnalysisWindow):
         generated_mplus_model = self.model.to_string()
         self.generatedModelViewer.setText(generated_mplus_model)
         # launch mplus
+
+        os.system('sox input.wav -b 24 output.aiff rate -v -L -b 90 48k')
+
+        # todo safety check this in case of rogue yml input!
+
+        model_input_file_path = os.path.join(self.config._data["output_dir"], "tempmodel.inp")
+
+        model_output_file_path = model_input_file_path + ".out"
+
+        with open(model_input_file_path, "w") as f:
+            f.write(generated_mplus_model)
+
+        cmd = self.config._data["MPlus_command"] + " " + model_input_file_path
+
+        print("About to run command\n", cmd)
+
+        os.system(cmd)
+
+        result = subprocess.run([self.config._data["MPlus_command"],
+                                 model_input_file_path,
+                                 model_output_file_path], stdout=subprocess.PIPE)
+
+        print("Here i tis")
+        with open(model_output_file_path, "r") as f:
+            mplus_output_contents = f.read()
+
+        self.modelOutput.setText(mplus_output_contents)
+
+        print(str(result.stdout, 'utf-8'))

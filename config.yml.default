@@ -10,3 +10,5 @@ open_mplus_model_on_launch:
   ~/mastergui/templates/mplus/model1.inp
 output_dir:
   ~/mastergui/mastergui/output
+MPlus_command:
+  /Applications/MplusDemo/mpdemo

@@ -41,7 +41,7 @@ class AnalysisWindow(QWidget):
             self.updateUIAfterInput()
             self.render_dataframe(self.input._data)
         except:
-            print("error")
+            self.alert("Error while opening file " + path)
 
     def updateUIAfterInput(self):
         print("override in subclasses")
@@ -52,7 +52,7 @@ class AnalysisWindow(QWidget):
         t.setRowCount(len(data.index))
         for i in range(len(data.index)):
             for j in range(len(data.columns)):
-                t.setItem(i, j, QTableWidgetItem(str(data.iget_value(i, j))))
+                t.setItem(i, j, QTableWidgetItem(str(data.iat[i, j])))
 
         for j in range(len(data.columns)):
             t.setHorizontalHeaderItem(j, QTableWidgetItem(data.columns[j]))
