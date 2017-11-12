@@ -47,10 +47,8 @@ class MasterGuiApp(QMainWindow):
     def load_config(self):
         if hasattr(sys.modules['__main__'], "__file__"):
             rootdir = os.path.dirname(sys.modules['__main__'].__file__)
-            print(rootdir)
             config_path = os.path.join(rootdir, "config.yml")
             self.config = config.Config(config_path)
-            print("found config")
         else:
             print("config not available")
 

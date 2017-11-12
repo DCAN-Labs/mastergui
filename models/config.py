@@ -10,4 +10,3 @@ class Config():
     def load(self):
         with open(self._path, 'r') as f:
             self._data = yaml.load(f)
-        print(self._data)
