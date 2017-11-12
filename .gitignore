@@ -1,4 +1,8 @@
 .DS_Store
 __pycache__
 config.yml
+tmp_misc/
+output/*.out
+output/*.inp
+output/*.csv
 
