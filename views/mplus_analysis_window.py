@@ -17,21 +17,32 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.model = models.mplus_model.MplusModel(path)
         self.modelTemplateViewer.setText(str(self.model._raw))
 
-    def createColumnNameListWidget(self, single_selection=False):
-        model = QStandardItemModel()
-        cols = self.input.columnnames() + ["i", "q", "s", "r"]
-        for col in cols:
+    def addColumnNamesToListView(self, listView, columnNames):
+
+        model = listView.model()
+
+        for col in columnNames:
             item = QStandardItem(col)
             # check = Qt.Checked if 1 == 1 else Qt.Unchecked
             # item.setCheckState(check)
             item.setCheckable(True)
             model.appendRow(item)
 
+    def addInputColumnNamesToListViews(self):
+        cols = self.input.columnnames() + ["i", "q", "s", "r"]
+        self.addColumnNamesToListView(self.columnSelectA, cols)
+        self.addColumnNamesToListView(self.columnSelectB, cols)
+
+    def createColumnNameListWidget(self, single_selection=False):
+        model = QStandardItemModel()
+
         view = QListView()
 
         view.setModel(model)
 
         if single_selection:
+            #todo #bug this is not governing the checkbox-ing, just the row level selection. we want the
+            #to restrict it to single checkbox selection
             view.setSelectionMode(QAbstractItemView.SingleSelection)
 
         return view
@@ -39,13 +50,39 @@ class MplusAnalysisWindow(AnalysisWindow):
     def btnstate(self, b):
         print(b.isChecked())
 
+    def selectedLabelsFromListView(self, list):
+
+        m = list.model()
+        labels = []
+        for i in range(m.rowCount()):
+            item = m.item(i)
+            if item.checkState() == Qt.Checked:
+                labels.append(item.text())
+        return labels
+
     def add_rule(self):
-        print("rule added")
-        print(self.columnSelectA.selectedIndexes())
+
+        listA = self.selectedLabelsFromListView(self.columnSelectA)
+        listB = self.selectedLabelsFromListView(self.columnSelectB)
+
+        if len(listA) == 0:
+            self.alert("Please select 1 or more values from the list on the right.")
+            return
+
+        if len(listB) == 0 or len(listB) > 1:
+            self.alert("Please select one and only one variable on the right.")
+            return
+
+        operator = self.operatorButtonGroup.checkedButton().text()
+
+        #now it passes the user input to the underlying mplus model object
+        self.model.add_rule(listA, operator, listB)
+
+        self.ruleDisplay.setText(self.model.rules_to_s())
 
     def createRuleOperatorWidget(self):
-        group = QWidget()
-
+        group = QButtonGroup()
+        groupWidget = QWidget()
         layout = QVBoxLayout()
         b1 = QRadioButton("on")
         b1.setChecked(True)
@@ -62,10 +99,37 @@ class MplusAnalysisWindow(AnalysisWindow):
 
         addBtn = QPushButton("Add Rule")
         addBtn.clicked.connect(self.add_rule)
-        layout.addWidget(addBtn)
 
-        group.setLayout(layout)
-        return group
+        layout.addWidget(addBtn)
+        group.addButton(b1, 1)
+        group.addButton(b2, 2)
+        group.addButton(b3, 3)
+        groupWidget.setLayout(layout)
+
+        self.operatorButtonGroup = group
+        return groupWidget
+
+    def initModelBuilderPanel(self):
+
+        rulePanel = QWidget()
+        ruleLayout = QHBoxLayout()
+
+        self.columnSelectA = self.createColumnNameListWidget()
+        self.columnSelectB = self.createColumnNameListWidget(True)
+
+        self.ruleDisplay = QTextEdit()
+
+        self.operationSelector = self.createRuleOperatorWidget()
+
+        ruleLayout.addWidget(self.columnSelectA)
+        ruleLayout.addWidget(self.operationSelector)
+        ruleLayout.addWidget(self.columnSelectB)
+
+        rulePanel.setLayout(ruleLayout)
+
+        self.modelBuilderLayout.addWidget(rulePanel)
+
+        self.modelBuilderLayout.addWidget(self.ruleDisplay)
 
     def initUISpecific(self):
         self.analysisOptionsLayout.addWidget(QLabel("Missing Data Tokens:"))
@@ -97,28 +161,11 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.tabs.addTab(self.modelOutput, "Raw MPlus Output")
         self.grid.addWidget(self.tabs)
 
+        self.initModelBuilderPanel()
+
     def updateUIAfterInput(self):
 
-        rulePanel = QWidget()
-        ruleLayout = QHBoxLayout()
-
-        self.columnSelectA = self.createColumnNameListWidget()
-        self.columnSelectB = self.createColumnNameListWidget(True)
-
-        self.ruleDisplay = QTextEdit()
-
-        self.operationSelector = self.createRuleOperatorWidget()
-
-        ruleLayout.addWidget(self.columnSelectA)
-        ruleLayout.addWidget(self.operationSelector)
-        ruleLayout.addWidget(self.columnSelectB)
-
-        rulePanel.setLayout(ruleLayout)
-        self.modelBuilderLayout.addWidget(rulePanel)
-        # self.modelBuilderLayout.addWidget(self.operationSelector)
-        # self.modelBuilderLayout.addWidget(self.columnSelectB)
-
-        self.modelBuilderLayout.addWidget(self.ruleDisplay)
+        self.addInputColumnNamesToListViews()
 
     def Go(self):
         # make data file with characters replaced
@@ -156,7 +203,6 @@ class MplusAnalysisWindow(AnalysisWindow):
                                  model_input_file_path,
                                  model_output_file_path], stdout=subprocess.PIPE)
 
-        print("Here i tis")
         with open(model_output_file_path, "r") as f:
             mplus_output_contents = f.read()
 

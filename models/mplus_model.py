@@ -5,6 +5,7 @@ class MplusModel():
     def __init__(self, path=""):
         if len(path) > 0:
             self.load(path)
+        self.rules = []
 
     def load(self, path):
         with open(path, 'r') as f:
@@ -26,6 +27,9 @@ class MplusModel():
                 value = raw[k[1]:key_positions[i + 1][0]]
             else:
                 value = raw[k[1]:]
+            if key[-1] == ":":
+                key = key[:-1]
+
             mplus_data[key] = value
             key_order.append(key)
         self.key_order = key_order
@@ -33,13 +37,30 @@ class MplusModel():
 
     def set_column_names(self, names):
         print(self.key_order)
-        self.mplus_data["VARIABLE:"] = ("Names are " + "\n\t".join(names) +
-                                        "\nUSEVARAIABLES = #todo;\n!auxillary = #todo, \nMISSING=.;\ncluster= #todo")
+        self.mplus_data["VARIABLE"] = ("Names are " + "\n\t".join(names) +
+                                       "\nUSEVARAIABLES = #todo;\n!auxillary = #todo, \nMISSING=.;\ncluster= #todo")
 
     def to_string(self):
         output_str = ""
         for key in self.key_order:
-            output_str += "\n" + key + "\n"
+            output_str += "\n" + key + ":\n"
             output_str += self.mplus_data[key]
 
         return output_str
+
+    def requires(self, include_already_set=False):
+        """
+        Returns a list of model parameters for which user input is required and how to attain them
+        :param include_already_set:
+        :return:
+        """
+        return ["Analysis", "Fields"]
+
+    def add_rule(self, fields_from, operator, fields_to):
+        new_rule_text = "%s %s %s;" % (",".join(fields_from), operator, fields_to[0])
+        self.rules.append(new_rule_text)
+        self.mplus_data["MODEL"] = self.rules_to_s()
+        # self.mplus_data["MODEL:"] = self.rules_to_s()
+
+    def rules_to_s(self):
+        return "\n".join(self.rules)
