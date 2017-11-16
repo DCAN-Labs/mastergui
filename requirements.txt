@@ -1,4 +1,4 @@
 pyqt
 pandas
 yaml
-
+nipy
