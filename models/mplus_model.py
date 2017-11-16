@@ -7,6 +7,9 @@ class MplusModel():
             self.load(path)
         self.rules = []
 
+        #track a unique list of variables used in the analysis
+        self.using_variables = set([])
+
     def load(self, path):
         with open(path, 'r') as f:
             self._raw = f.read()
@@ -37,8 +40,8 @@ class MplusModel():
 
     def set_column_names(self, names):
         print(self.key_order)
-        self.mplus_data["VARIABLE"] = ("Names are " + "\n\t".join(names) +
-                                       "\nUSEVARAIABLES = #todo;\n!auxillary = #todo, \nMISSING=.;\ncluster= #todo")
+        self.mplus_data["VARIABLE"] = ("Names are %s\nUSEVARIABLES = %s;\n!auxiliary = #todo, \nMISSING=.;\ncluster= #todo" %
+                                       ("\n\t".join(names), "\n\t".join(self.using_variables)))
 
     def to_string(self):
         output_str = ""
@@ -61,6 +64,7 @@ class MplusModel():
         self.rules.append(new_rule_text)
         self.mplus_data["MODEL"] = self.rules_to_s()
         # self.mplus_data["MODEL:"] = self.rules_to_s()
+        self.using_variables = self.using_variables.union(set(fields_from + fields_to))
 
     def rules_to_s(self):
         return "\n".join(self.rules)
