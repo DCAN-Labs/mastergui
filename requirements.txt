@@ -2,3 +2,6 @@ pyqt
 pandas
 yaml
 nipy
+glob
+json
+

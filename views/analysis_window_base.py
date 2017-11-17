@@ -1,6 +1,9 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from models.input_spreadsheet import *
+import glob
+import os
+from views.template_chooser_widget import *
 
 
 class AnalysisWindow(QWidget):
@@ -31,33 +34,39 @@ class AnalysisWindow(QWidget):
 
         grid.addLayout(self.analysisOptionsLayout, 0, 0)
 
+        self.initTabs()
+
+        self.initModelSelection()
+
+    def initTabs(self):
+        self.tabs = QTabWidget()
+        self.grid.addWidget(self.tabs)
+        self.tabs.show()
+
+    def addTab(self, widget, title):
+        self.tabs.addTab(widget, title)
+
     def initUISpecific(self):
         # intended for overriding by subclasses
         print("override this method in the subclass for a particular kind of analysis")
 
+    def initModelSelection(self):
+        path_to_templates = self.config._data["analyzers"][self.analyzerName]['templates']
+
+        self.templateChooser = TemplateChooserWidget(path_to_templates)
+
+        self.addTab(self.templateChooser, "Template Selection")
+
     def open_input_file(self, path):
-        try:
-            self.input = InputSpreadsheet(path)
-            self.updateUIAfterInput()
-            self.render_dataframe(self.input._data)
-        except:
-            self.alert("Error while opening file " + path)
+        # try:
+        self.input = InputSpreadsheet(path)
+        self.updateUIAfterInput()
+        self.dataPreview.render_dataframe(self.input._data)
+        # except:
+        #    self.alert("Error while opening file " + path)
 
     def updateUIAfterInput(self):
         print("override in subclasses")
-
-    def render_dataframe(self, data):
-        t = self.inputTable
-        t.setColumnCount(len(data.columns))
-        t.setRowCount(len(data.index))
-        for i in range(len(data.index)):
-            for j in range(len(data.columns)):
-                t.setItem(i, j, QTableWidgetItem(str(data.iat[i, j])))
-
-        for j in range(len(data.columns)):
-            t.setHorizontalHeaderItem(j, QTableWidgetItem(data.columns[j]))
-
-        t.show()
 
     def handle_open_action(self, filename):
         print("todo handle open file")
@@ -68,7 +77,7 @@ class AnalysisWindow(QWidget):
     def createVerticalGroupBox(self):
         self.verticalGroupBox = QGroupBox()
 
-        layout = QVBoxLayout()
+        layout = QHBoxLayout()
         for i in self.NumButtons:
             button = QPushButton(i)
             button.setObjectName(i)

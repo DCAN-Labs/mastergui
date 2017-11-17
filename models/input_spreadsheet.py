@@ -24,3 +24,7 @@ class InputSpreadsheet():
     def save_cleaned_data(self, path, list_of_missingvalues, standard_missing_char="."):
         self.cleanMissingValues(list_of_missingvalues, standard_missing_char)
         self.cleaned.to_csv(path, header=False)
+
+    def prepare_with_cifti(self):
+        if True:
+            print("todo")

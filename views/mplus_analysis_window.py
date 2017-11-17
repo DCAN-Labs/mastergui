@@ -2,6 +2,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from views.analysis_window_base import *
+from views.data_preview_widget import *
 import os
 import models
 import subprocess
@@ -11,6 +12,7 @@ class MplusAnalysisWindow(AnalysisWindow):
     def __init__(self, config):
         self.default_missing_tokens_list = ["-888", "NA", "", "nan"]
         self.title = "Mplus Analysis"
+        self.analyzerName = "mplus"
         super(MplusAnalysisWindow, self).__init__(config)
 
     def open_mplus_model_template(self, path):
@@ -29,7 +31,7 @@ class MplusAnalysisWindow(AnalysisWindow):
             model.appendRow(item)
 
     def addInputColumnNamesToListViews(self):
-        cols = ["VOXEL","i", "q", "s", "r"] + self.input.columnnames()
+        cols = ["VOXEL", "i", "q", "s", "r"] + self.input.columnnames()
         self.addColumnNamesToListView(self.columnSelectA, cols)
         self.addColumnNamesToListView(self.columnSelectB, cols)
 
@@ -41,8 +43,8 @@ class MplusAnalysisWindow(AnalysisWindow):
         view.setModel(model)
 
         if single_selection:
-            #todo #bug this is not governing the checkbox-ing, just the row level selection. we want the
-            #to restrict it to single checkbox selection
+            # todo #bug this is not governing the checkbox-ing, just the row level selection. we want the
+            # to restrict it to single checkbox selection
             view.setSelectionMode(QAbstractItemView.SingleSelection)
 
         return view
@@ -75,13 +77,12 @@ class MplusAnalysisWindow(AnalysisWindow):
 
         operator = self.operatorButtonGroup.checkedButton().text()
 
-        #now it passes the user input to the underlying mplus model object
+        # now it passes the user input to the underlying mplus model object
         self.model.add_rule(listA, operator, listB)
 
         self.ruleDisplay.setText(self.model.rules_to_s())
 
         self.updateGeneratedMPlusInputFile()
-
 
     def createRuleOperatorWidget(self):
         group = QButtonGroup()
@@ -142,15 +143,12 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.initModelBuilderPanel()
 
     def addTopLevelOptionWidgets(self):
-        self.analysisOptionsLayout.addWidget(QLabel("Missing Data Tokens:"))
-        self.missingDataTokens = QLineEdit()
-        self.missingDataTokens.setText(",".join(self.default_missing_tokens_list))
-        self.analysisOptionsLayout.addWidget(self.missingDataTokens)
 
-        self.analysisOptionsLayout.addWidget(QLabel("Title:"))
+        self.verticalGroupBox.layout()
+        self.verticalGroupBox.layout().addWidget(QLabel("Title:"))
         self.titleEdit = QLineEdit()
         self.titleEdit.setText("DefaultTitle")
-        self.analysisOptionsLayout.addWidget(self.titleEdit)
+        self.verticalGroupBox.layout().addWidget(self.titleEdit)
 
     def initUISpecific(self):
 
@@ -161,25 +159,23 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.modelTemplateViewer = QTextEdit()
         self.generatedModelViewer = QTextEdit()
 
-        self.inputTable = QTableWidget()
-        self.modelOutput = QTextEdit()
+        self.dataPreview = DataPreviewWidget()
 
-        self.tabs = QTabWidget()
+        self.modelOutput = QTextEdit()
 
         newMplusModel = QWidget()
 
         self.modelDesignContainer = QVBoxLayout()
         self.modelDesignContainer.addWidget(self.generatedModelViewer)
         newMplusModel.setLayout(self.modelDesignContainer)
-        self.tabs.resize(300, 200)
-        self.tabs.addTab(self.inputTable, "Input Data Review")
-        self.tabs.addTab(self.modelTemplateViewer, "Model Template")
-        self.tabs.addTab(self.modelBuilder, "Model Builder")
-        self.tabs.addTab(newMplusModel, "New Mplus Model")
-        self.tabs.addTab(self.modelOutput, "Raw MPlus Output")
-        self.grid.addWidget(self.tabs)
 
+        self.addTab(self.dataPreview, "Input Data Review")
+        self.addTab(self.modelTemplateViewer, "Model Template")
+        self.addTab(self.modelBuilder, "Model Builder")
+        self.addTab(newMplusModel, "New Mplus Model")
+        self.addTab(self.modelOutput, "Raw MPlus Output")
 
+        self.tabs.setCurrentIndex(0)
 
     def updateUIAfterInput(self):
 
@@ -193,16 +189,18 @@ class MplusAnalysisWindow(AnalysisWindow):
         generated_mplus_model = self.model.to_string()
         self.generatedModelViewer.setText(generated_mplus_model)
 
-        if len(save_to_path)>0:
+        if len(save_to_path) > 0:
             with open(save_to_path, "w") as f:
                 f.write(self.model.to_string())
 
     def Go(self):
         # make data file with characters replaced
         output_path = os.path.join(self.config._data.get("output_dir", ""), "GENERATEDmissing.csv")
+
+        # todo its just using the default, not the user input!
         self.input.save_cleaned_data(output_path, self.default_missing_tokens_list)
 
-        #todo put in some MasterGui status/log box
+        # todo put in some MasterGui status/log box
         # self.alert(output_path + " successfully saved.")
 
         # todo safety check this in case of rogue yml input!
