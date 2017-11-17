@@ -6,6 +6,7 @@ from views.data_preview_widget import *
 import os
 import models
 import subprocess
+import datetime
 
 
 class MplusAnalysisWindow(AnalysisWindow):
@@ -194,10 +195,19 @@ class MplusAnalysisWindow(AnalysisWindow):
                 f.write(self.model.to_string())
 
     def Go(self):
-        # make data file with characters replaced
-        output_path = os.path.join(self.config._data.get("output_dir", ""), "GENERATEDmissing.csv")
 
-        # todo its just using the default, not the user input!
+        title = self.titleEdit.text() + str(datetime.datetime.now()).replace(" ", ".").replace(":", ".")
+
+        self.model.title = title
+
+        # make data file with characters replaced
+        filename_prefix = self.model.title_for_filename
+        model_filename = filename_prefix + ".inp"
+        data_filename = filename_prefix + ".csv"
+
+        output_path = os.path.join(self.config._data.get("output_dir", ""), data_filename)
+
+        # todo its just using the default missing tokens, not the user input!
         self.input.save_cleaned_data(output_path, self.default_missing_tokens_list)
 
         # todo put in some MasterGui status/log box
@@ -205,11 +215,13 @@ class MplusAnalysisWindow(AnalysisWindow):
 
         # todo safety check this in case of rogue yml input!
 
-        model_input_file_path = os.path.join(self.config._data["output_dir"], "tempmodel.inp")
+        model_filename = self.model.title_for_filename + ".inp"
+
+        model_input_file_path = os.path.join(self.config._data["output_dir"], model_filename)
 
         model_output_file_path = model_input_file_path + ".out"
 
-        self.updateGeneratedMPlusInputFile(model_output_file_path)
+        self.updateGeneratedMPlusInputFile(model_input_file_path)
 
         # launch mplus
         cmd = self.config._data["MPlus_command"] + " " + model_input_file_path
