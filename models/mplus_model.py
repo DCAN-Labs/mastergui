@@ -5,6 +5,7 @@ class MplusModel():
     def __init__(self, path=""):
         if len(path) > 0:
             self.load(path)
+        self._title = "UntitledMplusModel"
         self.rules = []
 
         #track a unique list of variables used in the analysis
@@ -38,10 +39,48 @@ class MplusModel():
         self.key_order = key_order
         self.mplus_data = mplus_data
 
+    @property
+    def title(self):
+        return self._title
+
+    @title.setter
+    def title(self, title):
+        self._title  = title
+        self.mplus_data["TITLE"] = title
+        self.datafile = self.title_for_filename + ".csv"
+
+    @property
+    def title_for_filename(self):
+        return re.sub('[^0-9a-zA-Z]+', '_', self.title)
+
+    @property
+    def datafile(self):
+        return self._datafile
+
+    @datafile.setter
+    def datafile(self, datafile):
+        self._datafile = datafile
+        self.mplus_data["DATA"] = "FILE is %s;" % datafile
+
+    @property
+    def cluster(self):
+        return "COVA_SEX"
+
+    @property
+    def cluster_clause(self):
+        if len(self.cluster)==0:
+            return ""
+        else:
+            return "cluster=%s;\n" % self.cluster
+
     def set_column_names(self, names):
         print(self.key_order)
-        self.mplus_data["VARIABLE"] = ("Names are %s\nUSEVARIABLES = %s;\n!auxiliary = #todo, \nMISSING=.;\ncluster= #todo" %
-                                       ("\n\t".join(names), "\n\t".join(self.using_variables)))
+#        self.mplus_data["VARIABLE"] = (
+#        "Names are %s;\nUSEVARIABLES = %s;\n!auxiliary = #todo, \nMISSING=.;\ncluster= #todo" %
+#        ("\n\t".join(names), "\n\t".join(self.using_variables)))
+
+        self.mplus_data["VARIABLE"] = ("Names are %s;\nUSEVARIABLES = %s;\nMISSING=.;\n%s" %
+                                       ("\n\t".join(names), "\n\t".join(self.using_variables),self.cluster_clause))
 
     def to_string(self):
         output_str = ""
