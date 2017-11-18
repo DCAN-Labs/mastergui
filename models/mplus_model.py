@@ -109,22 +109,36 @@ class MplusModel():
     def rules_to_s(self):
         return "\n".join(self.rules)
 
-    def aggregate_results_to_cifti(self, inputspreadsheet, path_prefix, cifti_filename):
+    def aggregate_results_to_cifti(self, inputspreadsheet, path_prefix, look_for_fields, cifti_filename):
         n_elements = inputspreadsheet.ciftiSet.shape
         for i in range(n_elements):
             path = path_prefix + ".voxel" + str(i) + ".inp.out"
-            self.parse_mplus_results(path)
+            self.parse_mplus_results(path, look_for_fields)
 
-    def parse_mplus_results(self,path):
-        print("todo parse ")
-        look_for_fields = ['Akaike (AIC)',"CFI"]
+    def parse_mplus_results(self, path, look_for_fields = []):
+
 
         seeking = len(look_for_fields)
         found = 0
+        values = {}
         with open(path,"r") as f:
             lines = f.readlines()
 
-  #          for l in lines:
+            for l in lines:
+                l = l.strip()
+                for field in look_for_fields:
+                    if l.find(field)==0:
+                        parts = l.split(" ")
+                        value = parts[-1]
+                        found += 1
+                        values[field] = value
+                        if found==seeking:
+                            break
+                if found == seeking:
+                    break
+
+        return values
+
 
 
 

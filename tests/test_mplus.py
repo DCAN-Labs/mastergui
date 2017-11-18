@@ -1,4 +1,5 @@
 import unittest
+from models.mplus_model import *
 
 
 class TestMPlusAnalyzer(unittest.TestCase):
@@ -16,6 +17,11 @@ class TestMPlusAnalyzer(unittest.TestCase):
         with self.assertRaises(TypeError):
             s.split(2)
 
+    def test_results_parsing(self):
+        m = MplusModel()
+        look_for_fields = ['Akaike (AIC)', "CFI "]
+        r = m.parse_mplus_results("output/DefaultTitle2017_11_17_16_54_46_882585voxel0.inp.out", look_for_fields)
+        print(r)
 
 if __name__ == '__main__':
     unittest.main()
