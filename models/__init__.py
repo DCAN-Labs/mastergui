@@ -1,1 +1,1 @@
-__all__ = ['config', 'input_spreadsheet', 'mplus_analysis', 'mplus_model','cifti','mplus_template']
+__all__ = ['config', 'input_spreadsheet', 'mplus_analysis', 'mplus_model','cifti','mplus_template', 'ciftiset']

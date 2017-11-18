@@ -28,7 +28,6 @@ import unittest
 
 from models import *
 
-
 class TestCifti(unittest.TestCase):
     def test_loadsfile(self):
         # d = os.path.dirname(__file__)
@@ -37,7 +36,25 @@ class TestCifti(unittest.TestCase):
         c = cifti.Cifti(p)
 
         self.assertEqual(c.matrix().shape, (1,91282))
+        m  = c.matrix()
+        m[0, 0] = 1
+        m[0, 1] = 2
+        m[0, 3] = 3
 
+        c.save("tests/mynewcifti.nii")
+
+
+class TestCiftiSet(unittest.TestCase):
+    def test_loads_list(self):
+        p = "tests/ones.dscalar.nii"
+        list = [p,p]
+        cset = ciftiset.CiftiSet(list)
+        cset.load_all()
+        self.assertEqual(len(cset.ciftiMatrices),len(list))
+
+        col1 = cset.getVectorPosition(0)
+        print(col1)
+        self.assertEqual(len(col1),2)
 
 if __name__ == '__main__':
     unittest.main()

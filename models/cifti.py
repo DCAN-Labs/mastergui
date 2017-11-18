@@ -6,3 +6,6 @@ class Cifti():
 
     def matrix(self):
         return self._cifti.get_fdata()
+
+    def save(self,path):
+        self._cifti = nibabel.cifti2.cifti2.save(self._cifti, path)

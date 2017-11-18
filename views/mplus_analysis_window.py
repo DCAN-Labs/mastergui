@@ -195,6 +195,7 @@ class MplusAnalysisWindow(AnalysisWindow):
                 f.write(self.model.to_string())
 
     def Go(self):
+        self.modelOutput.setText("Pending...")
 
         title = self.titleEdit.text() + str(datetime.datetime.now()).replace(" ", ".").replace(":", ".")
 
@@ -202,13 +203,35 @@ class MplusAnalysisWindow(AnalysisWindow):
 
         # make data file with characters replaced
         filename_prefix = self.model.title_for_filename
-        model_filename = filename_prefix + ".inp"
+
         data_filename = filename_prefix + ".csv"
 
         output_path = os.path.join(self.config._data.get("output_dir", ""), data_filename)
 
         # todo its just using the default missing tokens, not the user input!
         self.input.save_cleaned_data(output_path, self.default_missing_tokens_list)
+        self.input.prepare_with_cifti("PATH_HCP", output_path)
+
+        max_times = 10
+
+        for i in range(self.input.cifti_vector_size):
+            model_filename = self.model.title_for_filename + "voxel" + str(i) +  ".inp"
+
+            model_input_file_path = os.path.join(self.config._data["output_dir"], model_filename)
+            self.model.datafile = data_filename + "." +  str(i) + ".csv"
+            model_output_file_path = model_input_file_path + ".out"
+            self.updateGeneratedMPlusInputFile(model_input_file_path)
+
+            # launch mplus
+            cmd = self.config._data["MPlus_command"] + " " + model_input_file_path
+
+
+            result = subprocess.run([self.config._data["MPlus_command"],
+                                 model_input_file_path,
+                                 model_output_file_path], stdout=subprocess.PIPE)
+
+            if i>max_times:
+                break
 
         # todo put in some MasterGui status/log box
         # self.alert(output_path + " successfully saved.")
@@ -226,10 +249,6 @@ class MplusAnalysisWindow(AnalysisWindow):
         # launch mplus
         cmd = self.config._data["MPlus_command"] + " " + model_input_file_path
 
-        print("About to run command\n", cmd)
-
-        os.system(cmd)
-
         result = subprocess.run([self.config._data["MPlus_command"],
                                  model_input_file_path,
                                  model_output_file_path], stdout=subprocess.PIPE)
@@ -240,3 +259,5 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.modelOutput.setText(mplus_output_contents)
 
         print(str(result.stdout, 'utf-8'))
+
+        self.tabs.setCurrentIndex(5)

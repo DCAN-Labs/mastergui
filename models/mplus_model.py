@@ -1,5 +1,6 @@
 import re
-
+from models import cifti
+from models import ciftiset
 
 class MplusModel():
     def __init__(self, path=""):
@@ -107,3 +108,23 @@ class MplusModel():
 
     def rules_to_s(self):
         return "\n".join(self.rules)
+
+    def aggregate_results_to_cifti(self, inputspreadsheet, path_prefix, cifti_filename):
+        n_elements = inputspreadsheet.ciftiSet.shape
+        for i in range(n_elements):
+            path = path_prefix + ".voxel" + str(i) + ".inp.out"
+            self.parse_mplus_results(path)
+
+    def parse_mplus_results(self,path):
+        print("todo parse ")
+        look_for_fields = ['Akaike (AIC)',"CFI"]
+
+        seeking = len(look_for_fields)
+        found = 0
+        with open(path,"r") as f:
+            lines = f.readlines()
+
+  #          for l in lines:
+
+
+

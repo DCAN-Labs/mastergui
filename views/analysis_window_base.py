@@ -1,9 +1,10 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
-from models.input_spreadsheet import *
+from models import *
 import glob
 import os
 from views.template_chooser_widget import *
+from models import input_spreadsheet
 
 
 class AnalysisWindow(QWidget):
@@ -59,7 +60,7 @@ class AnalysisWindow(QWidget):
 
     def open_input_file(self, path):
         # try:
-        self.input = InputSpreadsheet(path)
+        self.input = input_spreadsheet.InputSpreadsheet(path)
         self.updateUIAfterInput()
         self.dataPreview.render_dataframe(self.input._data)
         # except:
