@@ -34,6 +34,10 @@ class DataPreviewWidget(QWidget):
     def table(self):
         return self.inputTable
 
+    @property
+    def missing_tokens(self):
+        return self.missingDataTokens.text().split(",")
+
     def render_dataframe(self, data):
 
         self.data = data
@@ -48,7 +52,7 @@ class DataPreviewWidget(QWidget):
 
         t.setRowCount(len(data.index) + computed_row_count)
 
-        missing_tokens = self.missingDataTokens.text().split(",")
+        missing_tokens = self.missing_tokens
 
         # missing_color = QColor(252,187,161)
         missing_color = QColor(254, 224, 210)

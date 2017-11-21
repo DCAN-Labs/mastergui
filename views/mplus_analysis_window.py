@@ -190,9 +190,18 @@ class MplusAnalysisWindow(AnalysisWindow):
         generated_mplus_model = self.model.to_string()
         self.generatedModelViewer.setText(generated_mplus_model)
 
-        if len(save_to_path) > 0:
-            with open(save_to_path, "w") as f:
-                f.write(self.model.to_string())
+        if False:
+
+            if len(save_to_path) > 0:
+                with open(save_to_path, "w") as f:
+                    f.write(self.model.to_string())
+
+    def launchWorkbench(self, cifti_output_path):
+        base_image_paths = "/Users/David/Documents/projects/mastergui/data/fsaverage_LR32k/ohsu-sub-NDARINV3F6NJ6WW.L.inflated.32k_fs_LR.surf.gii /Users/David/Documents/projects/mastergui/data/fsaverage_LR32k/ohsu-sub-NDARINV3F6NJ6WW.L.midthickness.32k_fs_LR.surf.gii /Users/David/Documents/projects/mastergui/data/fsaverage_LR32k/ohsu-sub-NDARINV3F6NJ6WW.L.pial.32k_fs_LR.surf.gii /Users/David/Documents/projects/mastergui/data/fsaverage_LR32k/ohsu-sub-NDARINV3F6NJ6WW.R.inflated.32k_fs_LR.surf.gii /Users/David/Documents/projects/mastergui/data/fsaverage_LR32k/ohsu-sub-NDARINV3F6NJ6WW.R.midthickness.32k_fs_LR.surf.gii /Users/David/Documents/projects/mastergui/data/fsaverage_LR32k/ohsu-sub-NDARINV3F6NJ6WW.R.pial.32k_fs_LR.surf.gii /Users/David/Documents/projects/mastergui/data/T1w_restore.nii.gz"
+
+        # todo require wb_view is in the users path and change this mac specific command
+        os.system(
+            'open -a "/Applications/connectomeworkbench/macosx64_apps/wb_view.app" --args ' + base_image_paths + " " + cifti_output_path)
 
     def Go(self):
         self.modelOutput.setText("Pending...")
@@ -201,63 +210,19 @@ class MplusAnalysisWindow(AnalysisWindow):
 
         self.model.title = title
 
-        # make data file with characters replaced
-        filename_prefix = self.model.title_for_filename
+        analysis = models.mplus_analysis.MplusAnalysis(self.config)
 
-        data_filename = filename_prefix + ".csv"
-
-        output_path = os.path.join(self.config._data.get("output_dir", ""), data_filename)
-
-        # todo its just using the default missing tokens, not the user input!
-        self.input.save_cleaned_data(output_path, self.default_missing_tokens_list)
-        self.input.prepare_with_cifti("PATH_HCP", output_path)
-
-        max_times = 10
-
-        for i in range(self.input.cifti_vector_size):
-            model_filename = self.model.title_for_filename + "voxel" + str(i) +  ".inp"
-
-            model_input_file_path = os.path.join(self.config._data["output_dir"], model_filename)
-            self.model.datafile = data_filename + "." +  str(i) + ".csv"
-            model_output_file_path = model_input_file_path + ".out"
-            self.updateGeneratedMPlusInputFile(model_input_file_path)
-
-            # launch mplus
-            cmd = self.config._data["MPlus_command"] + " " + model_input_file_path
-
-
-            result = subprocess.run([self.config._data["MPlus_command"],
-                                 model_input_file_path,
-                                 model_output_file_path], stdout=subprocess.PIPE)
-
-            if i>max_times:
-                break
-
-        # todo put in some MasterGui status/log box
-        # self.alert(output_path + " successfully saved.")
-
-        # todo safety check this in case of rogue yml input!
-
-        model_filename = self.model.title_for_filename + ".inp"
-
-        model_input_file_path = os.path.join(self.config._data["output_dir"], model_filename)
-
-        model_output_file_path = model_input_file_path + ".out"
-
-        self.updateGeneratedMPlusInputFile(model_input_file_path)
-
-        # launch mplus
-        cmd = self.config._data["MPlus_command"] + " " + model_input_file_path
-
-        result = subprocess.run([self.config._data["MPlus_command"],
-                                 model_input_file_path,
-                                 model_output_file_path], stdout=subprocess.PIPE)
-
-        with open(model_output_file_path, "r") as f:
-            mplus_output_contents = f.read()
+        # for testing, halt after n rows of data processing. Set to 0 to do everything.
+        halt_after_n = 3
+        mplus_output_contents = analysis.go(self.model, self.titleEdit.text(), self.input,
+                                            self.dataPreview.missing_tokens, halt_after_n)
 
         self.modelOutput.setText(mplus_output_contents)
 
-        print(str(result.stdout, 'utf-8'))
+        print(analysis.mplus_stdout)
 
         self.tabs.setCurrentIndex(5)
+
+        cifti_output_path = analysis.cifti_output_path
+
+        self.launchWorkbench(cifti_output_path)

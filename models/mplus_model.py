@@ -2,6 +2,7 @@ import re
 from models import cifti
 from models import ciftiset
 
+
 class MplusModel():
     def __init__(self, path=""):
         if len(path) > 0:
@@ -9,7 +10,7 @@ class MplusModel():
         self._title = "UntitledMplusModel"
         self.rules = []
 
-        #track a unique list of variables used in the analysis
+        # track a unique list of variables used in the analysis
         self.using_variables = set([])
 
     def load(self, path):
@@ -46,7 +47,7 @@ class MplusModel():
 
     @title.setter
     def title(self, title):
-        self._title  = title
+        self._title = title
         self.mplus_data["TITLE"] = title
         self.datafile = self.title_for_filename + ".csv"
 
@@ -69,19 +70,19 @@ class MplusModel():
 
     @property
     def cluster_clause(self):
-        if len(self.cluster)==0:
+        if len(self.cluster) == 0:
             return ""
         else:
             return "cluster=%s;\n" % self.cluster
 
     def set_column_names(self, names):
         print(self.key_order)
-#        self.mplus_data["VARIABLE"] = (
-#        "Names are %s;\nUSEVARIABLES = %s;\n!auxiliary = #todo, \nMISSING=.;\ncluster= #todo" %
-#        ("\n\t".join(names), "\n\t".join(self.using_variables)))
+        #        self.mplus_data["VARIABLE"] = (
+        #        "Names are %s;\nUSEVARIABLES = %s;\n!auxiliary = #todo, \nMISSING=.;\ncluster= #todo" %
+        #        ("\n\t".join(names), "\n\t".join(self.using_variables)))
 
         self.mplus_data["VARIABLE"] = ("Names are %s;\nUSEVARIABLES = %s;\nMISSING=.;\n%s" %
-                                       ("\n\t".join(names), "\n\t".join(self.using_variables),self.cluster_clause))
+                                       ("\n\t".join(names), "\n\t".join(self.using_variables), self.cluster_clause))
 
     def to_string(self):
         output_str = ""
@@ -109,36 +110,54 @@ class MplusModel():
     def rules_to_s(self):
         return "\n".join(self.rules)
 
-    def aggregate_results_to_cifti(self, inputspreadsheet, path_prefix, look_for_fields, cifti_filename):
+    def aggregate_results_to_cifti(self, inputspreadsheet, path_prefix, look_for_fields, ciftis, naCiftiValue=-888):
+        """
+        parse results out of the per-voxel output files and aggregate them into cifti files. it accepts a list
+        of fields to extract from the outputs and there must be one Cifti instance provided per field as
+        we only write one given output field to one cifti at present
+        :param inputspreadsheet:
+        :param path_prefix:
+        :param look_for_fields:
+        :param ciftis:
+        :return:
+        """
+
+        max_todo = 3
+        if len(look_for_fields) != len(ciftis):
+            raise ValueError("Number of fields does not match number of ciftis")
         n_elements = inputspreadsheet.ciftiSet.shape
         for i in range(n_elements):
             path = path_prefix + ".voxel" + str(i) + ".inp.out"
-            self.parse_mplus_results(path, look_for_fields)
+            results = self.parse_mplus_results(path, look_for_fields)
+            for j in range(len(look_for_fields)):
+                # todo how to handle NA's if field not found in results?
+                fld = look_for_fields[j]
+                value = results.get(fld, naCiftiValue)
 
-    def parse_mplus_results(self, path, look_for_fields = []):
+                ciftis[j].setPosition(i, value)
+            if i > max_todo:
+                print("stopping early, testing mode")
+                break
 
+    def parse_mplus_results(self, path, look_for_fields=[]):
 
         seeking = len(look_for_fields)
         found = 0
         values = {}
-        with open(path,"r") as f:
+        with open(path, "r") as f:
             lines = f.readlines()
 
             for l in lines:
                 l = l.strip()
                 for field in look_for_fields:
-                    if l.find(field)==0:
+                    if l.find(field) == 0:
                         parts = l.split(" ")
                         value = parts[-1]
                         found += 1
                         values[field] = value
-                        if found==seeking:
+                        if found == seeking:
                             break
                 if found == seeking:
                     break
 
         return values
-
-
-
-

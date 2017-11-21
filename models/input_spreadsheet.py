@@ -3,6 +3,7 @@ import numpy as np
 from models import cifti
 from models import ciftiset
 
+
 class InputSpreadsheet():
     def __init__(self, path):
         # todo detect extension (.csv, .xls) and treat appropriately
@@ -41,9 +42,17 @@ class InputSpreadsheet():
     def save_dataframe(self, df, path):
         df.to_csv(path, header=False, index=False)
 
-    def prepare_with_cifti(self, path_col_name, output_path_prefix):
-
+    def prepare_with_cifti(self, path_col_name, output_path_prefix, testing_only_limit_to_n_rows=0):
+        """generate a separate file for each voxel in a cift
+        :param path_col_name:
+        :param output_path_prefix:
+        :param testing_only_limit_to_n_rows:  pass a number greater than 0 here ot have it only process that number of voxels, to facillitate testing
+        :return:
+        """
         paths = list(self._data[path_col_name])
+
+        if testing_only_limit_to_n_rows > 0:
+            paths = paths[0:testing_only_limit_to_n_rows]
 
         ciftiSet = ciftiset.CiftiSet(paths)
 
@@ -57,20 +66,18 @@ class InputSpreadsheet():
 
         rows = len(self.cleaned.index)
 
-        #blank = pd.Series(np.zeros(rows))
+        # blank = pd.Series(np.zeros(rows))
 
-        #base_df['voxel'] = blank
+        # base_df['voxel'] = blank
 
-        max = 10 #prematurely stop during testing
+        max = 3  # prematurely stop during testing
 
         for i in range(n_elements):
             voxel_data = ciftiSet.getVectorPosition(i)
             base_df['voxel'] = pd.Series(voxel_data)
-            self.save_dataframe(base_df, output_path_prefix + "."  + str(i) + ".csv")
+            self.save_dataframe(base_df, output_path_prefix + "." + str(i) + ".csv")
 
             if i > max:
                 break
 
         self.ciftiSet = ciftiSet
-
-

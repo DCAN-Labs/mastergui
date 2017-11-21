@@ -1,7 +1,8 @@
 import json
 
+
 class MplusTemplate():
-    def __init__(self,path):
+    def __init__(self, path):
         with open(path, 'r') as f:
             template_info = json.load(f, strict=False)
         if 'name' in template_info:
@@ -23,7 +24,7 @@ class MplusTemplate():
     def rawModel(self):
         return self.return_if_exists("rawmodel")
 
-    def return_if_exists(self, key, elsereturn = ""):
+    def return_if_exists(self, key, elsereturn=""):
         if key in self.data:
             return self.data[key]
         else:

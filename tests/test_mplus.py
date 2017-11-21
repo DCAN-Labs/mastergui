@@ -23,5 +23,12 @@ class TestMPlusAnalyzer(unittest.TestCase):
         r = m.parse_mplus_results("output/DefaultTitle2017_11_17_16_54_46_882585voxel0.inp.out", look_for_fields)
         print(r)
 
+    def test_generate_inputs_from_voxels(self):
+        print("todo")
+
+    def test_process_voxel_based_outputs(self):
+        print("todo")
+
+
 if __name__ == '__main__':
     unittest.main()
