@@ -25,10 +25,29 @@ class Cifti():
         # self.vector[vector_position] = value
 
     def getPosition(self, vector_position):
-        return self.vector[vector_position]
+        return self._cifti.get_fdata()[0, vector_position]
+        # return self.vector[vector_position]
 
     def save(self, path):
-        self._cifti = nibabel.cifti2.cifti2.save(self._cifti, path)
+        """Save the cifti to disk.
+        The data in the loaded Cifti2Image appears to be read only so
+        :param path:
+        :return:
+        """
+
+        orig_cifti = self._cifti
+
+        data = orig_cifti.get_fdata()
+
+        new_cifti = nibabel.cifti2.cifti2.Cifti2Image(data,
+                                                      orig_cifti.header,
+                                                      orig_cifti.nifti_header,
+                                                      orig_cifti.extra,
+                                                      orig_cifti.file_map)
+
+        nibabel.cifti2.cifti2.save(new_cifti, path)
+
+        self._cifti = new_cifti
 
     def randomize(self):
         """just for testing, make a random cift"""

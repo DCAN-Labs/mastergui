@@ -27,6 +27,21 @@ class TestCifti(unittest.TestCase):
         #self.assertEqual(c.getPosition(13244),0.735247)
         self.assertEqual(c.getPosition(18077), 0.735247)
 
+
+    def test_writecifti(self):
+        p = "tests/ones.dscalar.nii"
+        p2 = "tests/onesMODIFIED.dscalar.nii"
+        c = cifti.Cifti(p)
+        c.setPosition(1,2)
+        self.assertEqual(c.getPosition(1), 2)
+        c.save(p2)
+
+        c2 = cifti.Cifti(p2)
+
+        #self.assertEqual(c2.getPosition(0), 1)
+        #self.assertEqual(c2.getPosition(2), 1)
+        self.assertEqual(c2.getPosition(1),2)
+
 class TestCiftiSet(unittest.TestCase):
     def test_loads_list(self):
         p = "tests/ones.dscalar.nii"
