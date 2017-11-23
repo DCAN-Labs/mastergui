@@ -30,3 +30,4 @@ From the command line in the root directory, run:
 pytest tests/
 ```
 Run tests with -s option to see stdout as it processes (i.e. if there are diagnostic print statements in the code)
+Use -k your_method_name to test only a specific method in test file.
