@@ -20,13 +20,9 @@ class Cifti():
 
     def setPosition(self, vector_position, value):
         self._cifti.get_fdata()[0, vector_position] = value
-        print("set to " + str(value))
-        print("get value is " + str(self.getPosition(vector_position)))
-        # self.vector[vector_position] = value
 
     def getPosition(self, vector_position):
         return self._cifti.get_fdata()[0, vector_position]
-        # return self.vector[vector_position]
 
     def save(self, path):
         """Save the cifti to disk.

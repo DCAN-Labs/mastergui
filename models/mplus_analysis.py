@@ -69,6 +69,7 @@ class MplusAnalysis:
     def runAnalysisWithCiftiProcessing(self, testing_only_limit_to_n_rows):
 
         self.input.prepare_with_cifti("PATH_HCP", self.output_path, testing_only_limit_to_n_rows)
+
         for i in range(self.input.cifti_vector_size):
             model_filename = self.input_file_name_for_voxel(i)
 

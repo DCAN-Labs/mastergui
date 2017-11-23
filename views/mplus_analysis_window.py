@@ -178,6 +178,8 @@ class MplusAnalysisWindow(AnalysisWindow):
 
         self.tabs.setCurrentIndex(0)
 
+        self.progress = QProgressBar()
+
     def updateUIAfterInput(self):
 
         self.addInputColumnNamesToListViews()
@@ -203,7 +205,15 @@ class MplusAnalysisWindow(AnalysisWindow):
         os.system(
             'open -a "/Applications/connectomeworkbench/macosx64_apps/wb_view.app" --args ' + base_image_paths + " " + cifti_output_path)
 
+    def activateProgressBar(self):
+        self.progress.show()
+        self.progress.setMaximum(len(self.input.data()))
+        self.progress.setValue(len(self.input.data()) / 2)
+
     def Go(self):
+
+        #self.activateProgressBar()
+
         self.modelOutput.setText("Pending...")
 
         title = self.titleEdit.text() + str(datetime.datetime.now()).replace(" ", ".").replace(":", ".")
@@ -225,3 +235,4 @@ class MplusAnalysisWindow(AnalysisWindow):
 
         if len(cifti_output_path)>0:
             self.launchWorkbench(cifti_output_path)
+

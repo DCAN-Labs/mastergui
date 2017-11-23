@@ -2,6 +2,8 @@ import pandas as pd
 import numpy as np
 from models import cifti
 from models import ciftiset
+import os
+
 
 
 class InputSpreadsheet():
@@ -42,6 +44,13 @@ class InputSpreadsheet():
     def save_dataframe(self, df, path):
         df.to_csv(path, header=False, index=False)
 
+    def checkForInvalidPaths(self,paths):
+        invalids = []
+        for i,path in enumerate(paths):
+            if not os.path.exists(path):
+                invalids.append((i,path))
+        return invalids
+
     def prepare_with_cifti(self, path_col_name, output_path_prefix, testing_only_limit_to_n_rows=0):
         """generate a separate file for each voxel in a cift
         :param path_col_name:
@@ -53,6 +62,11 @@ class InputSpreadsheet():
 
         if testing_only_limit_to_n_rows > 0:
             paths = paths[0:testing_only_limit_to_n_rows]
+
+        invalid_paths = self.checkForInvalidPaths(paths)
+
+        if len(invalid_paths)>0:
+            raise ValueError("%i paths to ciftis are not valid" % len(invalid_paths))
 
         ciftiSet = ciftiset.CiftiSet(paths)
 
@@ -66,18 +80,12 @@ class InputSpreadsheet():
 
         rows = len(self.cleaned.index)
 
-        # blank = pd.Series(np.zeros(rows))
-
-        # base_df['voxel'] = blank
-
-        max = 3  # prematurely stop during testing
-
         for i in range(n_elements):
             voxel_data = ciftiSet.getVectorPosition(i)
             base_df['voxel'] = pd.Series(voxel_data)
             self.save_dataframe(base_df, output_path_prefix + "." + str(i) + ".csv")
 
-            if i > max:
+            if testing_only_limit_to_n_rows >0 and i > testing_only_limit_to_n_rows:
                 break
 
         self.ciftiSet = ciftiSet
