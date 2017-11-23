@@ -1,5 +1,5 @@
 import nibabel
-
+import numpy as np
 
 class Cifti():
     def __init__(self, path):
@@ -49,6 +49,11 @@ class Cifti():
 
         self._cifti = new_cifti
 
+    def nullify(self):
+        n = len(self.vector)
+        for i in range(n):
+            self.setPosition(i, np.nan)
+
     def randomize(self):
         """just for testing, make a random cift"""
         n = len(self.vector)
@@ -56,4 +61,4 @@ class Cifti():
         for i in range(n):
             if i % 1000 == 0:
                 value += 1
-            self.setPosition(i, value)
+                self.setPosition(i, value)

@@ -12,3 +12,5 @@ output_dir:
   ~/mastergui/mastergui/output
 MPlus_command:
   /Applications/MplusDemo/mpdemo
+Base_cifti_for_output:
+  data/base_output.dscalar.nii

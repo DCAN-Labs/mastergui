@@ -219,10 +219,9 @@ class MplusAnalysisWindow(AnalysisWindow):
 
         self.modelOutput.setText(mplus_output_contents)
 
-        print(analysis.mplus_stdout)
-
         self.tabs.setCurrentIndex(5)
 
         cifti_output_path = analysis.cifti_output_path
 
-        self.launchWorkbench(cifti_output_path)
+        if len(cifti_output_path)>0:
+            self.launchWorkbench(cifti_output_path)
