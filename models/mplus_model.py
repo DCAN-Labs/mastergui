@@ -110,13 +110,13 @@ class MplusModel():
     def rules_to_s(self):
         return "\n".join(self.rules)
 
-    def aggregate_results_to_cifti(self, inputspreadsheet, path_prefix, look_for_fields, ciftis, naCiftiValue=-888):
+    def aggregate_results_to_cifti(self, inputspreadsheet, path_template, look_for_fields, ciftis, naCiftiValue=-888):
         """
         parse results out of the per-voxel output files and aggregate them into cifti files. it accepts a list
         of fields to extract from the outputs and there must be one Cifti instance provided per field as
         we only write one given output field to one cifti at present
         :param inputspreadsheet:
-        :param path_prefix:
+        :param path_template:
         :param look_for_fields:
         :param ciftis:
         :return:
@@ -127,7 +127,7 @@ class MplusModel():
             raise ValueError("Number of fields does not match number of ciftis")
         n_elements = inputspreadsheet.ciftiSet.shape
         for i in range(n_elements):
-            path = path_prefix + ".voxel" + str(i) + ".inp.out"
+            path = path_template  % str(i) # + ".voxel" + str(i) + ".inp.out"
             results = self.parse_mplus_results(path, look_for_fields)
             for j in range(len(look_for_fields)):
                 # todo how to handle NA's if field not found in results?

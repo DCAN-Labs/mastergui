@@ -2,7 +2,7 @@ import datetime
 import os
 import subprocess
 from models.cifti import *
-
+import re
 
 class MplusAnalysis:
     def __init__(self, config):
@@ -23,33 +23,51 @@ class MplusAnalysis:
     @property
     def filename_prefix(self):
         # make data file with non alphanumeric characters replaced with _
-        return self.model.title_for_filename
+        return "input"  #self.model.title_for_filename
+
+
 
     @property
     def base_output_path(self):
-        return os.path.join(self.config._data.get("output_dir", ""), self.filename_prefix)
+        return os.path.join(self.batchOutputDir, self.filename_prefix)
 
     @property
     def data_filename(self):
-        return self.filename_prefix + ".csv"
+        return "input.csv"
 
     @property
     def output_path(self):
-        return os.path.join(self.config._data.get("output_dir", ""), self.data_filename)
+        return os.path.join(self.batchOutputDir, self.data_filename)
 
     @property
     def output_dir(self):
         return self.config._data.get("output_dir", "")
 
+    @property
+    def batchOutputDir(self):
+        return os.path.join(self.config._data.get("output_dir", ""), self.batchTitle)
+
     def input_file_name_for_voxel(self, voxel_index):
         return "%s.voxel%s.inp" % (self.filename_prefix, str(voxel_index))
+
+    def dir_name_for_title(self,raw_title):
+        return raw_title + str(datetime.datetime.now()).replace(" ", ".").replace(":", ".")
+
+    def setBatchTitle(self, raw_title):
+        self.batchTitle = re.sub('[^0-9a-zA-Z]+', '_', self.dir_name_for_title(raw_title))
 
     def go(self, model, title, input, missing_tokens_list, testing_only_limit_to_n_rows=3, needsCiftiProcessing=True):
 
         if len(title) == 0:
             title = "Untitled"
 
-        title = title + str(datetime.datetime.now()).replace(" ", ".").replace(":", ".")
+        self.setBatchTitle(title)
+
+        #create a directory composed of the analysis title and a timestamp into which all the writing will happen
+
+        os.mkdir(self.batchOutputDir)
+
+        title = self.batchTitle
 
         self.model = model
 
@@ -73,7 +91,7 @@ class MplusAnalysis:
         for i in range(self.input.cifti_vector_size):
             model_filename = self.input_file_name_for_voxel(i)
 
-            model_input_file_path = os.path.join(self.output_dir, model_filename)
+            model_input_file_path = os.path.join(self.batchOutputDir, model_filename)
 
             self.model.datafile = self.data_filename + "." + str(i) + ".csv"
 
@@ -89,7 +107,9 @@ class MplusAnalysis:
 
         # load a standard baseline cifti that we will overwrite with our computed data
         output_cifti = self.base_cifti_for_output()
-        self.model.aggregate_results_to_cifti(self.input, self.base_output_path, ["Akaike (AIC)"], [output_cifti])
+
+        path_template_for_data_including_voxel = self.base_output_path + ".voxel%s.inp.out"
+        self.model.aggregate_results_to_cifti(self.input, path_template_for_data_including_voxel , ["Akaike (AIC)"], [output_cifti])
         cifti_output_path = self.output_path + ".out.dscalar.nii"
         output_cifti.save(cifti_output_path)
         self._cifti_output_path = cifti_output_path
