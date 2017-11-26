@@ -79,7 +79,7 @@ class InputSpreadsheet():
         base_df = self.cleaned
 
         rows = len(self.cleaned.index)
-
+        base_df = base_df.drop(path_col_name, 1)
         for i in range(n_elements):
             voxel_data = ciftiSet.getVectorPosition(i)
             base_df['voxel'] = pd.Series(voxel_data)
