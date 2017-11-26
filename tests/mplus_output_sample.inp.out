@@ -1,0 +1,353 @@
+Mplus VERSION 8 DEMO (Mac)
+MUTHEN & MUTHEN
+11/25/2017   1:17 PM
+
+INPUT INSTRUCTIONS
+
+
+  TITLE:
+  DefaultTitle2017_11_25_13_17_44_993526
+  DATA:
+  FILE is input.csv.0.csv;
+  VARIABLE:
+  Names are ID_SUBJ
+  	ID_SCAN
+  	COVA_AGE
+  	COVA_SEX
+  	COVA_IQ
+  	COVA_MFD
+  	COVA_SUBTYPE
+  	PATH_HCP;
+  USEVARIABLES = COVA_AGE
+  	COVA_IQ;
+  MISSING=.;
+  cluster=COVA_SEX;
+
+  ANALYSIS:
+   type=complex;
+            estimator=MLR;
+
+
+  MODEL:
+  COVA_AGE on COVA_IQ;
+  OUTPUT:
+   stdyx;
+
+
+
+*** WARNING
+  Data set contains unknown or missing values for GROUPING,
+  PATTERN, COHORT, CLUSTER and/or STRATIFICATION variables.
+  Number of cases with unknown or missing values:  1
+*** WARNING
+  Data set contains cases with missing on x-variables.
+  These cases were not included in the analysis.
+  Number of cases with missing on x-variables:  2
+   2 WARNING(S) FOUND IN THE INPUT INSTRUCTIONS
+
+
+
+
+DefaultTitle2017_11_25_13_17_44_993526
+
+SUMMARY OF ANALYSIS
+
+Number of groups                                                 1
+Number of observations                                           7
+
+Number of dependent variables                                    1
+Number of independent variables                                  1
+Number of continuous latent variables                            0
+
+Observed dependent variables
+
+  Continuous
+   COVA_AGE
+
+Observed independent variables
+   COVA_IQ
+
+Variables with special functions
+
+  Cluster variable      COVA_SEX
+
+Estimator                                                      MLR
+Information matrix                                        OBSERVED
+Maximum number of iterations                                  1000
+Convergence criterion                                    0.500D-04
+Maximum number of steepest descent iterations                   20
+Maximum number of iterations for H1                           2000
+Convergence criterion for H1                             0.100D-03
+
+Input data file(s)
+  input.csv.0.csv
+
+Input data format  FREE
+
+
+SUMMARY OF DATA
+
+     Number of missing data patterns             1
+     Number of clusters           2
+
+
+
+COVARIANCE COVERAGE OF DATA
+
+Minimum covariance coverage value   0.100
+
+
+     PROPORTION OF DATA PRESENT
+
+
+           Covariance Coverage
+              COVA_AGE      COVA_IQ
+              ________      ________
+ COVA_AGE       1.000
+ COVA_IQ        1.000         1.000
+
+
+
+UNIVARIATE SAMPLE STATISTICS
+
+
+     UNIVARIATE HIGHER-ORDER MOMENT DESCRIPTIVE STATISTICS
+
+         Variable/         Mean/     Skewness/   Minimum/ % with                Percentiles
+        Sample Size      Variance    Kurtosis    Maximum  Min/Max      20%/60%    40%/80%    Median
+
+     COVA_AGE           -118.130      -2.041    -888.000   14.29%    -888.000      9.891      9.891
+               7.000   98784.404       2.167      11.329   14.29%       9.891     10.955
+     COVA_IQ             124.000       0.284     104.000   28.57%     104.000    106.000    127.000
+               7.000     356.286      -1.493     150.000   28.57%     127.000    150.000
+
+
+THE MODEL ESTIMATION TERMINATED NORMALLY
+
+     THE STANDARD ERRORS OF THE MODEL PARAMETER ESTIMATES MAY NOT BE
+     TRUSTWORTHY FOR SOME PARAMETERS DUE TO A NON-POSITIVE DEFINITE
+     FIRST-ORDER DERIVATIVE PRODUCT MATRIX.  THIS MAY BE DUE TO THE STARTING
+     VALUES BUT MAY ALSO BE AN INDICATION OF MODEL NONIDENTIFICATION.  THE
+     CONDITION NUMBER IS      -0.224D-16.  PROBLEM INVOLVING THE FOLLOWING PARAMETER:
+     Parameter 2, COVA_AGE ON COVA_IQ
+
+     THIS IS MOST LIKELY DUE TO HAVING MORE PARAMETERS THAN THE NUMBER
+     OF CLUSTERS MINUS THE NUMBER OF STRATA WITH MORE THAN ONE CLUSTER.
+
+
+
+
+MODEL FIT INFORMATION
+
+Number of Free Parameters                        3
+
+Loglikelihood
+
+          H0 Value                         -49.459
+          H0 Scaling Correction Factor      2.0024
+            for MLR
+          H1 Value                         -49.459
+          H1 Scaling Correction Factor      2.0024
+            for MLR
+
+Information Criteria
+
+          Akaike (AIC)                     104.918
+          Bayesian (BIC)                   104.756
+          Sample-Size Adjusted BIC          95.975
+            (n* = (n + 2) / 24)
+
+Chi-Square Test of Model Fit
+
+          Value                              0.000*
+          Degrees of Freedom                     0
+          P-Value                           0.0000
+          Scaling Correction Factor         1.0000
+            for MLR
+
+*   The chi-square value for MLM, MLMV, MLR, ULSMV, WLSM and WLSMV cannot be used
+    for chi-square difference testing in the regular way.  MLM, MLR and WLSM
+    chi-square difference testing is described on the Mplus website.  MLMV, WLSMV,
+    and ULSMV difference testing is done using the DIFFTEST option.
+
+RMSEA (Root Mean Square Error Of Approximation)
+
+          Estimate                           0.000
+          90 Percent C.I.                    0.000  0.000
+          Probability RMSEA <= .05           0.000
+
+CFI/TLI
+
+          CFI                                1.000
+          TLI                                1.000
+
+Chi-Square Test of Model Fit for the Baseline Model
+
+          Value                              1.452
+          Degrees of Freedom                     1
+          P-Value                           0.2282
+
+SRMR (Standardized Root Mean Square Residual)
+
+          Value                              0.000
+
+
+
+MODEL RESULTS
+
+                                                    Two-Tailed
+                    Estimate       S.E.  Est./S.E.    P-Value
+
+ COVA_AGE ON
+    COVA_IQ            7.207      5.700      1.264      0.206
+
+ Intercepts
+    COVA_AGE       -1011.820    808.309     -1.252      0.211
+
+ Residual Variances
+    COVA_AGE       80280.750  86883.500      0.924      0.355
+
+
+STANDARDIZED MODEL RESULTS
+
+
+STDYX Standardization
+
+                                                    Two-Tailed
+                    Estimate       S.E.  Est./S.E.    P-Value
+
+ COVA_AGE ON
+    COVA_IQ            0.433      0.089      4.880      0.000
+
+ Intercepts
+    COVA_AGE          -3.219      0.679     -4.738      0.000
+
+ Residual Variances
+    COVA_AGE           0.813      0.077     10.584      0.000
+
+
+R-SQUARE
+
+    Observed                                        Two-Tailed
+    Variable        Estimate       S.E.  Est./S.E.    P-Value
+
+    COVA_AGE           0.187      0.077      2.440      0.015
+
+
+QUALITY OF NUMERICAL RESULTS
+
+     Condition Number for the Information Matrix              0.565E-02
+       (ratio of smallest to largest eigenvalue)
+
+
+TECHNICAL 1 OUTPUT
+
+
+     PARAMETER SPECIFICATION
+
+
+           NU
+              COVA_AGE      COVA_IQ
+              ________      ________
+                  0             0
+
+
+           LAMBDA
+              COVA_AGE      COVA_IQ
+              ________      ________
+ COVA_AGE           0             0
+ COVA_IQ            0             0
+
+
+           THETA
+              COVA_AGE      COVA_IQ
+              ________      ________
+ COVA_AGE           0
+ COVA_IQ            0             0
+
+
+           ALPHA
+              COVA_AGE      COVA_IQ
+              ________      ________
+                  1             0
+
+
+           BETA
+              COVA_AGE      COVA_IQ
+              ________      ________
+ COVA_AGE           0             2
+ COVA_IQ            0             0
+
+
+           PSI
+              COVA_AGE      COVA_IQ
+              ________      ________
+ COVA_AGE           3
+ COVA_IQ            0             0
+
+
+     STARTING VALUES
+
+
+           NU
+              COVA_AGE      COVA_IQ
+              ________      ________
+                0.000         0.000
+
+
+           LAMBDA
+              COVA_AGE      COVA_IQ
+              ________      ________
+ COVA_AGE       1.000         0.000
+ COVA_IQ        0.000         1.000
+
+
+           THETA
+              COVA_AGE      COVA_IQ
+              ________      ________
+ COVA_AGE       0.000
+ COVA_IQ        0.000         0.000
+
+
+           ALPHA
+              COVA_AGE      COVA_IQ
+              ________      ________
+             -118.130       124.000
+
+
+           BETA
+              COVA_AGE      COVA_IQ
+              ________      ________
+ COVA_AGE       0.000         0.000
+ COVA_IQ        0.000         0.000
+
+
+           PSI
+              COVA_AGE      COVA_IQ
+              ________      ________
+ COVA_AGE   49392.203
+ COVA_IQ        0.000       356.286
+
+
+     Beginning Time:  13:17:53
+        Ending Time:  13:17:53
+       Elapsed Time:  00:00:00
+
+
+Mplus VERSION 8 DEMO (Mac) has the following limitations:
+  Maximum number of dependent variables: 6
+  Maximum number of independent variables: 2
+  Maximum number of between variables: 2
+  Maximum number of continuous latent variables in time series analysis: 2
+
+
+MUTHEN & MUTHEN
+3463 Stoner Ave.
+Los Angeles, CA  90066
+
+Tel: (310) 391-9971
+Fax: (310) 391-8971
+Web: www.StatModel.com
+Support: Support@StatModel.com
+
+Copyright (c) 1998-2017 Muthen & Muthen

@@ -1,0 +1,28 @@
+
+TITLE:
+DefaultTitle2017_11_25_19_46_33_411128
+DATA:
+FILE is DefaultTitle2017_11_25_19_46_33_411128.csv;
+VARIABLE:
+Names are ID_SUBJ
+	ID_SCAN
+	COVA_AGE
+	COVA_SEX
+	COVA_IQ
+	COVA_MFD
+	COVA_SUBTYPE
+	PATH_HCP;
+USEVARIABLES = COVA_IQ
+	COVA_AGE;
+MISSING=.;
+cluster=COVA_SEX;
+
+ANALYSIS:
+ type=complex;
+          estimator=MLR;
+
+
+MODEL:
+COVA_AGE on COVA_IQ;
+OUTPUT:
+ stdyx;
