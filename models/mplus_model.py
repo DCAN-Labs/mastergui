@@ -127,7 +127,7 @@ class MplusModel():
             raise ValueError("Number of fields does not match number of ciftis")
         n_elements = inputspreadsheet.ciftiSet.shape
         for i in range(n_elements):
-            path = path_template  % str(i) # + ".voxel" + str(i) + ".inp.out"
+            path = path_template % str(i)  # + ".voxel" + str(i) + ".inp.out"
             results = self.parse_mplus_results(path, look_for_fields)
             for j in range(len(look_for_fields)):
                 # todo how to handle NA's if field not found in results?
@@ -135,7 +135,7 @@ class MplusModel():
                 value = results.get(fld, naCiftiValue)
 
                 ciftis[j].setPosition(i, value)
-            if i > max_todo:
+            if i >= max_todo - 1:
                 print("stopping early, testing mode")
                 break
 

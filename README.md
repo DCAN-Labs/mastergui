@@ -31,3 +31,9 @@ pytest tests/
 ```
 Run tests with -s option to see stdout as it processes (i.e. if there are diagnostic print statements in the code)
 Use -k your_method_name to test only a specific method in test file.
+
+When running in a virtualenv you may need to run pytest as follows:
+
+```
+python -m pytest tests/
+```

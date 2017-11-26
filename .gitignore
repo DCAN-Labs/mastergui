@@ -2,7 +2,4 @@
 __pycache__
 config.yml
 tmp_misc/
-output/*.out
-output/*.inp
-output/*.csv
-output/*.out.dscalar.nii
+output/
