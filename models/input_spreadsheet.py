@@ -3,7 +3,7 @@ import numpy as np
 from models import cifti
 from models import ciftiset
 import os
-
+import csv
 
 
 class InputSpreadsheet():
@@ -42,7 +42,7 @@ class InputSpreadsheet():
         self.save_dataframe(self.cleaned, path)
 
     def save_dataframe(self, df, path):
-        df.to_csv(path, header=False, index=False)
+        df.to_csv(path, header=False, index=False, quoting = csv.QUOTE_NONNUMERIC)
 
     def checkForInvalidPaths(self,paths):
         invalids = []
