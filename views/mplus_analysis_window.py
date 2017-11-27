@@ -3,10 +3,10 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from views.analysis_window_base import *
 from views.data_preview_widget import *
-import os
+import views.workbench_launcher
 import models
-import subprocess
 import datetime
+import sys
 
 
 class MplusAnalysisWindow(AnalysisWindow):
@@ -15,6 +15,13 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.title = "Mplus Analysis"
         self.analyzerName = "mplus"
         super(MplusAnalysisWindow, self).__init__(config)
+
+        a = models.mplus_analysis.MplusAnalysis(self.config)
+
+        missing_keys = a.missingRequiredConfigKeys()
+
+        if len(missing_keys) > 0:
+            self.alert("Your configuration file is missing some items that are required for the full functionality.  Please provide the following keys: " + " ".join(missing_keys))
 
     def open_mplus_model_template(self, path):
         self.model = models.mplus_model.MplusModel(path)
@@ -199,11 +206,12 @@ class MplusAnalysisWindow(AnalysisWindow):
                     f.write(self.model.to_string())
 
     def launchWorkbench(self, cifti_output_path):
-        base_image_paths = "/Users/David/Documents/projects/mastergui/data/fsaverage_LR32k/ohsu-sub-NDARINV3F6NJ6WW.L.inflated.32k_fs_LR.surf.gii /Users/David/Documents/projects/mastergui/data/fsaverage_LR32k/ohsu-sub-NDARINV3F6NJ6WW.L.midthickness.32k_fs_LR.surf.gii /Users/David/Documents/projects/mastergui/data/fsaverage_LR32k/ohsu-sub-NDARINV3F6NJ6WW.L.pial.32k_fs_LR.surf.gii /Users/David/Documents/projects/mastergui/data/fsaverage_LR32k/ohsu-sub-NDARINV3F6NJ6WW.R.inflated.32k_fs_LR.surf.gii /Users/David/Documents/projects/mastergui/data/fsaverage_LR32k/ohsu-sub-NDARINV3F6NJ6WW.R.midthickness.32k_fs_LR.surf.gii /Users/David/Documents/projects/mastergui/data/fsaverage_LR32k/ohsu-sub-NDARINV3F6NJ6WW.R.pial.32k_fs_LR.surf.gii /Users/David/Documents/projects/mastergui/data/T1w_restore.nii.gz"
-
-        # todo require wb_view is in the users path and change this mac specific command
-        os.system(
-            'open -a "/Applications/connectomeworkbench/macosx64_apps/wb_view.app" --args ' + base_image_paths + " " + cifti_output_path)
+        try:
+            views.workbench_launcher.launch(self.config, cifti_output_path)
+        except:
+            info = sys.exc_info()
+            self.alert("Error opening workbench.\n%s\n%s" % (info[0],info[1]))
+            print(info)
 
     def activateProgressBar(self):
         self.progress.show()
@@ -223,7 +231,8 @@ class MplusAnalysisWindow(AnalysisWindow):
         analysis = models.mplus_analysis.MplusAnalysis(self.config)
 
         # for testing, halt after n rows of data processing. Set to 0 to do everything.
-        halt_after_n = 3
+        halt_after_n = int(self.config.getOptional('testing_halt_after_n_voxels',3))
+
         mplus_output_contents = analysis.go(self.model, self.titleEdit.text(), self.input,
                                             self.dataPreview.missing_tokens, halt_after_n)
 

@@ -9,6 +9,12 @@ class MplusAnalysis:
     def __init__(self, config):
         self.config = config
 
+    def missingRequiredConfigKeys(self):
+        keys = ['default_maps','Base_cifti_for_output','MPlus_command','output_dir']
+        missing_keys = [k for k in keys if not k in self.config._data]
+        return missing_keys
+
+
     def updateGeneratedMPlusInputFile(self, save_to_path=""):
         columns = self.input.columnnames()
 
@@ -55,7 +61,7 @@ class MplusAnalysis:
     def setBatchTitle(self, raw_title):
         self.batchTitle = re.sub('[^0-9a-zA-Z]+', '_', self.dir_name_for_title(raw_title))
 
-    def go(self, model, title, input, missing_tokens_list, testing_only_limit_to_n_rows=3, needsCiftiProcessing=False):
+    def go(self, model, title, input, missing_tokens_list, testing_only_limit_to_n_rows=3, needsCiftiProcessing=True):
 
         if len(title) == 0:
             title = "Untitled"
