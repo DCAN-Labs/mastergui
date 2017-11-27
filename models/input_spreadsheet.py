@@ -82,7 +82,7 @@ class InputSpreadsheet():
         base_df = base_df.drop(path_col_name, 1)
         for i in range(n_elements):
             voxel_data = ciftiSet.getVectorPosition(i)
-            base_df['voxel'] = pd.Series(voxel_data).fillna(standard_missing_char, inplace=True)
+            base_df['voxel'] = pd.Series(voxel_data).fillna(standard_missing_char)
             self.save_dataframe(base_df, output_path_prefix + "." + str(i) + ".csv")
 
             if testing_only_limit_to_n_rows >0 and i > testing_only_limit_to_n_rows:

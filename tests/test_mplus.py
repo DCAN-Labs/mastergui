@@ -46,6 +46,8 @@ class TestMPlusAnalyzer(unittest.TestCase):
         title = "unittests"
         model_path = "tests/mplus_input_sample.inp"
         model = mplus_model.MplusModel(model_path)
+        model.add_rule(['COVA_AGE'], "on", ['COVA_IQ'])
+
         input_path = "tests/input_csv_file_test_case_Evan_simple.xlsx"
 
         input = input_spreadsheet.InputSpreadsheet(input_path)
