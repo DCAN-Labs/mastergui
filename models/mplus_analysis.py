@@ -3,7 +3,7 @@ import os
 import subprocess
 from models.cifti import *
 import re
-
+import time
 
 class MplusAnalysis:
     def __init__(self, config):
@@ -89,18 +89,74 @@ class MplusAnalysis:
         else:
             return self.runAnalysis()
 
+    def modelPathByVoxel(self,voxel_idx):
+
+        model_filename = self.input_file_name_for_voxel(voxel_idx)
+
+        model_input_file_path = os.path.join(self.batchOutputDir, model_filename)
+
+        return model_input_file_path
+
     def runAnalysisWithCiftiProcessing(self, testing_only_limit_to_n_rows):
+        start_time = time.time()
 
         self.input.prepare_with_cifti("PATH_HCP", self.output_path, testing_only_limit_to_n_rows)
 
-        for i in range(self.input.cifti_vector_size):
-            model_filename = self.input_file_name_for_voxel(i)
+        time2 = time.time()
+        print("Time to read cifti data and prepare csvs with cifti data: %f seconds" % (time2 - start_time))
 
-            model_input_file_path = os.path.join(self.batchOutputDir, model_filename)
+        self.generateInputModelsWithVoxel(testing_only_limit_to_n_rows)
+
+        time3 = time.time()
+        print("Time to prepare prepare mplus model files %f seconds"  % (time3 - time2))
+
+        self.runAllVoxelBasedModels(testing_only_limit_to_n_rows)
+
+        time4 = time.time()
+
+        print("Time to run mplus model files %f seconds" % (time4 - time3))
+
+        # load a standard baseline cifti that we will overwrite with our computed data
+        output_cifti = self.base_cifti_for_output()
+
+        path_template_for_data_including_voxel = self.base_output_path + ".voxel%s.inp.out"
+
+        #note this code is a little confusing, there are updates happening to the cift objects
+        #while it is return a data frame that contains all the aggregated values
+        aggregated_results = self.model.aggregate_results(self.input, path_template_for_data_including_voxel, ["Akaike (AIC)"],
+                                              [output_cifti], testing_only_limit_to_n_rows = testing_only_limit_to_n_rows )
+        time5 = time.time()
+
+        print("Time to aggregate mplus results %f seconds" % (time5 - time4))
+
+        cifti_output_path = self.output_path + ".out.dscalar.nii"
+        output_cifti.save(cifti_output_path)
+        time6 = time.time()
+        print("Time to run generate new cifti %f seconds" % (time6-time5))
+
+        aggregated_results.to_csv(cifti_output_path + ".raw.csv", header = True, index = False)
+        self._cifti_output_path = cifti_output_path
+
+        print("TOTAL TIME %f seconds" % (time.time() - start_time))
+        return "Ran vectorized model."
+
+
+    def generateInputModelsWithVoxel(self, testing_only_limit_to_n_rows):
+        for i in range(self.input.cifti_vector_size):
+
+            model_input_file_path = self.modelPathByVoxel(i)
 
             self.model.datafile = self.data_filename + "." + str(i) + ".csv"
 
             self.updateGeneratedMPlusInputFile(model_input_file_path)
+
+            if testing_only_limit_to_n_rows > 0 and i >= testing_only_limit_to_n_rows - 1:
+                break
+
+    def runAllVoxelBasedModels(self, testing_only_limit_to_n_rows):
+        for i in range(self.input.cifti_vector_size):
+
+            model_input_file_path = self.modelPathByVoxel(i)
 
             result = self.runMplus(model_input_file_path)
 
@@ -109,17 +165,6 @@ class MplusAnalysis:
 
             if testing_only_limit_to_n_rows > 0 and i >= testing_only_limit_to_n_rows - 1:
                 break
-
-        # load a standard baseline cifti that we will overwrite with our computed data
-        output_cifti = self.base_cifti_for_output()
-
-        path_template_for_data_including_voxel = self.base_output_path + ".voxel%s.inp.out"
-        self.model.aggregate_results_to_cifti(self.input, path_template_for_data_including_voxel, ["Akaike (AIC)"],
-                                              [output_cifti])
-        cifti_output_path = self.output_path + ".out.dscalar.nii"
-        output_cifti.save(cifti_output_path)
-        self._cifti_output_path = cifti_output_path
-        return "Ran vectorized model."
 
     def evalMplusStdOut(self, result):
         # todo monitor these for errors

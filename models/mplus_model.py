@@ -1,7 +1,8 @@
 import re
 from models import cifti
 from models import ciftiset
-
+import numpy as np
+import pandas as pd
 
 class MplusModel():
     def __init__(self, path=""):
@@ -110,7 +111,7 @@ class MplusModel():
     def rules_to_s(self):
         return "\n".join(self.rules)
 
-    def aggregate_results_to_cifti(self, inputspreadsheet, path_template, look_for_fields, ciftis, naCiftiValue=-888):
+    def aggregate_results(self, inputspreadsheet, path_template, look_for_fields, ciftis, naCiftiValue=-888, testing_only_limit_to_n_rows = 0):
         """
         parse results out of the per-voxel output files and aggregate them into cifti files. it accepts a list
         of fields to extract from the outputs and there must be one Cifti instance provided per field as
@@ -119,13 +120,17 @@ class MplusModel():
         :param path_template:
         :param look_for_fields:
         :param ciftis:
-        :return:
+        :return: a pandas data frame with the extracted values from the mplus output files
         """
 
-        max_todo = 3
+
         if len(look_for_fields) != len(ciftis):
             raise ValueError("Number of fields does not match number of ciftis")
         n_elements = inputspreadsheet.ciftiSet.shape
+
+        all_found_results = np.zeros((n_elements, len(look_for_fields)), dtype=np.float32)
+        all_found_results[:] = np.nan
+
         for i in range(n_elements):
             path = path_template % str(i)  # + ".voxel" + str(i) + ".inp.out"
             results = self.parse_mplus_results(path, look_for_fields)
@@ -133,11 +138,15 @@ class MplusModel():
                 # todo how to handle NA's if field not found in results?
                 fld = look_for_fields[j]
                 value = results.get(fld, naCiftiValue)
-
+                all_found_results[i,j] = value
                 ciftis[j].setPosition(i, value)
-            if i >= max_todo - 1:
-                print("stopping early, testing mode")
+            if i >= testing_only_limit_to_n_rows - 1:
+                print("stopping result aggregation early, testing mode")
                 break
+
+        all_results_df = pd.DataFrame(all_found_results, columns = look_for_fields)
+
+        return all_results_df
 
     def parse_mplus_results(self, path, look_for_fields=[]):
 

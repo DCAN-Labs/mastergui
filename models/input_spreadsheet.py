@@ -47,8 +47,8 @@ class InputSpreadsheet():
     def checkForInvalidPaths(self,paths):
         invalids = []
         for i,path in enumerate(paths):
-            print("path not found: "  + path)
             if not os.path.exists(path):
+                print("path not found: " + path)
                 invalids.append((i,path))
         return invalids
 

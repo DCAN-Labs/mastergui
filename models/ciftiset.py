@@ -24,6 +24,8 @@ class CiftiSet():
         last_shape = None
 
         self.ciftiMatrices = {}
+        self.matrix = None
+
         for i, path in enumerate(self._path_list):
             if os.path.exists(path):
                 c = Cifti(path)
@@ -35,13 +37,17 @@ class CiftiSet():
                         raise ValueError('Cifti Matrix Size Mismatch',
                                          "%s with a shape of %s does not match the others with a shape of %s" % (
                                              path, str(m.shape), str(last_shape)))
-                    print(m.shape)
+
+                if i == 0:
+                    allCiftiMatrix = np.zeros((len(self._path_list),m.shape[1]))
+                    allCiftiMatrix[:] = np.nan
+                allCiftiMatrix[i,:] = c.matrix[0,:]
                 self.ciftiMatrices[i] = c.matrix
                 self.ciftis[i] = c
             else:
                 raise ValueError('Cifti missing', "%s not found" % path)
         self._shape = last_shape[1]
-
+        self.matrix = allCiftiMatrix
         # todo combine into a 3d numpy matrix
 
     def getVectorPosition(self, i):
