@@ -73,6 +73,8 @@ class MplusAnalysis:
 
         self.setBatchTitle(title)
 
+        logging.info("Beginning analysis job %s, output will be generated in %s" % (title,self.batchOutputDir))
+
         # create a directory composed of the analysis title and a timestamp into which all the writing will happen
 
         os.mkdir(self.batchOutputDir)
@@ -128,7 +130,7 @@ class MplusAnalysis:
 
         # note this code is a little confusing, there are updates happening to the cift objects
         # while it is return a data frame that contains all the aggregated values
-        aggregated_results = self.model.aggregate_results(self.input, path_template_for_data_including_voxel,
+        aggregated_results = self.model.aggregate_results(self.input.ciftiSet.shape, path_template_for_data_including_voxel,
                                                           ["Akaike (AIC)"],
                                                           [output_cifti],
                                                           testing_only_limit_to_n_rows=testing_only_limit_to_n_voxels)
@@ -194,11 +196,15 @@ class MplusAnalysis:
                     break
                 count = self.mplus_exec_count + 1
                 self.mplus_exec_count = count
-                if count > 0 and count % 2 == 0:
+                if count > 0 and count % 100 == 0:
                     seconds = time.time() - self.mplus_exec_start_time
                     rate = seconds / count
-                    logging.info("Mplus Models executed: %i in %f seconds (%f sec/model)" % (
-                    self.mplus_exec_count, seconds, rate))
+
+                    n = self.input.cifti_vector_size
+                    remaining = (n - count) * rate / 60
+
+                    logging.info("Mplus Models executed: %i in %f seconds (%f sec/model). Estimated remaining time: %f minutes" % (
+                    self.mplus_exec_count, seconds, rate, remaining))
                 self.mplus_exec_counterQueue.task_done()
         except:
             logging.info("queue monitor complete (empty queue)")

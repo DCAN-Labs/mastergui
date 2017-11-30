@@ -268,7 +268,7 @@ class MplusAnalysisWindow(AnalysisWindow):
         analysis = models.mplus_analysis.MplusAnalysis(self.config)
 
         # for testing, halt after n rows of data processing. Set to 0 to do everything.
-        halt_after_n = int(self.config.getOptional('testing_halt_after_n_voxels',3))
+        halt_after_n = int(self.config.getOptional('testing_halt_after_n_voxels',0))
 
         mplus_output_contents = analysis.go(self.model, self.titleEdit.text(), self.input,
                                             self.dataPreview.missing_tokens, halt_after_n)

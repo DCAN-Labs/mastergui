@@ -86,6 +86,9 @@ class InputSpreadsheet():
         base_df = self.cleaned
 
         rows = len(self.cleaned.index)
+
+        #todo drop all the columns that are not part of the model.
+
         base_df = base_df.drop(path_col_name, 1)
         for i in range(n_elements):
             voxel_data = ciftiSet.getVectorPosition(i)

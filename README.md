@@ -19,21 +19,46 @@ Note: your own private config.yml has been added to .gitignore so it will not be
 
 # Usage: 
 
-From the command line in the root directory, run: 
+From the command line in the root directory:
+ 
+First activate the virtualenv enviornment:
+```
+source venv/bin/activate
+```
+
+Then run
 ```
 python main.py
 ```  
  
 # Tests:
-From the command line in the root directory, run:
-```
-pytest tests/
-```
-Run tests with -s option to see stdout as it processes (i.e. if there are diagnostic print statements in the code)
-Use -k your_method_name to test only a specific method in test file.
+From the command line in the root directory
 
-When running in a virtualenv you may need to run pytest as follows:
-
+First activate the virtualenv enviornment:
 ```
-python -m pytest tests/
+source venv/bin/activate
+```
+Then run all tests
+```
+pytest tests
+```
+
+If pytest is not in your path try
+```
+python -m pytest tests
+```
+
+Helpful options include:
+
+specific filename:
+```
+pytest tests/test_mplus.py
+```
+
+ -s to see have stdout show up in your path as well
+```
+pytest -s tests/
+```
+
+-k to run a particular method name
 ```

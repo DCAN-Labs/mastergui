@@ -72,7 +72,8 @@ class MplusModel():
 
     @property
     def cluster(self):
-        return "COVA_SEX"
+        #todo still need logic for cluster
+        return ""
 
     @property
     def cluster_clause(self):
@@ -116,7 +117,7 @@ class MplusModel():
     def rules_to_s(self):
         return "\n".join(self.rules)
 
-    def aggregate_results(self, inputspreadsheet, path_template, look_for_fields, ciftis, naCiftiValue=-888, testing_only_limit_to_n_rows = 0):
+    def aggregate_results(self, n_elements, path_template, look_for_fields, ciftis, naCiftiValue=-888, testing_only_limit_to_n_rows = 0):
         """
         parse results out of the per-voxel output files and aggregate them into cifti files. it accepts a list
         of fields to extract from the outputs and there must be one Cifti instance provided per field as
@@ -131,7 +132,7 @@ class MplusModel():
 
         if len(look_for_fields) != len(ciftis):
             raise ValueError("Number of fields does not match number of ciftis")
-        n_elements = inputspreadsheet.ciftiSet.shape
+
 
         all_found_results = np.zeros((n_elements, len(look_for_fields)), dtype=np.float32)
         all_found_results[:] = np.nan
@@ -145,7 +146,7 @@ class MplusModel():
                 value = results.get(fld, naCiftiValue)
                 all_found_results[i,j] = value
                 ciftis[j].setPosition(i, value)
-            if i >= testing_only_limit_to_n_rows - 1:
+            if testing_only_limit_to_n_rows >0 and i >= testing_only_limit_to_n_rows - 1:
                 print("stopping result aggregation early, testing mode")
                 break
 
