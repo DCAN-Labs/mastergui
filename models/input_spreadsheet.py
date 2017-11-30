@@ -10,7 +10,14 @@ import logging
 class InputSpreadsheet():
     def __init__(self, path):
         # todo detect extension (.csv, .xls) and treat appropriately
-        self._data = pd.read_excel(path)
+        path = path.strip()
+        if path[-4:].lower() == ".csv":
+            self._data = pd.read_csv(path)
+        else:
+            if path[-4:].lower() == ".xls" or path[-5:].lower() == ".xlsx":
+                self._data = pd.read_excel(path)
+            else:
+                raise ValueError("Only files with extensions .csv, .xls, or .xlsx are supported.")
 
     def data(self):
         return self._data
