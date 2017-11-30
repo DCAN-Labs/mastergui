@@ -42,18 +42,5 @@ class TestCifti(unittest.TestCase):
         self.assertEqual(c2.getPosition(1), 2)
 
 
-class TestCiftiSet(unittest.TestCase):
-    def test_loads_list(self):
-        p = "tests/ones.dscalar.nii"
-        list = [p, p]
-        cset = ciftiset.CiftiSet(list)
-        cset.load_all()
-        self.assertEqual(len(cset.ciftiMatrices), len(list))
-
-        col1 = cset.getVectorPosition(0)
-        print(col1)
-        self.assertEqual(len(col1), 2)
-
-
 if __name__ == '__main__':
     unittest.main()

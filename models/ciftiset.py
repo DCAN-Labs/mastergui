@@ -23,7 +23,7 @@ class CiftiSet():
 
         last_shape = None
 
-        self.ciftiMatrices = {}
+        # self.ciftiMatrices = {}
         self.matrix = None
 
         for i, path in enumerate(self._path_list):
@@ -39,30 +39,19 @@ class CiftiSet():
                                              path, str(m.shape), str(last_shape)))
 
                 if i == 0:
-                    allCiftiMatrix = np.zeros((len(self._path_list),m.shape[1]))
+                    allCiftiMatrix = np.zeros((len(self._path_list), m.shape[1]))
                     allCiftiMatrix[:] = np.nan
-                allCiftiMatrix[i,:] = c.matrix[0,:]
-                self.ciftiMatrices[i] = c.matrix
-                self.ciftis[i] = c
+                allCiftiMatrix[i, :] = c.matrix[0, :]
+                # self.ciftiMatrices[i] = c.matrix
+                # self.ciftis[i] = c
             else:
                 raise ValueError('Cifti missing', "%s not found" % path)
         self._shape = last_shape[1]
         self.matrix = allCiftiMatrix
-        # todo combine into a 3d numpy matrix
 
     def getVectorPosition(self, i):
 
-        # todo assumes validation has already confirmed all are the same shape
-        shape = self.ciftiMatrices[0].shape
-
-        vector = np.zeros(len(self.ciftiMatrices))
-
-        for k, v in self.ciftiMatrices.items():
-            print(type(v))
-
-            vector[k] = v[0, i]
-
-        return vector
+        return self.matrix[:, i]
 
     @property
     def shape(self):
