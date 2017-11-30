@@ -1,7 +1,7 @@
 {"name":"Some Nice Name for XL_G_and_S_paracentral on group",
 "description":"Another Big Description Another Big Description Another Big Description Another Big Description Another Big Description Another Big Description Another Big Description",
 "input":"To run this you will need a csv of non-imaging data that contains full paths to cifti files for each subject",
- "raw":"TITLE: XL_G_and_S_paracentral
+ "rawmodel":"TITLE: XL_G_and_S_paracentral
 
 DATA: FILE is missing.csv;
 

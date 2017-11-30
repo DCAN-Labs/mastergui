@@ -8,9 +8,10 @@ import models
 
 
 class TemplateChooserWidget(QWidget):
-    def __init__(self, path_to_templates, display_elements=[]):
+    def __init__(self, path_to_templates, parent, display_elements=[]):
         super(TemplateChooserWidget, self).__init__()
         # path_to_templates = self.config._data["analyzers"][self.analyzerName]['templates']
+        self.parent = parent
 
         if len(display_elements) == 0:
             # default set
@@ -110,3 +111,7 @@ class TemplateChooserWidget(QWidget):
             else:
                 caption.show()
                 w.show()
+        raw_model = template.return_if_exists("rawmodel")
+
+        #todo make this more generic for reuse with other analyzers
+        self.parent.open_mplus_model_raw(raw_model)

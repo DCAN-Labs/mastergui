@@ -54,7 +54,7 @@ class AnalysisWindow(QWidget):
     def initModelSelection(self):
         path_to_templates = self.config._data["analyzers"][self.analyzerName]['templates']
 
-        self.templateChooser = TemplateChooserWidget(path_to_templates)
+        self.templateChooser = TemplateChooserWidget(path_to_templates, self)
 
         self.addTab(self.templateChooser, "Template Selection")
 

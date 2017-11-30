@@ -16,8 +16,13 @@ class MplusModel():
 
     def load(self, path):
         with open(path, 'r') as f:
-            self._raw = f.read()
-        self.parseMplus(self._raw)
+            model_text = f.read()
+
+        self.loadFromString(model_text)
+
+    def loadFromString(self,model_text):
+        self._raw = model_text
+        self.parseMplus(model_text)
 
     def parseMplus(self, raw):
 

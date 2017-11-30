@@ -60,18 +60,15 @@ class InputSpreadsheet():
                 invalids.append((i, path))
         return invalids
 
-    def prepare_with_cifti(self, path_col_name, output_path_prefix, testing_only_limit_to_n_rows=0,
+    def prepare_with_cifti(self, path_col_name, output_path_prefix, testing_only_limit_to_n_voxels=0,
                            standard_missing_char="."):
         """generate a separate file for each voxel in a cift
         :param path_col_name:
         :param output_path_prefix:
-        :param testing_only_limit_to_n_rows:  pass a number greater than 0 here ot have it only process that number of voxels, to facillitate testing
+        :param testing_only_limit_to_n_voxels:  pass a number greater than 0 here ot have it only process that number of voxels, to facillitate testing
         :return:
         """
         paths = list(self._data[path_col_name])
-
-        if testing_only_limit_to_n_rows > 0:
-            paths = paths[0:testing_only_limit_to_n_rows]
 
         invalid_paths = self.checkForInvalidPaths(paths)
 
@@ -95,7 +92,7 @@ class InputSpreadsheet():
             base_df['voxel'] = pd.Series(voxel_data).fillna(standard_missing_char)
             self.save_dataframe(base_df, output_path_prefix + "." + str(i) + ".csv")
 
-            if testing_only_limit_to_n_rows > 0 and i > testing_only_limit_to_n_rows:
+            if testing_only_limit_to_n_voxels > 0 and i > testing_only_limit_to_n_voxels:
                 break
 
         self.ciftiSet = ciftiSet

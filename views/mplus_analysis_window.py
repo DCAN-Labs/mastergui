@@ -22,11 +22,30 @@ class MplusAnalysisWindow(AnalysisWindow):
 
         if len(missing_keys) > 0:
             self.alert("Your configuration file is missing some items that are required for the full functionality.  Please provide the following keys: " + " ".join(missing_keys))
+
         data_path = self.config.getOptional("open_path_on_launch","")
         if len(data_path)==0:
             self.openDataFileDialog()
         else:
             self.open_input_file(data_path)
+
+        filename = self.config.getOptional("open_mplus_model_on_launch", "")
+        self.needsTemplate = True
+        if len(filename) > 0:
+            if os.path.exists(filename):
+                self.open_mplus_model_template_from_file(filename)
+                self.needsTemplate = False
+            else:
+                self.alert(
+                    filename + " does not exist. Check your config.yml file attribute open_mplus_model_on_launch.")
+
+        if not self.needsTemplate:
+            self.tabs.setTabEnabled(0, False)
+            #source of this stylesheet trick to hide disabled tab:
+            # https://stackoverflow.com/questions/34377663/how-to-hide-a-tab-in-qtabwidget-and-show-it-when-a-button-is-pressed
+            self.tabs.setStyleSheet("QTabBar::tab::disabled {width: 0; height: 0; margin: 0; padding: 0; border: none;} ")
+
+
 
     def openDataFileDialog(self):
         options = QFileDialog.Options()
@@ -36,9 +55,14 @@ class MplusAnalysisWindow(AnalysisWindow):
             self.fileName = fileName
             self.open_input_file(fileName)
 
-    def open_mplus_model_template(self, path):
+    def open_mplus_model_template_from_file(self, path):
         self.model = models.mplus_model.MplusModel(path)
         self.modelTemplateViewer.setText(str(self.model._raw))
+
+    def open_mplus_model_raw(self, model_text):
+        self.model = models.mplus_model.MplusModel()
+        self.model.loadFromString(model_text)
+        self.modelTemplateViewer.setText(model_text)
 
     def addColumnNamesToListView(self, listView, columnNames):
 

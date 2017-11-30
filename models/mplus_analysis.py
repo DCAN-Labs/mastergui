@@ -102,20 +102,20 @@ class MplusAnalysis:
 
         return model_input_file_path
 
-    def runAnalysisWithCiftiProcessing(self, testing_only_limit_to_n_rows):
+    def runAnalysisWithCiftiProcessing(self, testing_only_limit_to_n_voxels):
         start_time = time.time()
 
-        self.input.prepare_with_cifti("PATH_HCP", self.output_path, testing_only_limit_to_n_rows)
+        self.input.prepare_with_cifti("PATH_HCP", self.output_path, testing_only_limit_to_n_voxels)
 
         time2 = time.time()
         logging.info("Time to read cifti data and prepare csvs with cifti data: %f seconds" % (time2 - start_time))
 
-        self.generateInputModelsWithVoxel(testing_only_limit_to_n_rows)
+        self.generateInputModelsWithVoxel(testing_only_limit_to_n_voxels)
 
         time3 = time.time()
         logging.info("Time to prepare prepare mplus model files %f seconds" % (time3 - time2))
 
-        self.runAllVoxelBasedModels(testing_only_limit_to_n_rows)
+        self.runAllVoxelBasedModels(testing_only_limit_to_n_voxels)
 
         time4 = time.time()
 
@@ -131,7 +131,7 @@ class MplusAnalysis:
         aggregated_results = self.model.aggregate_results(self.input, path_template_for_data_including_voxel,
                                                           ["Akaike (AIC)"],
                                                           [output_cifti],
-                                                          testing_only_limit_to_n_rows=testing_only_limit_to_n_rows)
+                                                          testing_only_limit_to_n_rows=testing_only_limit_to_n_voxels)
         time5 = time.time()
 
         logging.info("Time to aggregate mplus results %f seconds" % (time5 - time4))
