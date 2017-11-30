@@ -49,8 +49,8 @@ class MplusAnalysisWindow(AnalysisWindow):
 
     def openDataFileDialog(self):
         options = QFileDialog.Options()
-        #options |= QFileDialog.DontUseNativeDialog
-        fileName, _ = QFileDialog.getOpenFileName(self,"Select Data File", "","All Data Files (*.xls;*.xlsx;*.csv);;CSV Files (*.csv);;Excel Files (*.xls;*.xlsx)", options=options)
+        options |= QFileDialog.DontUseNativeDialog
+        fileName, _ = QFileDialog.getOpenFileName(self,"Select Data File", "","All Data Files (*.csv *.xls *.xlsx);;Excel Files (*.xls *.xlsx);;CSV files (*.csv)", options=options)
         if fileName:
             self.fileName = fileName
             self.open_input_file(fileName)
