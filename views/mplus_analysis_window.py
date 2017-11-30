@@ -22,6 +22,19 @@ class MplusAnalysisWindow(AnalysisWindow):
 
         if len(missing_keys) > 0:
             self.alert("Your configuration file is missing some items that are required for the full functionality.  Please provide the following keys: " + " ".join(missing_keys))
+        data_path = self.config.getOptional("open_path_on_launch","")
+        if len(data_path)==0:
+            self.openDataFileDialog()
+        else:
+            self.open_input_file(data_path)
+
+    def openDataFileDialog(self):
+        options = QFileDialog.Options()
+        #options |= QFileDialog.DontUseNativeDialog
+        fileName, _ = QFileDialog.getOpenFileName(self,"Select Data File", "","All Data Files (*.xls;*.xlsx;*.csv);;CSV Files (*.csv);;Excel Files (*.xls;*.xlsx)", options=options)
+        if fileName:
+            self.fileName = fileName
+            self.open_input_file(fileName)
 
     def open_mplus_model_template(self, path):
         self.model = models.mplus_model.MplusModel(path)

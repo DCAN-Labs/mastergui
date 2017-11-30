@@ -136,12 +136,12 @@ class MasterGuiApp(QMainWindow):
         else:
             self.setCentralWidget(self.analysis_class)
 
-        filename = self.config._data.get("open_path_on_launch", "")
-        if len(filename) > 0:
-            if os.path.exists(filename):
-                self.analysis_class.open_input_file(filename)
-            else:
-                self.alert(filename + " does not exist. Check your config.yml file attribute open_path_on_launch.")
+        #filename = self.config._data.get("open_path_on_launch", "")
+        #if len(filename) > 0:
+        #    if os.path.exists(filename):
+        #        self.analysis_class.open_input_file(filename)
+        #    else:
+        #        self.alert(filename + " does not exist. Check your config.yml file attribute open_path_on_launch.")
 
         filename = self.config._data.get("open_mplus_model_on_launch", "")
         if len(filename) > 0:
