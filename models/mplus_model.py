@@ -88,8 +88,11 @@ class MplusModel():
         #        "Names are %s;\nUSEVARIABLES = %s;\n!auxiliary = #todo, \nMISSING=.;\ncluster= #todo" %
         #        ("\n\t".join(names), "\n\t".join(self.using_variables)))
 
+        #assumes will be dropping all names but the column you are using.
+
+        keeping_column_names = [name for name in names if name in self.using_variables]
         self.mplus_data["VARIABLE"] = ("Names are %s;\nUSEVARIABLES = %s;\nMISSING=.;\n%s" %
-                                       ("\n\t".join(names), "\n\t".join(self.using_variables), self.cluster_clause))
+                                       ("\n\t".join(keeping_column_names), "\n\t".join(self.using_variables), self.cluster_clause))
 
     def to_string(self):
         output_str = ""

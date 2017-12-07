@@ -107,7 +107,7 @@ class MplusAnalysis:
     def runAnalysisWithCiftiProcessing(self, testing_only_limit_to_n_voxels):
         start_time = time.time()
 
-        self.input.prepare_with_cifti("PATH_HCP", self.output_path, testing_only_limit_to_n_voxels)
+        self.input.prepare_with_cifti("PATH_HCP", self.output_path, testing_only_limit_to_n_voxels, only_save_columns=list(self.model.using_variables))
 
         time2 = time.time()
         logging.info("Time to read cifti data and prepare csvs with cifti data: %f seconds" % (time2 - start_time))
@@ -147,7 +147,7 @@ class MplusAnalysis:
         self._cifti_output_path = cifti_output_path
 
         logging.info("TOTAL TIME %f seconds" % (time.time() - start_time))
-        return "Ran vectorized model."
+        return "Ran vectorized model. %i of %s failed" % ( self.mplus_exec_errors, self.mplus_exec_count)
 
     def generateInputModelsWithVoxel(self, testing_only_limit_to_n_rows):
         for i in range(self.input.cifti_vector_size):
@@ -174,6 +174,7 @@ class MplusAnalysis:
 
         self.mplus_exec_counterQueue = queue.Queue()
         self.mplus_exec_count = 0
+        self.mplus_exec_errors = 0
         self.mplus_exec_start_time = time.time()
         for i in range(len(sets_of_model_paths)):
             t = threading.Thread(target=self.runMplusForSetOfVoxels, args=[sets_of_model_paths[i]])
@@ -195,16 +196,19 @@ class MplusAnalysis:
                 if item is None:
                     break
                 count = self.mplus_exec_count + 1
-                self.mplus_exec_count = count
-                if count > 0 and count % 100 == 0:
+                with threading.Lock():
+                    errors_so_far = self.mplus_exec_errors
+                    self.mplus_exec_count = count
+
+                if count > 0 and count % 5 == 0:
                     seconds = time.time() - self.mplus_exec_start_time
                     rate = seconds / count
 
                     n = self.input.cifti_vector_size
                     remaining = (n - count) * rate / 60
 
-                    logging.info("Mplus Models executed: %i in %f seconds (%f sec/model). Estimated remaining time: %f minutes" % (
-                    self.mplus_exec_count, seconds, rate, remaining))
+                    logging.info("Mplus Models executed: %i in %f seconds (%f sec/model). Estimated remaining time: %f minutes. Mplus errors so far: %s" % (
+                    self.mplus_exec_count, seconds, rate, remaining, errors_so_far))
                 self.mplus_exec_counterQueue.task_done()
         except:
             logging.info("queue monitor complete (empty queue)")
@@ -217,7 +221,22 @@ class MplusAnalysis:
             result = self.runMplus(model_input_file_path)
 
             self.mplus_exec_counterQueue.put(i)
+            if result.returncode==1:
 
+                logging.error("Mplus model run for voxel %i failed\n\tSee file %s.out for details" % (i, model_input_file_path))
+
+                with threading.Lock():
+                    self.mplus_exec_errors+=1
+
+                #todo write to an error queue
+            """ sample bad output
+            CompletedProcess(args=['/Applications/MplusDemo/mpdemo',
+                                   '/Users/David/Documents/projects/mastergui/output/DefaultTitle2017_12_07_11_38_09_024508/input.voxel75.inp',
+                                   '/Users/David/Documents/projects/mastergui/output/DefaultTitle2017_12_07_11_38_09_024508/input.voxel75.inp.out'],
+                             returncode=1,
+                             stdout=b"\n     Mplus VERSION 8 DEMO (Mac)\n     MUTHEN & MUTHEN\n\n     Running input file '/Users/David/Documents/projects/mastergui/output/DefaultTitle2017_12_07_11_38_09_024508/input.voxel75.inp'...\n\n An error has occurred, refer to '/Users/David/Documents/projects/mastergui/outp\n ut/DefaultTitle2017_12_07_11_38_09_024508/input.voxel75.inp.out'\n")
+
+            """
             # todo monitor these for errors
             # ok = self.evalMplusStdOut(result)
 

@@ -61,7 +61,7 @@ class InputSpreadsheet():
         return invalids
 
     def prepare_with_cifti(self, path_col_name, output_path_prefix, testing_only_limit_to_n_voxels=0,
-                           standard_missing_char="."):
+                           standard_missing_char=".", only_save_columns = []):
         """generate a separate file for each voxel in a cift
         :param path_col_name:
         :param output_path_prefix:
@@ -84,12 +84,15 @@ class InputSpreadsheet():
         self.cifti_vector_size = n_elements
 
         base_df = self.cleaned
+        if len(only_save_columns)>0:
+            base_df = base_df[only_save_columns]
 
         rows = len(self.cleaned.index)
 
         #todo drop all the columns that are not part of the model.
 
-        base_df = base_df.drop(path_col_name, 1)
+        if path_col_name in base_df:
+            base_df = base_df.drop(path_col_name, 1)
         for i in range(n_elements):
             voxel_data = ciftiSet.getVectorPosition(i)
             base_df['voxel'] = pd.Series(voxel_data).fillna(standard_missing_char)
