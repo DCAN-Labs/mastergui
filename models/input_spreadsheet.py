@@ -85,6 +85,9 @@ class InputSpreadsheet():
 
         base_df = self.cleaned
         if len(only_save_columns)>0:
+            if 'VOXEL' in only_save_columns:
+                only_save_columns.remove('VOXEL')
+
             base_df = base_df[only_save_columns]
 
         rows = len(self.cleaned.index)
