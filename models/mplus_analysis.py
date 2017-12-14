@@ -66,7 +66,7 @@ class MplusAnalysis:
     def setBatchTitle(self, raw_title):
         self.batchTitle = re.sub('[^0-9a-zA-Z]+', '_', self.dir_name_for_title(raw_title))
 
-    def go(self, model, title, input, missing_tokens_list, testing_only_limit_to_n_rows=3, needsCiftiProcessing=True):
+    def go(self, model, title, input, missing_tokens_list, testing_only_limit_to_n_rows=3, path_to_voxel_mappings = []):
 
         if len(title) == 0:
             title = "Untitled"
@@ -89,10 +89,10 @@ class MplusAnalysis:
 
         self.input.save_cleaned_data(self.output_path, missing_tokens_list)
 
-        self.needCiftiProcessing = needsCiftiProcessing
+        self.needCiftiProcessing = len(path_to_voxel_mappings) > 0
 
         if self.needCiftiProcessing:
-            return self.runAnalysisWithCiftiProcessing(testing_only_limit_to_n_rows)
+            return self.runAnalysisWithCiftiProcessing(path_to_voxel_mappings, testing_only_limit_to_n_rows)
         else:
             return self.runAnalysis()
 
@@ -104,10 +104,16 @@ class MplusAnalysis:
 
         return model_input_file_path
 
-    def runAnalysisWithCiftiProcessing(self, testing_only_limit_to_n_voxels):
+    def runAnalysisWithCiftiProcessing(self, path_to_voxel_mappings, testing_only_limit_to_n_voxels):
+        """
+
+        :param path_to_voxel_mappings: an array of tuples (sourcecolumnname, columnnameforvoxel)
+        :param testing_only_limit_to_n_voxels:
+        :return:
+        """
         start_time = time.time()
 
-        self.input.prepare_with_cifti("PATH_HCP", self.output_path, testing_only_limit_to_n_voxels, only_save_columns=list(self.model.using_variables))
+        self.input.prepare_with_cifti(path_to_voxel_mappings, self.output_path, testing_only_limit_to_n_voxels, only_save_columns=list(self.model.using_variables))
 
         time2 = time.time()
         logging.info("Time to read cifti data and prepare csvs with cifti data: %f seconds" % (time2 - start_time))
@@ -128,9 +134,9 @@ class MplusAnalysis:
 
         path_template_for_data_including_voxel = self.base_output_path + ".voxel%s.inp.out"
 
-        # note this code is a little confusing, there are updates happening to the cift objects
+        # note this code is a little confusing, there are updates happening to the cifti objects
         # while it is return a data frame that contains all the aggregated values
-        aggregated_results = self.model.aggregate_results(self.input.ciftiSet.shape, path_template_for_data_including_voxel,
+        aggregated_results = self.model.aggregate_results(self.input.cifti_vector_size, path_template_for_data_including_voxel,
                                                           ["Akaike (AIC)"],
                                                           [output_cifti],
                                                           testing_only_limit_to_n_rows=testing_only_limit_to_n_voxels)
@@ -200,7 +206,7 @@ class MplusAnalysis:
                     errors_so_far = self.mplus_exec_errors
                     self.mplus_exec_count = count
 
-                if count > 0 and count % 5 == 0:
+                if count > 0 and count % 100 == 0:
                     seconds = time.time() - self.mplus_exec_start_time
                     rate = seconds / count
 

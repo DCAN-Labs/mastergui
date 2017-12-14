@@ -270,8 +270,15 @@ class MplusAnalysisWindow(AnalysisWindow):
         # for testing, halt after n rows of data processing. Set to 0 to do everything.
         halt_after_n = int(self.config.getOptional('testing_halt_after_n_voxels',0))
 
+
+
+        mappings = [('PATH_HCP', 'VOXEL')]
+
+
+
         mplus_output_contents = analysis.go(self.model, self.titleEdit.text(), self.input,
-                                            self.dataPreview.missing_tokens, halt_after_n)
+                                            self.dataPreview.missing_tokens, halt_after_n,
+                                            path_to_voxel_mappings=mappings)
 
         self.modelOutput.setText(mplus_output_contents)
 

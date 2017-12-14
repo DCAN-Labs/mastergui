@@ -5,6 +5,7 @@ from models import ciftiset
 import os
 import csv
 import logging
+import threading
 
 
 class InputSpreadsheet():
@@ -42,12 +43,13 @@ class InputSpreadsheet():
             # print(indices_where_still_empty)
         # output.loc[indices_where_still_empty]= "SECONDPASS"
         output.fillna(standard_missing_char, inplace=True)
-        self.cleaned = output
+        #self.cleaned = output
+        self._data = output
         return output
 
     def save_cleaned_data(self, path, list_of_missingvalues, standard_missing_char=".", exclude_columns=[]):
-        self.cleanMissingValues(list_of_missingvalues, standard_missing_char, exclude_columns)
-        self.save_dataframe(self.cleaned, path)
+        cleaned = self.cleanMissingValues(list_of_missingvalues, standard_missing_char, exclude_columns)
+        self.save_dataframe(cleaned, path)
 
     def save_dataframe(self, df, path):
         df.to_csv(path, header=False, index=False, quoting=csv.QUOTE_NONNUMERIC)
@@ -60,48 +62,92 @@ class InputSpreadsheet():
                 invalids.append((i, path))
         return invalids
 
-    def prepare_with_cifti(self, path_col_name, output_path_prefix, testing_only_limit_to_n_voxels=0,
-                           standard_missing_char=".", only_save_columns = []):
-        """generate a separate file for each voxel in a cift
-        :param path_col_name:
-        :param output_path_prefix:
-        :param testing_only_limit_to_n_voxels:  pass a number greater than 0 here ot have it only process that number of voxels, to facillitate testing
-        :return:
-        """
-        paths = list(self._data[path_col_name])
+    def validatePathsToCiftis(self, path_to_voxel_mappings):
+        paths = []
+        for mapping in path_to_voxel_mappings:
+            source_col_name = mapping[0]
+            paths += list(self._data[source_col_name])
 
         invalid_paths = self.checkForInvalidPaths(paths)
 
         if len(invalid_paths) > 0:
             raise ValueError("%i paths to ciftis are not valid" % len(invalid_paths))
 
-        ciftiSet = ciftiset.CiftiSet(paths)
+    def loadCiftiSetFromMapping(self, mapping_tuple):
+        source_col_name = mapping_tuple[0]
 
+        ciftiSet = ciftiset.CiftiSet(list(self._data[source_col_name]))
         ciftiSet.load_all()
 
-        n_elements = ciftiSet.shape
+        with threading.Lock():
+            self.ciftiSets[source_col_name] = ciftiSet
 
-        self.cifti_vector_size = n_elements
+    def prepare_with_cifti(self, path_to_voxel_mappings, output_path_prefix, testing_only_limit_to_n_voxels=0,
+                           standard_missing_char=".", only_save_columns = []):
+        """generate a separate file for each voxel in a cift
+        :param path_to_voxel_mappings: an array of tuples (sourcecolumnname, columnnameforvoxel)
+        :param output_path_prefix:
+        :param testing_only_limit_to_n_voxels:  pass a number greater than 0 here ot have it only process that number of voxels, to facillitate testing
+        :return:
+        """
 
-        base_df = self.cleaned
+        self.validatePathsToCiftis(path_to_voxel_mappings)
+
+        self.ciftiSets = {}
+        self.cifti_vector_size  = None
+
+        threads = []
+
+        for mapping in path_to_voxel_mappings:
+
+            #start each io intensive process of loading a ciftiset in a new thread
+            t = threading.Thread(target=self.loadCiftiSetFromMapping, args=[mapping])
+            t.start()
+            threads.append(t)
+
+            if len(only_save_columns) > 0:
+                target_new_column_name = mapping[1]
+                if target_new_column_name in only_save_columns:
+                    only_save_columns.remove(target_new_column_name)
+
+
+        for t in threads:
+            t.join()
+
+        base_df = self._data.copy(deep=True)
+
         if len(only_save_columns)>0:
-            if 'VOXEL' in only_save_columns:
-                only_save_columns.remove('VOXEL')
-
             base_df = base_df[only_save_columns]
 
-        rows = len(self.cleaned.index)
+        for mapping in path_to_voxel_mappings:
+            source_col_name = mapping[0]
+            if source_col_name in base_df:
+                base_df = base_df.drop(source_col_name, 1)
 
-        #todo drop all the columns that are not part of the model.
 
-        if path_col_name in base_df:
-            base_df = base_df.drop(path_col_name, 1)
-        for i in range(n_elements):
-            voxel_data = ciftiSet.getVectorPosition(i)
-            base_df['voxel'] = pd.Series(voxel_data).fillna(standard_missing_char)
-            self.save_dataframe(base_df, output_path_prefix + "." + str(i) + ".csv")
+        for mapping in path_to_voxel_mappings:
+            source_col_name = mapping[0]
+            new_voxel_col_name = mapping[1]
+            ciftiSet = self.ciftiSets[source_col_name]
 
-            if testing_only_limit_to_n_voxels > 0 and i > testing_only_limit_to_n_voxels:
-                break
+            n_elements = ciftiSet.shape
 
-        self.ciftiSet = ciftiSet
+            if self.cifti_vector_size is None:
+                self.cifti_vector_size = n_elements
+            else:
+                if self.cifti_vector_size != n_elements:
+                    raise ValueError("Ciftset for source column %s size does not match" % source_col_name)
+
+            for i in range(n_elements):
+                voxel_data = ciftiSet.getVectorPosition(i)
+                base_df[new_voxel_col_name] = pd.Series(voxel_data).fillna(standard_missing_char)
+                self.save_dataframe(base_df, output_path_prefix + "." + str(i) + ".csv")
+
+                if testing_only_limit_to_n_voxels > 0 and i > testing_only_limit_to_n_voxels:
+                    break
+
+
+        #release the memory, we don't need them anymore!
+        self.ciftiSets.clear()
+
+#        self.ciftiSet = ciftiSet

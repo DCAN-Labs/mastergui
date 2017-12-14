@@ -6,7 +6,6 @@ import numpy as np
 class CiftiSet():
     def __init__(self, path_list):
         self._path_list = path_list
-        self.ciftiMatrices = {}  # todo kill off ciftiMatrices
         self.ciftis = {}
 
     def verify_paths(self):
@@ -26,6 +25,8 @@ class CiftiSet():
         # self.ciftiMatrices = {}
         self.matrix = None
 
+        #todo this would benefit from multiple threads as there is a lot of disk i/o time
+
         for i, path in enumerate(self._path_list):
             if os.path.exists(path):
                 c = Cifti(path)
@@ -42,8 +43,7 @@ class CiftiSet():
                     allCiftiMatrix = np.zeros((len(self._path_list), m.shape[1]))
                     allCiftiMatrix[:] = np.nan
                 allCiftiMatrix[i, :] = c.matrix[0, :]
-                # self.ciftiMatrices[i] = c.matrix
-                # self.ciftis[i] = c
+
             else:
                 raise ValueError('Cifti missing', "%s not found" % path)
         self._shape = last_shape[1]
