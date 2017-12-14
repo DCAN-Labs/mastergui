@@ -7,7 +7,7 @@ import views.workbench_launcher
 import models
 import datetime
 import sys
-
+import threading
 
 class MplusAnalysisWindow(AnalysisWindow):
     def __init__(self, config):
@@ -43,7 +43,7 @@ class MplusAnalysisWindow(AnalysisWindow):
             self.tabs.setTabEnabled(0, False)
             #source of this stylesheet trick to hide disabled tab:
             # https://stackoverflow.com/questions/34377663/how-to-hide-a-tab-in-qtabwidget-and-show-it-when-a-button-is-pressed
-            self.tabs.setStyleSheet("QTabBar::tab::disabled {width: 0; height: 0; margin: 0; padding: 0; border: none;} ")
+        self.tabs.setStyleSheet("QTabBar::tab::disabled {width: 0; height: 0; margin: 0; padding: 0; border: none;} ")
 
 
 
@@ -224,6 +224,11 @@ class MplusAnalysisWindow(AnalysisWindow):
 
         self.progress = QProgressBar()
 
+        [self.tabs.setTabEnabled(i, False) for i in range(1,self.tabs.count())]
+#        self.tabs.setTabEnabled(1,False)
+#        self.tabs.setTabEnabled(2, False)
+#        self.tabs.setTabEnabled(3, False)
+
     def updateUIAfterInput(self):
 
         self.addInputColumnNamesToListViews()
@@ -255,7 +260,25 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.progress.setMaximum(len(self.input.data()))
         self.progress.setValue(len(self.input.data()) / 2)
 
-    def Go(self):
+    def Next(self):
+        tab = self.tabs.currentIndex()
+
+        if tab == 0:
+            [self.tabs.setTabEnabled(i, True) for i in range(1, self.tabs.count())]
+            self.tabs.setTabEnabled(0,False)
+            self.tabs.setStyleSheet(
+                "QTabBar::tab::disabled {width: 0; height: 0; margin: 0; padding: 0; border: none;} ")
+            return
+        elif tab < 4:
+            self.tabs.setCurrentIndex(tab+1)
+        else:
+            self.tabs.setCurrentIndex(5)
+            self.tabs.update()
+            self.update()
+            self.runAnalysis()
+
+
+    def runAnalysis(self):
 
         #self.activateProgressBar()
 

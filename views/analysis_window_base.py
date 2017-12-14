@@ -8,7 +8,7 @@ from models import input_spreadsheet
 
 
 class AnalysisWindow(QWidget):
-    NumButtons = ['Go']
+    NumButtons = ['Next']
 
     title = "Analysis Window"
 
