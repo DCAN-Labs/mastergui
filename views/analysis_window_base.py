@@ -79,13 +79,17 @@ class AnalysisWindow(QWidget):
         self.verticalGroupBox = QGroupBox()
 
         layout = QHBoxLayout()
-        for i in self.NumButtons:
-            button = QPushButton(i)
-            button.setObjectName(i)
-            layout.addWidget(button)
-            layout.setSpacing(10)
-            self.verticalGroupBox.setLayout(layout)
-            button.clicked.connect(self.submitCommand)
+
+
+        #button = QPushButton("Next")
+        #button.setObjectName("Next")
+#        layout.addWidget(button)
+ #       layout.setSpacing(10)
+        self.verticalGroupBox.setLayout(layout)
+        #button.clicked.connect(self.submitCommand)
+        #self.btnNext = button
+        #button.setEnabled(False)
+
 
     def submitCommand(self):
         eval('self.' + str(self.sender().objectName()) + '()')

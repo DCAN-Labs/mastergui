@@ -66,14 +66,17 @@ class MplusAnalysis:
     def setBatchTitle(self, raw_title):
         self.batchTitle = re.sub('[^0-9a-zA-Z]+', '_', self.dir_name_for_title(raw_title))
 
-    def go(self, model, title, input, missing_tokens_list, testing_only_limit_to_n_rows=3, path_to_voxel_mappings = []):
+    def go(self, model, title, input, missing_tokens_list, testing_only_limit_to_n_rows=3, path_to_voxel_mappings = [], progress_callback = None, error_callback = None):
+
+        self.progress_callback = progress_callback
+        self.error_callback = error_callback
 
         if len(title) == 0:
             title = "Untitled"
 
         self.setBatchTitle(title)
 
-        logging.info("Beginning analysis job %s, output will be generated in %s" % (title,self.batchOutputDir))
+        self.progressMessage("Beginning analysis job %s, output will be generated in %s" % (title,self.batchOutputDir))
 
         # create a directory composed of the analysis title and a timestamp into which all the writing will happen
 
@@ -91,6 +94,8 @@ class MplusAnalysis:
 
         self.needCiftiProcessing = len(path_to_voxel_mappings) > 0
 
+
+
         if self.needCiftiProcessing:
             return self.runAnalysisWithCiftiProcessing(path_to_voxel_mappings, testing_only_limit_to_n_rows)
         else:
@@ -104,6 +109,13 @@ class MplusAnalysis:
 
         return model_input_file_path
 
+    def progressMessage(self, txt):
+
+        logging.info(txt)
+        if self.progress_callback is not None:
+            self.progress_callback.emit(txt)
+
+
     def runAnalysisWithCiftiProcessing(self, path_to_voxel_mappings, testing_only_limit_to_n_voxels):
         """
 
@@ -116,18 +128,18 @@ class MplusAnalysis:
         self.input.prepare_with_cifti(path_to_voxel_mappings, self.output_path, testing_only_limit_to_n_voxels, only_save_columns=list(self.model.using_variables))
 
         time2 = time.time()
-        logging.info("Time to read cifti data and prepare csvs with cifti data: %f seconds" % (time2 - start_time))
+        self.progressMessage("Time to read cifti data and prepare csvs with cifti data: %f seconds" % (time2 - start_time))
 
         self.generateInputModelsWithVoxel(testing_only_limit_to_n_voxels)
 
         time3 = time.time()
-        logging.info("Time to prepare prepare mplus model files %f seconds" % (time3 - time2))
+        self.progressMessage("Time to prepare prepare mplus model files %f seconds" % (time3 - time2))
 
         self.runAllVoxelBasedModels(testing_only_limit_to_n_voxels)
 
         time4 = time.time()
 
-        logging.info("Time to run mplus model files %f seconds" % (time4 - time3))
+        self.progressMessage("Time to run mplus model files %f seconds" % (time4 - time3))
 
         # load a standard baseline cifti that we will overwrite with our computed data
         output_cifti = self.base_cifti_for_output()
@@ -142,17 +154,17 @@ class MplusAnalysis:
                                                           testing_only_limit_to_n_rows=testing_only_limit_to_n_voxels)
         time5 = time.time()
 
-        logging.info("Time to aggregate mplus results %f seconds" % (time5 - time4))
+        self.progressMessage("Time to aggregate mplus results %f seconds" % (time5 - time4))
 
         cifti_output_path = self.output_path + ".out.dscalar.nii"
         output_cifti.save(cifti_output_path)
         time6 = time.time()
-        logging.info("Time to run generate new cifti %f seconds" % (time6 - time5))
+        self.progressMessage("Time to run generate new cifti %f seconds" % (time6 - time5))
 
         aggregated_results.to_csv(cifti_output_path + ".raw.csv", header=True, index=False)
         self._cifti_output_path = cifti_output_path
 
-        logging.info("TOTAL TIME %f seconds" % (time.time() - start_time))
+        self.progressMessage("TOTAL TIME %f seconds" % (time.time() - start_time))
         return "Ran vectorized model. %i of %s failed" % ( self.mplus_exec_errors, self.mplus_exec_count)
 
     def generateInputModelsWithVoxel(self, testing_only_limit_to_n_rows):
@@ -213,11 +225,11 @@ class MplusAnalysis:
                     n = self.input.cifti_vector_size
                     remaining = (n - count) * rate / 60
 
-                    logging.info("Mplus Models executed: %i in %f seconds (%f sec/model). Estimated remaining time: %f minutes. Mplus errors so far: %s" % (
+                    self.progressMessage("Mplus Models executed: %i in %f seconds (%f sec/model). Estimated remaining time: %f minutes. Mplus errors so far: %s" % (
                     self.mplus_exec_count, seconds, rate, remaining, errors_so_far))
                 self.mplus_exec_counterQueue.task_done()
         except:
-            logging.info("queue monitor complete (empty queue)")
+            self.progressMessage("queue monitor complete (empty queue)")
 
     def runMplusForSetOfVoxels(self, set_of_voxels):
 

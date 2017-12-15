@@ -20,6 +20,7 @@ class TemplateChooserWidget(QWidget):
                                 ("Raw Model File", "rawmodel")]
 
         self.display_elements = display_elements
+        overallLayout = QVBoxLayout()
 
         layout = QHBoxLayout()
 
@@ -56,9 +57,29 @@ class TemplateChooserWidget(QWidget):
         layout.addWidget(view)
         layout.addWidget(self.templateViewer)
 
-        self.setLayout(layout)
+        topWidget = QWidget()
+        topWidget.setLayout(layout)
+
+        overallLayout.addWidget(topWidget)
+
+        overallLayout.setAlignment(Qt.AlignRight)
+
+        button = QPushButton("Select Template")
+        button.setObjectName("Select Template")
+        overallLayout.addWidget(button)
+        button.setFixedWidth(140)
+
+        button.clicked.connect(self.selectAndContinue)
+
+
+
+        self.setLayout(overallLayout)
 
         view.selectionModel().currentChanged.connect(self.on_row_changed)
+
+
+    def selectAndContinue(self):
+        self.parent.onSelectTemplate()
 
     def createTemplateViewer(self):
         w = QWidget()
@@ -83,11 +104,14 @@ class TemplateChooserWidget(QWidget):
         self.displayWidgets = displayWidgets
         self.captionWidgets = captionWidgets
 
+
+
         w.setLayout(layout)
 
         return w
 
     def on_row_changed(self, current, previous):
+
         print(current.data())
         print('Row %d selected' % current.row())
 

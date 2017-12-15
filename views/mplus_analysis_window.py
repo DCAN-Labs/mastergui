@@ -8,6 +8,88 @@ import models
 import datetime
 import sys
 import threading
+import traceback
+import time
+
+#threading worker example from https://martinfitzpatrick.name/article/multithreading-pyqt-applications-with-qthreadpool/
+class WorkerSignals(QObject):
+    '''
+    Defines the signals available from a running worker thread.
+
+    Supported signals are:
+
+    finished
+        No data
+
+    error
+        `tuple` (exctype, value, traceback.format_exc() )
+
+    result
+        `object` data returned from processing, anything
+
+    progress
+        `int` indicating % progress
+
+    '''
+    finished = pyqtSignal()
+    error = pyqtSignal(tuple)
+    result = pyqtSignal(object)
+    progress = pyqtSignal(str)
+
+class Worker(QRunnable):
+    '''
+    Worker thread
+
+    Inherits from QRunnable to handler worker thread setup, signals and wrap-up.
+
+    :param callback: The function callback to run on this worker thread. Supplied args and
+                     kwargs will be passed through to the runner.
+    :type callback: function
+    :param args: Arguments to pass to the callback function
+    :param kwargs: Keywords to pass to the callback function
+
+    '''
+
+    def __init__(self, fn, *args, **kwargs):
+        super(Worker, self).__init__()
+        # Store constructor arguments (re-used for processing)
+        self.fn = fn
+
+        self.kwargs = kwargs
+        self.signals = WorkerSignals()
+
+        self.args = args + (self.signals.progress, self.signals.finished, self.signals.error)
+        # Add the callback to our kwargs
+#        self.args.append(self.signals.progress)
+#        self.args.append(self.signals.finished)
+        #kwargs['progress_callback'] = self.signals.progress
+        #kwargs['finished_callback'] = self.signals.finished
+
+
+    @pyqtSlot()
+    def run(self):
+        '''
+        Initialise the runner function with passed args, kwargs.
+        '''
+
+        # Retrieve args/kwargs here; and fire processing using them
+        try:
+
+            result = self.fn(*self.args, **self.kwargs)
+        except:
+            print("in except of run")
+            traceback.print_exc()
+            exctype, value = sys.exc_info()[:2]
+            self.signals.error.emit((exctype, value, traceback.format_exc()))
+        else:
+            print("in the else of run")
+            print(result)
+            self.signals.result.emit(result)  # Return the result of the processing
+        finally:
+            print("finally in run")
+            self.signals.finished.emit()  # Done
+
+
 
 class MplusAnalysisWindow(AnalysisWindow):
     def __init__(self, config):
@@ -195,6 +277,28 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.titleEdit.setText("DefaultTitle")
         self.verticalGroupBox.layout().addWidget(self.titleEdit)
 
+    def initExecAnalysisWidget(self):
+        self.execAnalysisWidget = QWidget()
+        self.modelOutput = QTextEdit()
+
+        l = QVBoxLayout()
+
+        self.chkAutoLaunchWorkbench = QCheckBox("Launch Workbench When Complete")
+        self.chkAutoLaunchWorkbench.setChecked(True)
+        l.addWidget(self.chkAutoLaunchWorkbench)
+
+        button = QPushButton("Run Analysis")
+        button.setFixedWidth(100)
+        button.setObjectName("Run")
+        l.addWidget(button)
+        button.clicked.connect(self.runAnalysis)
+        l.addWidget(self.modelOutput)
+
+
+
+        self.execAnalysisWidget.setLayout(l)
+
+
     def initUISpecific(self):
 
         self.addTopLevelOptionWidgets()
@@ -208,6 +312,8 @@ class MplusAnalysisWindow(AnalysisWindow):
 
         self.modelOutput = QTextEdit()
 
+        self.initExecAnalysisWidget()
+
         newMplusModel = QWidget()
 
         self.modelDesignContainer = QVBoxLayout()
@@ -218,7 +324,7 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.addTab(self.modelTemplateViewer, "Model Template")
         self.addTab(self.modelBuilder, "Model Builder")
         self.addTab(newMplusModel, "New Mplus Model")
-        self.addTab(self.modelOutput, "Raw MPlus Output")
+        self.addTab(self.execAnalysisWidget, "Execution Tab")
 
         self.tabs.setCurrentIndex(0)
 
@@ -271,44 +377,97 @@ class MplusAnalysisWindow(AnalysisWindow):
             return
         elif tab < 4:
             self.tabs.setCurrentIndex(tab+1)
-        else:
-            self.tabs.setCurrentIndex(5)
-            self.tabs.update()
-            self.update()
-            self.runAnalysis()
+        #else:
+        #    self.tabs.setCurrentIndex(5)
+        #    self.tabs.update()
+        #    self.update()
+        #    self.runAnalysis()
 
+    def appendTextToOutputDisplay(self,txt):
+        self.modelOutput.setText("%s\n%s" % (self.modelOutput.toPlainText(), txt))
+
+    def onAnalysisProgressMessage(self, txt):
+        self.appendTextToOutputDisplay(txt)
+
+    def onAnalysisError(self, exception_info):
+        #(exctype, value, traceback.format_exc())
+        self.appendTextToOutputDisplay("Error! %s" % exception_info[1])
+
+    def execute_this_fn(self, progress_callback, finished_callback, error_callback):
+        # for testing, halt after n rows of data processing. Set to 0 to do everything.
+        halt_after_n = int(self.config.getOptional('testing_halt_after_n_voxels', 0))
+
+        #todo gui driven path to voxel mappings.
+        mappings = [('PATH_HCP', 'VOXEL')]
+        self.mplus_output_contents=""
+        self.mplus_output_contents = self.analysis.go(self.model, self.titleEdit.text(), self.input,
+                                            self.dataPreview.missing_tokens, halt_after_n,
+                                            path_to_voxel_mappings=mappings, progress_callback = progress_callback, error_callback = error_callback)
+
+        finished_callback.emit()
+
+        #self.modelOutput.setText(mplus_output_contents)
+
+        return "Done."
+
+    def onAnalysisFinish(self):
+        self.appendTextToOutputDisplay("Analysis Complete")
+
+        self.appendTextToOutputDisplay(self.mplus_output_contents)
+
+        if hasattr(self, 'analysis'):
+            cifti_output_path = self.analysis.cifti_output_path
+        else:
+            cifti_output_path = ""
+
+        if len(cifti_output_path)>0:
+            if self.chkAutoLaunchWorkbench.isChecked():
+
+                if hasattr(self,'analysis'):
+
+                    self.appendTextToOutputDisplay("Opening output file %s in Connectome Workbench" % cifti_output_path)
+
+                    self.launchWorkbench(cifti_output_path)
+            else:
+                self.appendTextToOutputDisplay("The output file %s is available for opening in Connectome Workbench" % cifti_output_path)
 
     def runAnalysis(self):
 
-        #self.activateProgressBar()
+        self.threadpool = QThreadPool()
+        print("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount())
 
         self.modelOutput.setText("Pending...")
+        self.tabs.setCurrentIndex(5)
 
         title = self.titleEdit.text() + str(datetime.datetime.now()).replace(" ", ".").replace(":", ".")
 
         self.model.title = title
 
-        analysis = models.mplus_analysis.MplusAnalysis(self.config)
+        self.analysis = models.mplus_analysis.MplusAnalysis(self.config)
 
-        # for testing, halt after n rows of data processing. Set to 0 to do everything.
-        halt_after_n = int(self.config.getOptional('testing_halt_after_n_voxels',0))
+        worker = Worker(self.execute_this_fn) # Any other args, kwargs are passed to the run function
+#        worker.signals.result.connect(self.print_output)
+#        worker.signals.finished.connect(self.thread_complete)
+        worker.signals.progress.connect(self.onAnalysisProgressMessage)
+        worker.signals.finished.connect(self.onAnalysisFinish)
+        worker.signals.error.connect(self.onAnalysisError)
+        # Execute
+        self.threadpool.start(worker)
 
 
+        return
+        #self.activateProgressBar()
 
-        mappings = [('PATH_HCP', 'VOXEL')]
 
-
-
-        mplus_output_contents = analysis.go(self.model, self.titleEdit.text(), self.input,
-                                            self.dataPreview.missing_tokens, halt_after_n,
-                                            path_to_voxel_mappings=mappings)
-
-        self.modelOutput.setText(mplus_output_contents)
-
-        self.tabs.setCurrentIndex(5)
 
         cifti_output_path = analysis.cifti_output_path
 
         if len(cifti_output_path)>0:
             self.launchWorkbench(cifti_output_path)
 
+
+    def onSelectTemplate(self):
+        [self.tabs.setTabEnabled(i, True) for i in range(1, self.tabs.count())]
+        self.tabs.setTabEnabled(0, False)
+        self.tabs.setStyleSheet(
+            "QTabBar::tab::disabled {width: 0; height: 0; margin: 0; padding: 0; border: none;} ")

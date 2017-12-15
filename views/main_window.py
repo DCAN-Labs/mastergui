@@ -35,14 +35,14 @@ class MasterGuiApp(QMainWindow):
         self.init_ui()
         self.mdimode = mdimode
 
-        self.setGeometry(100, 100, 800, 600)
+        self.setGeometry(100, 100, 700, 500)
         # this automatic launch of the mplus analysis is just temporary
         # while there is only one analysis type available
         # to facillitate debugging
         self.load_config()
         self.analysis_class = appClass(self.config)
 
-        self.new_mplus_analysis()
+        #self.new_mplus_analysis()
 
     def load_config(self):
         if hasattr(sys.modules['__main__'], "__file__"):
