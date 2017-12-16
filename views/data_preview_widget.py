@@ -4,10 +4,11 @@ from PyQt5.QtGui import *
 
 import numpy as np
 
-max_row_idx = 0
-min_row_idx = 1
-missing_idx = 2
-include_col_idx = 3
+voxel_mapping_idx = 0
+max_row_idx = 1
+min_row_idx = 2
+missing_idx = 3
+include_col_idx = 4
 
 
 class DataPreviewWidget(QWidget):
@@ -45,19 +46,24 @@ class DataPreviewWidget(QWidget):
 
         insert_where = self.inputTable.columnCount()
 
-        self.inputTable.insertColumn(insert_where)
+        #self.inputTable.insertColumn(insert_where)
 
-        self.inputTable.setHorizontalHeaderItem(insert_where, QTableWidgetItem(colname))
+        #self.inputTable.setHorizontalHeaderItem(insert_where, QTableWidgetItem(colname))
 
-        self.setupComputedCellsForCol(insert_where)
+        #self.setupComputedCellsForCol(insert_where)
 
-        self.inputTable.item(include_col_idx, insert_where).setCheckState(Qt.Checked)
+        #self.inputTable.item(include_col_idx, insert_where).setCheckState(Qt.Checked)
 
         source_name = self.inputTable.horizontalHeaderItem(path_col_index).text()
 
         # copy the % missing from the source column
-        self.inputTable.item(missing_idx, insert_where).setText(
-            self.inputTable.item(missing_idx, path_col_index).text())
+        #self.inputTable.item(missing_idx, insert_where).setText(
+        #    self.inputTable.item(missing_idx, path_col_index).text())
+
+        item = QTableWidgetItem(colname)
+        item.setBackground(Qt.gray)
+        self.inputTable.setItem(voxel_mapping_idx, path_col_index,  item)
+
 
         # store tuples of column mapping for later usage when generating data.
         self.voxelized_columns.append((source_name, colname))
@@ -76,7 +82,7 @@ class DataPreviewWidget(QWidget):
         highlight_missing = self.highlightMissing.isChecked()
 
         # we will insert some computed rows at the top of the table
-        computed_row_count = 4
+        computed_row_count = 5
 
         t.setRowCount(len(data.index) + computed_row_count)
 
@@ -98,10 +104,14 @@ class DataPreviewWidget(QWidget):
                     if highlight_missing:
                         t.item(row_idx, j).setBackground(missing_color)
 
+
+
+        t.setVerticalHeaderItem(voxel_mapping_idx, QTableWidgetItem("Transform to Voxel Column Name:"))
         t.setVerticalHeaderItem(max_row_idx, QTableWidgetItem("Max Value:"))
         t.setVerticalHeaderItem(min_row_idx, QTableWidgetItem("Min Value:"))
         t.setVerticalHeaderItem(missing_idx, QTableWidgetItem("% Missing:"))
         t.setVerticalHeaderItem(include_col_idx, QTableWidgetItem("Include In Model:"))
+
         f = QFont()
         f.setBold(True)
         # t.verticalHeader().setFont(f)
@@ -148,7 +158,7 @@ class DataPreviewWidget(QWidget):
     def setupComputedCellsForCol(self, col, max_val="", min_val="", missing_count=""):
         t = self.inputTable
 
-        for row in (max_row_idx, min_row_idx, missing_idx, include_col_idx):
+        for row in (voxel_mapping_idx, max_row_idx, min_row_idx, missing_idx, include_col_idx):
             # you can set colors from RGB values with QColor(r,g,b)
 
             if row == include_col_idx:
