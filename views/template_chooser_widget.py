@@ -29,6 +29,7 @@ class TemplateChooserWidget(QWidget):
         model = QStandardItemModel()
 
         templates = {}
+
         for p in template_paths:
 
             # template_info = json.load(f, strict=False)
@@ -50,7 +51,10 @@ class TemplateChooserWidget(QWidget):
 
         view.setSelectionMode(QAbstractItemView.SingleSelection)
 
-        self.templateViewer = self.createTemplateViewer()
+        self.templateViewer = QTextEdit()
+        self.templateViewer.setReadOnly(True)
+
+        # self.templateViewer = self.createTemplateViewer()
 
         self.listView = view
 
@@ -66,43 +70,53 @@ class TemplateChooserWidget(QWidget):
 
         button = QPushButton("Select Template")
         button.setObjectName("Select Template")
-        overallLayout.addWidget(button)
+        overallLayout.addWidget(button, 0, Qt.AlignRight)
+
         button.setFixedWidth(140)
 
         button.clicked.connect(self.selectAndContinue)
-
-
 
         self.setLayout(overallLayout)
 
         view.selectionModel().currentChanged.connect(self.on_row_changed)
 
+        if len(template_paths) > 0:
+            view.setCurrentIndex(model.index(0, 0))
 
     def selectAndContinue(self):
-        self.parent.onSelectTemplate()
+        raw_model = self.activeTemplate.return_if_exists("rawmodel")
+
+        self.parent.onSelectTemplate(raw_model)
 
     def createTemplateViewer(self):
         w = QWidget()
+        w.setMaximumHeight(500)
+
+        self.descDisplay = QTextEdit()
+        self.descDisplay.setReadOnly(True)
+        # self.descDisplay.setMaximumHeight(300)
+
         layout = QVBoxLayout()
 
-        displayWidgets = {}
-        captionWidgets = {}
+        layout.addWidget(self.descDisplay)
 
-        for field in self.display_elements:
-            key = field[1]
+        # displayWidgets = {}
+        # captionWidgets = {}
 
-            caption = QLabel(field[0])
-            captionWidgets[key] = caption
-            layout.addWidget(caption)
 
-            fieldWidget = QTextEdit()
-            # fieldWidget.setTextBackgroundColor(Qt.color)
-            # fieldWidget.setStyleSheet("background-color:red")
-            layout.addWidget(fieldWidget)
-            displayWidgets[key] = fieldWidget
+        # for field in self.display_elements:
+        #     key = field[1]
+        #
+        #     caption = QLabel(field[0])
+        #     captionWidgets[key] = caption
+        #     layout.addWidget(caption)
+        #
+        #     fieldWidget = QTextEdit()
+        #     layout.addWidget(fieldWidget)
+        #     displayWidgets[key] = fieldWidget
 
-        self.displayWidgets = displayWidgets
-        self.captionWidgets = captionWidgets
+        # self.displayWidgets = displayWidgets
+        # self.captionWidgets = captionWidgets
 
 
 
@@ -123,19 +137,23 @@ class TemplateChooserWidget(QWidget):
             print("Error template no longer stored")
 
     def renderTemplate(self, template):
+
+        text = ""
         for field in self.display_elements:
             key = field[1]
             txt = template.return_if_exists(key)
-            w = self.displayWidgets[key]
-            w.setText(txt)
-            caption = self.captionWidgets[key]
-            if len(txt) == 0:
-                w.hide()
-                caption.hide()
-            else:
-                caption.show()
-                w.show()
-        raw_model = template.return_if_exists("rawmodel")
+            # w = self.displayWidgets[key]
+            # w.setText(txt)
+            # caption = self.captionWidgets[key]
+            if len(txt) > 0:
+                # w.hide()
+                # caption.hide()
+                # else:
+                text += "<H3>%s</H3>\n%s\n\n" % (key.title(), txt)
+                # caption.show()
+                # w.show()
 
-        #todo make this more generic for reuse with other analyzers
-        self.parent.open_mplus_model_raw(raw_model)
+        self.templateViewer.setText(text)
+        # todo make this more generic for reuse with other analyzers
+
+        self.activeTemplate = template

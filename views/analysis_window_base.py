@@ -21,7 +21,6 @@ class AnalysisWindow(QWidget):
         self.initUISpecific()
 
     def initUIGeneral(self):
-        self.center()
         self.setWindowTitle(self.title)
 
         grid = QGridLayout()
@@ -30,14 +29,8 @@ class AnalysisWindow(QWidget):
         self.setLayout(grid)
         self.createVerticalGroupBox()
 
-        self.analysisOptionsLayout = QVBoxLayout()
-        self.analysisOptionsLayout.addWidget(self.verticalGroupBox)
-
-        grid.addLayout(self.analysisOptionsLayout, 0, 0)
-
         self.initTabs()
 
-        self.initModelSelection()
 
     def initTabs(self):
         self.tabs = QTabWidget()
@@ -52,7 +45,12 @@ class AnalysisWindow(QWidget):
         print("override this method in the subclass for a particular kind of analysis")
 
     def initModelSelection(self):
-        path_to_templates = self.config._data["analyzers"][self.analyzerName]['templates']
+
+        path_to_templates = ""
+        if self.analyzerName in self.config._data["analyzers"]:
+            configData = self.config._data["analyzers"][self.analyzerName]
+            if 'templates' in configData:
+                path_to_templates = self.config._data["analyzers"][self.analyzerName]['templates']
 
         self.templateChooser = TemplateChooserWidget(path_to_templates, self)
 
@@ -80,16 +78,14 @@ class AnalysisWindow(QWidget):
 
         layout = QHBoxLayout()
 
-
-        #button = QPushButton("Next")
-        #button.setObjectName("Next")
-#        layout.addWidget(button)
- #       layout.setSpacing(10)
+        # button = QPushButton("Next")
+        # button.setObjectName("Next")
+        #        layout.addWidget(button)
+        #       layout.setSpacing(10)
         self.verticalGroupBox.setLayout(layout)
-        #button.clicked.connect(self.submitCommand)
-        #self.btnNext = button
-        #button.setEnabled(False)
-
+        # button.clicked.connect(self.submitCommand)
+        # self.btnNext = button
+        # button.setEnabled(False)
 
     def submitCommand(self):
         eval('self.' + str(self.sender().objectName()) + '()')

@@ -3,6 +3,7 @@ import os
 from views.mplus_analysis_window import *
 from models import config
 from views import mplus_analysis_window
+from views import other_analysis
 
 
 # https://riverbankcomputing.com/pipermail/pyqt/2009-May/022961.html
@@ -29,20 +30,25 @@ def excepthook(excType, excValue, tracebackobj):
 # sys.excepthook = excepthook
 
 class MasterGuiApp(QMainWindow):
-    def __init__(self, appClass=mplus_analysis_window.MplusAnalysisWindow, mdimode=False):
+    def __init__(self, mdimode=True):
         super(MasterGuiApp, self).__init__()
 
         self.init_ui()
         self.mdimode = mdimode
 
-        self.setGeometry(100, 100, 700, 500)
+        self.setGeometry(100, 100, 1200, 1000)
         # this automatic launch of the mplus analysis is just temporary
         # while there is only one analysis type available
         # to facillitate debugging
         self.load_config()
-        self.analysis_class = appClass(self.config)
+        # self.analysis_class = appClass(self.config)
+        # self.analysis_class = other_analysis.OtherAnalysisWindow(self.config)
+        # self.new_mplus_analysis()
 
-        #self.new_mplus_analysis()
+        if self.mdimode:
+            self.mdi = QMdiArea()
+            # self.mdi.setViewMode(1)  # tabbed = 1, 0 = regular child windows
+            self.setCentralWidget(self.mdi)
 
     def load_config(self):
         if hasattr(sys.modules['__main__'], "__file__"):
@@ -52,11 +58,18 @@ class MasterGuiApp(QMainWindow):
         else:
             print("config not available")
 
-    def add_analysiswindow_as_subwindow(self, gw, title=""):
+    def add_analysiswindow_as_subwindow(self, gw):
         sub = QMdiSubWindow()
         sub.setWidget(gw)
+
+        if hasattr(gw, 'title'):
+            title = gw.title
+        else:
+            title = "MPlus Analysis"
+
         if len(title) > 0:
             sub.setWindowTitle(title)
+
         self.mdi.addSubWindow(sub)
         self.mdi.activateNextSubWindow()
 
@@ -128,13 +141,23 @@ class MasterGuiApp(QMainWindow):
             fileMenu.addAction(self.menu_item(*m))
 
     def new_mplus_analysis(self):
+
+        analysis = mplus_analysis_window.MplusAnalysisWindow(self.config)
+
+        self.displayNewAnalysis(analysis)
+
+    def new_other_analysis(self):
+
+        analysis = other_analysis.OtherAnalysisWindow(self.config)
+
+        self.displayNewAnalysis(analysis)
+
+
+    def displayNewAnalysis(self,analysis):
         if self.mdimode:
-            self.mdi = QMdiArea()
-            self.mdi.setViewMode(1)  # tabbed = 1, 0 = regular child windows
-            self.setCentralWidget(self.mdi)
-            self.add_analysiswindow_as_subwindow(self.analysis_class, "Main Doc")
+            self.add_analysiswindow_as_subwindow(analysis)
         else:
-            self.setCentralWidget(self.analysis_class)
+            self.setCentralWidget(analysis)
 
     def alert(self, txt):
         errorbox = QMessageBox()
@@ -146,8 +169,12 @@ class MasterGuiApp(QMainWindow):
         mplusAction.setShortcut('Ctrl+M')
         mplusAction.triggered.connect(self.new_mplus_analysis)
 
+        otherAction = QAction('Other Analysis Type (Demo)', self)
+        otherAction.triggered.connect(self.new_other_analysis)
+
         self.analysistoolbar = self.addToolBar('analysis_toolbar')
         self.analysistoolbar.addAction(mplusAction)
+        self.analysistoolbar.addAction(otherAction)
 
 
 """

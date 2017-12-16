@@ -11,7 +11,8 @@ import threading
 import traceback
 import time
 
-#threading worker example from https://martinfitzpatrick.name/article/multithreading-pyqt-applications-with-qthreadpool/
+
+# threading worker example from https://martinfitzpatrick.name/article/multithreading-pyqt-applications-with-qthreadpool/
 class WorkerSignals(QObject):
     '''
     Defines the signals available from a running worker thread.
@@ -36,6 +37,7 @@ class WorkerSignals(QObject):
     result = pyqtSignal(object)
     progress = pyqtSignal(str)
 
+
 class Worker(QRunnable):
     '''
     Worker thread
@@ -59,12 +61,6 @@ class Worker(QRunnable):
         self.signals = WorkerSignals()
 
         self.args = args + (self.signals.progress, self.signals.finished, self.signals.error)
-        # Add the callback to our kwargs
-#        self.args.append(self.signals.progress)
-#        self.args.append(self.signals.finished)
-        #kwargs['progress_callback'] = self.signals.progress
-        #kwargs['finished_callback'] = self.signals.finished
-
 
     @pyqtSlot()
     def run(self):
@@ -77,18 +73,13 @@ class Worker(QRunnable):
 
             result = self.fn(*self.args, **self.kwargs)
         except:
-            print("in except of run")
             traceback.print_exc()
             exctype, value = sys.exc_info()[:2]
             self.signals.error.emit((exctype, value, traceback.format_exc()))
         else:
-            print("in the else of run")
-            print(result)
             self.signals.result.emit(result)  # Return the result of the processing
         finally:
-            print("finally in run")
             self.signals.finished.emit()  # Done
-
 
 
 class MplusAnalysisWindow(AnalysisWindow):
@@ -103,10 +94,12 @@ class MplusAnalysisWindow(AnalysisWindow):
         missing_keys = a.missingRequiredConfigKeys()
 
         if len(missing_keys) > 0:
-            self.alert("Your configuration file is missing some items that are required for the full functionality.  Please provide the following keys: " + " ".join(missing_keys))
+            self.alert(
+                "Your configuration file is missing some items that are required for the full functionality.  Please provide the following keys: " + " ".join(
+                    missing_keys))
 
-        data_path = self.config.getOptional("open_path_on_launch","")
-        if len(data_path)==0:
+        data_path = self.config.getOptional("open_path_on_launch", "")
+        if len(data_path) == 0:
             self.openDataFileDialog()
         else:
             self.open_input_file(data_path)
@@ -123,16 +116,16 @@ class MplusAnalysisWindow(AnalysisWindow):
 
         if not self.needsTemplate:
             self.tabs.setTabEnabled(0, False)
-            #source of this stylesheet trick to hide disabled tab:
+            # source of this stylesheet trick to hide disabled tab:
             # https://stackoverflow.com/questions/34377663/how-to-hide-a-tab-in-qtabwidget-and-show-it-when-a-button-is-pressed
         self.tabs.setStyleSheet("QTabBar::tab::disabled {width: 0; height: 0; margin: 0; padding: 0; border: none;} ")
-
-
 
     def openDataFileDialog(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        fileName, _ = QFileDialog.getOpenFileName(self,"Select Data File", "","All Data Files (*.csv *.xls *.xlsx);;Excel Files (*.xls *.xlsx);;CSV files (*.csv)", options=options)
+        fileName, _ = QFileDialog.getOpenFileName(self, "Select Data File", "",
+                                                  "All Data Files (*.csv *.xls *.xlsx);;Excel Files (*.xls *.xlsx);;CSV files (*.csv)",
+                                                  options=options)
         if fileName:
             self.fileName = fileName
             self.open_input_file(fileName)
@@ -269,14 +262,6 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.modelBuilder.setLayout(self.modelBuilderLayout)
         self.initModelBuilderPanel()
 
-    def addTopLevelOptionWidgets(self):
-
-        self.verticalGroupBox.layout()
-        self.verticalGroupBox.layout().addWidget(QLabel("Title:"))
-        self.titleEdit = QLineEdit()
-        self.titleEdit.setText("DefaultTitle")
-        self.verticalGroupBox.layout().addWidget(self.titleEdit)
-
     def initExecAnalysisWidget(self):
         self.execAnalysisWidget = QWidget()
         self.modelOutput = QTextEdit()
@@ -294,14 +279,12 @@ class MplusAnalysisWindow(AnalysisWindow):
         button.clicked.connect(self.runAnalysis)
         l.addWidget(self.modelOutput)
 
-
-
         self.execAnalysisWidget.setLayout(l)
-
 
     def initUISpecific(self):
 
-        self.addTopLevelOptionWidgets()
+
+        self.initModelSelection()
 
         self.initModelBuilder()
 
@@ -330,10 +313,7 @@ class MplusAnalysisWindow(AnalysisWindow):
 
         self.progress = QProgressBar()
 
-        [self.tabs.setTabEnabled(i, False) for i in range(1,self.tabs.count())]
-#        self.tabs.setTabEnabled(1,False)
-#        self.tabs.setTabEnabled(2, False)
-#        self.tabs.setTabEnabled(3, False)
+        [self.tabs.setTabEnabled(i, False) for i in range(1, self.tabs.count())]
 
     def updateUIAfterInput(self):
 
@@ -358,7 +338,7 @@ class MplusAnalysisWindow(AnalysisWindow):
             views.workbench_launcher.launch(self.config, cifti_output_path)
         except:
             info = sys.exc_info()
-            self.alert("Error opening workbench.\n%s\n%s" % (info[0],info[1]))
+            self.alert("Error opening workbench.\n%s\n%s" % (info[0], info[1]))
             print(info)
 
     def activateProgressBar(self):
@@ -366,47 +346,29 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.progress.setMaximum(len(self.input.data()))
         self.progress.setValue(len(self.input.data()) / 2)
 
-    def Next(self):
-        tab = self.tabs.currentIndex()
-
-        if tab == 0:
-            [self.tabs.setTabEnabled(i, True) for i in range(1, self.tabs.count())]
-            self.tabs.setTabEnabled(0,False)
-            self.tabs.setStyleSheet(
-                "QTabBar::tab::disabled {width: 0; height: 0; margin: 0; padding: 0; border: none;} ")
-            return
-        elif tab < 4:
-            self.tabs.setCurrentIndex(tab+1)
-        #else:
-        #    self.tabs.setCurrentIndex(5)
-        #    self.tabs.update()
-        #    self.update()
-        #    self.runAnalysis()
-
-    def appendTextToOutputDisplay(self,txt):
+    def appendTextToOutputDisplay(self, txt):
         self.modelOutput.setText("%s\n%s" % (self.modelOutput.toPlainText(), txt))
 
     def onAnalysisProgressMessage(self, txt):
         self.appendTextToOutputDisplay(txt)
 
     def onAnalysisError(self, exception_info):
-        #(exctype, value, traceback.format_exc())
+        # (exctype, value, traceback.format_exc())
         self.appendTextToOutputDisplay("Error! %s" % exception_info[1])
 
-    def execute_this_fn(self, progress_callback, finished_callback, error_callback):
+    def runAnalysisBackgroundWorker(self, progress_callback, finished_callback, error_callback):
         # for testing, halt after n rows of data processing. Set to 0 to do everything.
         halt_after_n = int(self.config.getOptional('testing_halt_after_n_voxels', 0))
 
-        #todo gui driven path to voxel mappings.
-        mappings = [('PATH_HCP', 'VOXEL')]
-        self.mplus_output_contents=""
-        self.mplus_output_contents = self.analysis.go(self.model, self.titleEdit.text(), self.input,
-                                            self.dataPreview.missing_tokens, halt_after_n,
-                                            path_to_voxel_mappings=mappings, progress_callback = progress_callback, error_callback = error_callback)
+        mappings = self.dataPreview.voxelized_columns
+        self.mplus_output_contents = ""
+        self.mplus_output_contents = self.analysis.go(self.model, self.title, self.input,
+                                                      self.dataPreview.missing_tokens, halt_after_n,
+                                                      path_to_voxel_mappings=mappings,
+                                                      progress_callback=progress_callback,
+                                                      error_callback=error_callback)
 
         finished_callback.emit()
-
-        #self.modelOutput.setText(mplus_output_contents)
 
         return "Done."
 
@@ -420,16 +382,16 @@ class MplusAnalysisWindow(AnalysisWindow):
         else:
             cifti_output_path = ""
 
-        if len(cifti_output_path)>0:
+        if len(cifti_output_path) > 0:
             if self.chkAutoLaunchWorkbench.isChecked():
 
-                if hasattr(self,'analysis'):
-
+                if hasattr(self, 'analysis'):
                     self.appendTextToOutputDisplay("Opening output file %s in Connectome Workbench" % cifti_output_path)
 
                     self.launchWorkbench(cifti_output_path)
             else:
-                self.appendTextToOutputDisplay("The output file %s is available for opening in Connectome Workbench" % cifti_output_path)
+                self.appendTextToOutputDisplay(
+                    "The output file %s is available for opening in Connectome Workbench" % cifti_output_path)
 
     def runAnalysis(self):
 
@@ -439,34 +401,22 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.modelOutput.setText("Pending...")
         self.tabs.setCurrentIndex(5)
 
-        title = self.titleEdit.text() + str(datetime.datetime.now()).replace(" ", ".").replace(":", ".")
+        title = self.title + str(datetime.datetime.now()).replace(" ", ".").replace(":", ".")
 
         self.model.title = title
 
         self.analysis = models.mplus_analysis.MplusAnalysis(self.config)
 
-        worker = Worker(self.execute_this_fn) # Any other args, kwargs are passed to the run function
-#        worker.signals.result.connect(self.print_output)
-#        worker.signals.finished.connect(self.thread_complete)
+        worker = Worker(self.runAnalysisBackgroundWorker)  # Any other args, kwargs are passed to the run function
+
         worker.signals.progress.connect(self.onAnalysisProgressMessage)
         worker.signals.finished.connect(self.onAnalysisFinish)
         worker.signals.error.connect(self.onAnalysisError)
         # Execute
         self.threadpool.start(worker)
 
-
-        return
-        #self.activateProgressBar()
-
-
-
-        cifti_output_path = analysis.cifti_output_path
-
-        if len(cifti_output_path)>0:
-            self.launchWorkbench(cifti_output_path)
-
-
-    def onSelectTemplate(self):
+    def onSelectTemplate(self, raw_mplus_model_text):
+        self.open_mplus_model_raw(raw_mplus_model_text)
         [self.tabs.setTabEnabled(i, True) for i in range(1, self.tabs.count())]
         self.tabs.setTabEnabled(0, False)
         self.tabs.setStyleSheet(

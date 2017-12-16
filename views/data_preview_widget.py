@@ -4,6 +4,11 @@ from PyQt5.QtGui import *
 
 import numpy as np
 
+max_row_idx = 0
+min_row_idx = 1
+missing_idx = 2
+include_col_idx = 3
+
 
 class DataPreviewWidget(QWidget):
     def __init__(self):
@@ -28,11 +33,34 @@ class DataPreviewWidget(QWidget):
 
         self.setLayout(layout)
 
+        self.voxelized_columns = []
+
     def clickHighlighting(self):
         self.render_dataframe(self.data)
 
     def table(self):
         return self.inputTable
+
+    def addVoxelColumn(self, path_col_index, colname="VOXEL"):
+
+        insert_where = self.inputTable.columnCount()
+
+        self.inputTable.insertColumn(insert_where)
+
+        self.inputTable.setHorizontalHeaderItem(insert_where, QTableWidgetItem(colname))
+
+        self.setupComputedCellsForCol(insert_where)
+
+        self.inputTable.item(include_col_idx, insert_where).setCheckState(Qt.Checked)
+
+        source_name = self.inputTable.horizontalHeaderItem(path_col_index).text()
+
+        # copy the % missing from the source column
+        self.inputTable.item(missing_idx, insert_where).setText(
+            self.inputTable.item(missing_idx, path_col_index).text())
+
+        # store tuples of column mapping for later usage when generating data.
+        self.voxelized_columns.append((source_name, colname))
 
     @property
     def missing_tokens(self):
@@ -48,7 +76,7 @@ class DataPreviewWidget(QWidget):
         highlight_missing = self.highlightMissing.isChecked()
 
         # we will insert some computed rows at the top of the table
-        computed_row_count = 3
+        computed_row_count = 4
 
         t.setRowCount(len(data.index) + computed_row_count)
 
@@ -69,45 +97,66 @@ class DataPreviewWidget(QWidget):
                     missingCountByCol[j] = missingCountByCol.get(j, 0) + 1
                     if highlight_missing:
                         t.item(row_idx, j).setBackground(missing_color)
-        max_row_idx = 0
-        min_row_idx = 1
-        missing_idx = 2
 
         t.setVerticalHeaderItem(max_row_idx, QTableWidgetItem("Max Value:"))
         t.setVerticalHeaderItem(min_row_idx, QTableWidgetItem("Min Value:"))
         t.setVerticalHeaderItem(missing_idx, QTableWidgetItem("% Missing:"))
-
+        t.setVerticalHeaderItem(include_col_idx, QTableWidgetItem("Include In Model:"))
         f = QFont()
         f.setBold(True)
         # t.verticalHeader().setFont(f)
 
         for j in range(len(data.columns)):
+
+            self.setupComputedCellsForCol(j)
+
             t.setHorizontalHeaderItem(j, QTableWidgetItem(data.columns[j]))
             # self.summaryTable.setHorizontalHeaderItem(j, QTableWidgetItem(data.columns[j]))
             col_data = data[data.columns[j]]
-            print(col_data.name + str(col_data.dtype))
-            #            try:
+
             if col_data.dtype == np.float64 or col_data.dtype == np.int64:
                 col_max = np.max(col_data)
                 col_min = np.min(col_data)
                 # todo just hardcoding a missing value for the moment, adjust to recognize all
                 n_missing = len(np.where(col_data == -888)[0])
 
-                t.setItem(max_row_idx, j, QTableWidgetItem(str(col_max)))
-                t.setItem(min_row_idx, j, QTableWidgetItem(str(col_min)))
-            else:
-                t.setItem(max_row_idx, j, QTableWidgetItem(""))
-                t.setItem(min_row_idx, j, QTableWidgetItem(""))
+                t.item(max_row_idx, j).setText(str(col_max))
+                t.item(min_row_idx, j).setText(str(col_min))
+                # t.setItem(max_row_idx, j, QTableWidgetItem(str(col_max)))
+                # t.setItem(min_row_idx, j, QTableWidgetItem(str(col_min)))
+            # else:
+            #    t.setItem(max_row_idx, j, QTableWidgetItem(""))
+            #    t.setItem(min_row_idx, j, QTableWidgetItem(""))
             missing_for_col = missingCountByCol.get(j, 0)
             if len(data.index) > 0:
                 percent_missing = str(100 * missing_for_col / len(data.index)) + "%"
-                t.setItem(missing_idx, j, QTableWidgetItem(percent_missing))
-            # self.summaryTable.item(max_row_idx,j).setStylesheet("color:red")
-            # you can set colors from RGB values with QColor(r,g,b)
-            t.item(max_row_idx, j).setBackground(Qt.gray)
-            t.item(min_row_idx, j).setBackground(Qt.gray)
-            t.item(missing_idx, j).setBackground(Qt.gray)
+                # t.setItem(missing_idx, j, QTableWidgetItem(percent_missing))
+                t.item(missing_idx, j).setText(percent_missing)
 
-            #        except:
-            #            print("math error")
+        self.autoVoxelize()
         t.show()
+
+    def autoVoxelize(self):
+        """by convention we will assume that any column names that start with "PATH_" are intended for voxelization
+        """
+        for c in range(self.inputTable.columnCount()):
+
+            colname = self.inputTable.horizontalHeaderItem(c).text()
+            if colname[0:5] == "PATH_":
+                self.addVoxelColumn(c, "VOXEL_" + colname[5:])
+
+    def setupComputedCellsForCol(self, col, max_val="", min_val="", missing_count=""):
+        t = self.inputTable
+
+        for row in (max_row_idx, min_row_idx, missing_idx, include_col_idx):
+            # you can set colors from RGB values with QColor(r,g,b)
+
+            if row == include_col_idx:
+                item = QTableWidgetItem()
+                item.setFlags(Qt.ItemIsUserCheckable | Qt.ItemIsEnabled)
+                item.setCheckState(Qt.Unchecked)
+            else:
+                item = QTableWidgetItem()
+            item.setBackground(Qt.gray)
+            t.setItem(row, col, item)
+            # t.item(row, col).setBackground(Qt.gray)
