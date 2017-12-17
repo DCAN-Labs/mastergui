@@ -31,7 +31,6 @@ class AnalysisWindow(QWidget):
 
         self.initTabs()
 
-
     def initTabs(self):
         self.tabs = QTabWidget()
         self.grid.addWidget(self.tabs)
@@ -100,3 +99,14 @@ class AnalysisWindow(QWidget):
         errorbox = QMessageBox()
         errorbox.setText(str(txt))
         errorbox.exec_()
+
+    def addButton(self, caption, container, on_click, width=-1):
+        button = QPushButton(caption)
+        if width >= 0:
+            button.setFixedWidth(width)
+
+        button.setObjectName(caption)
+        button.clicked.connect(on_click)
+        container.addWidget(button)
+
+        return button

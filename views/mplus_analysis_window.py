@@ -169,9 +169,6 @@ class MplusAnalysisWindow(AnalysisWindow):
 
         return view
 
-    def btnstate(self, b):
-        print(b.isChecked())
-
     def selectedLabelsFromListView(self, list):
 
         m = list.model()
@@ -210,21 +207,16 @@ class MplusAnalysisWindow(AnalysisWindow):
         layout = QVBoxLayout()
         b1 = QRadioButton("on")
         b1.setChecked(True)
-        b1.toggled.connect(lambda: self.btnstate(b1))
         layout.addWidget(b1)
 
         b2 = QRadioButton("with")
-        b2.toggled.connect(lambda: self.btnstate(b2))
         layout.addWidget(b2)
 
         b3 = QRadioButton("restricted")
-        b3.toggled.connect(lambda: self.btnstate(b3))
         layout.addWidget(b3)
 
-        addBtn = QPushButton("Add Rule")
-        addBtn.clicked.connect(self.add_rule)
+        self.addButton("Add Rule", layout, self.add_rule)
 
-        layout.addWidget(addBtn)
         group.addButton(b1, 1)
         group.addButton(b2, 2)
         group.addButton(b3, 3)
@@ -232,6 +224,32 @@ class MplusAnalysisWindow(AnalysisWindow):
 
         self.operatorButtonGroup = group
         return groupWidget
+
+
+
+    def initUISpecific(self):
+        """
+        This method is invoked by the base class upon initial loading and should contain the GUI
+        initialization code specific to this particular analysis module
+        :return:
+        """
+        self.initModelSelection()
+
+        self.initModelBuilder()
+
+        self.dataPreview = DataPreviewWidget()
+
+        self.initExecAnalysisWidget()
+
+        self.addTab(self.dataPreview, "Input Data Review")
+        self.addTab(self.modelBuilderTab, "Model Builder")
+        self.addTab(self.execAnalysisWidget, "Execution Tab")
+
+        self.tabs.setCurrentIndex(0)
+
+        self.progress = QProgressBar()
+
+        [self.tabs.setTabEnabled(i, False) for i in range(1, self.tabs.count())]
 
     def initModelBuilder(self):
         """
@@ -298,38 +316,49 @@ class MplusAnalysisWindow(AnalysisWindow):
 
         l = QVBoxLayout()
 
+        command_bar = QHBoxLayout()
+
+        self.addButton("Run Analysis", command_bar, self.runAnalysis, 100)
+
         self.chkAutoLaunchWorkbench = QCheckBox("Launch Workbench When Complete")
         self.chkAutoLaunchWorkbench.setChecked(True)
-        l.addWidget(self.chkAutoLaunchWorkbench)
+        command_bar.addWidget(self.chkAutoLaunchWorkbench)
 
-        button = QPushButton("Run Analysis")
-        button.setFixedWidth(100)
-        button.setObjectName("Run")
-        l.addWidget(button)
-        button.clicked.connect(self.runAnalysis)
+        self.initTestAnalysisFrame(command_bar)
+
+        l.addLayout(command_bar)
         l.addWidget(self.modelOutput)
 
         self.execAnalysisWidget.setLayout(l)
 
-    def initUISpecific(self):
+    def addCheckBoxAndField(self, container, checkLabel, fieldInitialValue):
+        row = QHBoxLayout()
+        fld = QLineEdit("10")
+        fld.setFixedWidth(30)
+        chk = QCheckBox("Limit # of Voxels")
+        row.addWidget(chk)
+        row.addWidget(fld)
 
-        self.initModelSelection()
+        container.addLayout(row)
 
-        self.initModelBuilder()
+        return (chk, fld)
 
-        self.dataPreview = DataPreviewWidget()
+    def initTestAnalysisFrame(self, container):
 
-        self.initExecAnalysisWidget()
+        optionsFrame = QFrame()
+        optionsFrame.setFixedWidth(250)
+        optionsFrame.setFrameShape(QFrame.StyledPanel)
 
-        self.addTab(self.dataPreview, "Input Data Review")
-        self.addTab(self.modelBuilderTab, "Model Builder")
-        self.addTab(self.execAnalysisWidget, "Execution Tab")
+        options = QVBoxLayout()
 
-        self.tabs.setCurrentIndex(0)
+        self.checkLimitRows, self.wLimitRows = self.addCheckBoxAndField(options, "Limit # of rows", 10)
+        self.checkLimitVoxels, self.wLimitVoxels = self.addCheckBoxAndField(options, "Limit # of voxels", 10)
 
-        self.progress = QProgressBar()
+        self.addButton("Test Analysis", options, self.testAnalysis, 120)
 
-        [self.tabs.setTabEnabled(i, False) for i in range(1, self.tabs.count())]
+        optionsFrame.setLayout(options)
+
+        container.addWidget(optionsFrame)
 
     def updateUIAfterInput(self):
 
@@ -409,13 +438,12 @@ class MplusAnalysisWindow(AnalysisWindow):
                 self.appendTextToOutputDisplay(
                     "The output file %s is available for opening in Connectome Workbench" % cifti_output_path)
 
-    def runAnalysis(self):
+    def runAnalysis(self, limit_by_row=-1, limit_by_voxel=-1):
 
         self.threadpool = QThreadPool()
         print("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount())
 
-        self.modelOutput.setText("Pending...")
-        self.tabs.setCurrentIndex(5)
+        self.modelOutput.setText("Starting Analysis...")
 
         title = self.title + str(datetime.datetime.now()).replace(" ", ".").replace(":", ".")
 
@@ -430,6 +458,26 @@ class MplusAnalysisWindow(AnalysisWindow):
         worker.signals.error.connect(self.onAnalysisError)
         # Execute
         self.threadpool.start(worker)
+
+    def testAnalysis(self):
+
+        limit_by_row = -1
+        limit_by_voxel = -1
+
+        try:
+            if self.checkLimitRows.isChecked():
+                limit_by_row = int(self.wLimitRows.text())
+        except:
+            self.alert("Invalid value in the Limit By Row field.  Test not started.")
+            return
+
+        try:
+            if self.checkLimitVoxels.isChecked():
+                limit_by_voxel = int(self.wLimitVoxels.text())
+        except:
+            self.alert("Invalid value in the Limit By Voxel field.  Test not started.")
+            return
+        self.runAnalysis(limit_by_row, limit_by_voxel)
 
     def onSelectTemplate(self, raw_mplus_model_text):
         self.open_mplus_model_raw(raw_mplus_model_text)
