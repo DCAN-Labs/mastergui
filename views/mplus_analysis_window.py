@@ -233,6 +233,36 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.operatorButtonGroup = group
         return groupWidget
 
+    def initModelBuilder(self):
+        """
+        structure of widgets:
+            modelBuilderTab (Hbox)
+                modelBuilder   (choosers for specifying rules that go into the model
+
+                modelBuilderTemplateViewTabs
+                    model view widget
+                    template view widget
+        :return:
+        """
+
+        self.modelBuilderTab = QWidget()
+        self.modelBuilderTabLayout = QHBoxLayout()
+        self.modelBuilderTab.setLayout(self.modelBuilderTabLayout)
+
+        self.modelBuilderTemplateViewTabs = QTabWidget()
+
+        self.modelBuilder = QWidget()
+        self.modelBuilderLayout = QVBoxLayout()
+        self.modelBuilderLayout.addWidget(QLabel("Select Covariates"))
+        self.modelBuilder.setLayout(self.modelBuilderLayout)
+
+        self.initModelBuilderPanel()
+
+        self.initModelBuilderViewTabs()
+
+        self.modelBuilderTabLayout.addWidget(self.modelBuilder)
+        self.modelBuilderTabLayout.addWidget(self.modelBuilderTemplateViewTabs)
+
     def initModelBuilderPanel(self):
 
         rulePanel = QWidget()
@@ -255,12 +285,12 @@ class MplusAnalysisWindow(AnalysisWindow):
 
         self.modelBuilderLayout.addWidget(self.ruleDisplay)
 
-    def initModelBuilder(self):
-        self.modelBuilder = QWidget()
-        self.modelBuilderLayout = QVBoxLayout()
-        self.modelBuilderLayout.addWidget(QLabel("Select Covariates"))
-        self.modelBuilder.setLayout(self.modelBuilderLayout)
-        self.initModelBuilderPanel()
+    def initModelBuilderViewTabs(self):
+        self.modelTemplateViewer = QTextEdit()
+        self.generatedModelViewer = QTextEdit()
+
+        self.modelBuilderTemplateViewTabs.addTab(self.generatedModelViewer, "Model")
+        self.modelBuilderTemplateViewTabs.addTab(self.modelTemplateViewer, "Template")
 
     def initExecAnalysisWidget(self):
         self.execAnalysisWidget = QWidget()
@@ -283,30 +313,16 @@ class MplusAnalysisWindow(AnalysisWindow):
 
     def initUISpecific(self):
 
-
         self.initModelSelection()
 
         self.initModelBuilder()
 
-        self.modelTemplateViewer = QTextEdit()
-        self.generatedModelViewer = QTextEdit()
-
         self.dataPreview = DataPreviewWidget()
-
-        self.modelOutput = QTextEdit()
 
         self.initExecAnalysisWidget()
 
-        newMplusModel = QWidget()
-
-        self.modelDesignContainer = QVBoxLayout()
-        self.modelDesignContainer.addWidget(self.generatedModelViewer)
-        newMplusModel.setLayout(self.modelDesignContainer)
-
         self.addTab(self.dataPreview, "Input Data Review")
-        self.addTab(self.modelTemplateViewer, "Model Template")
-        self.addTab(self.modelBuilder, "Model Builder")
-        self.addTab(newMplusModel, "New Mplus Model")
+        self.addTab(self.modelBuilderTab, "Model Builder")
         self.addTab(self.execAnalysisWidget, "Execution Tab")
 
         self.tabs.setCurrentIndex(0)
