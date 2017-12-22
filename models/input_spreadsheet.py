@@ -6,6 +6,7 @@ import os
 import csv
 import logging
 import threading
+import time
 
 
 class InputSpreadsheet():
@@ -43,7 +44,7 @@ class InputSpreadsheet():
             # print(indices_where_still_empty)
         # output.loc[indices_where_still_empty]= "SECONDPASS"
         output.fillna(standard_missing_char, inplace=True)
-        #self.cleaned = output
+        # self.cleaned = output
         self._data = output
         return output
 
@@ -83,7 +84,7 @@ class InputSpreadsheet():
             self.ciftiSets[source_col_name] = ciftiSet
 
     def prepare_with_cifti(self, path_to_voxel_mappings, output_path_prefix, testing_only_limit_to_n_voxels=0,
-                           standard_missing_char=".", only_save_columns = []):
+                           standard_missing_char=".", only_save_columns=[]):
         """generate a separate file for each voxel in a cift
         :param path_to_voxel_mappings: an array of tuples (sourcecolumnname, columnnameforvoxel)
         :param output_path_prefix:
@@ -91,63 +92,95 @@ class InputSpreadsheet():
         :return:
         """
 
-        self.validatePathsToCiftis(path_to_voxel_mappings)
+        # this is a slow and memory intensive step
+        self.loadAllCiftis(path_to_voxel_mappings)
 
-        self.ciftiSets = {}
-        self.cifti_vector_size  = None
+        base_df = self.getBaseDataFrame(only_save_columns, path_to_voxel_mappings)
+
+        if testing_only_limit_to_n_voxels > 0:
+            upper_bound = testing_only_limit_to_n_voxels
+        else:
+            upper_bound = base_df.shape[0]
+
+        num_threads = 4
 
         threads = []
 
-        for mapping in path_to_voxel_mappings:
+        sets_of_voxel_indices = np.array_split(list(range(upper_bound)), num_threads)
 
-            #start each io intensive process of loading a ciftiset in a new thread
-            t = threading.Thread(target=self.loadCiftiSetFromMapping, args=[mapping])
+        begin_time = time.time()
+
+        for list_of_voxel_indices in sets_of_voxel_indices:
+            t = threading.Thread(target=self.generateVoxelizedFilesForList,
+                                 args=[base_df, list_of_voxel_indices, output_path_prefix,
+                                       path_to_voxel_mappings, standard_missing_char
+                                       ])
             t.start()
+
             threads.append(t)
-
-            if len(only_save_columns) > 0:
-                target_new_column_name = mapping[1]
-                if target_new_column_name in only_save_columns:
-                    only_save_columns.remove(target_new_column_name)
-
 
         for t in threads:
             t.join()
+        end_time = time.time()
 
+        print("Elapsed time for the generation of the voxelized files (excluding reading ciftis) %s" % (
+        end_time - begin_time))
+
+        # release the memory, we don't need them anymore!
+        self.ciftiSets.clear()
+
+    def generateVoxelizedFilesForList(self, base_df, list_of_voxel_indices, output_path_prefix, path_to_voxel_mappings,
+                                      standard_missing_char):
+
+        # this is called for each thread.  each thread should work with its own copy of the base data frame
+
+
+        base_df = base_df.copy(deep=True)
+
+        for voxel_idx in list_of_voxel_indices:
+            for mapping in path_to_voxel_mappings:
+                source_col_name = mapping[0]
+                new_voxel_col_name = mapping[1]
+                ciftiSet = self.ciftiSets[source_col_name]
+                voxel_data = ciftiSet.getVectorPosition(voxel_idx)
+                base_df[new_voxel_col_name] = pd.Series(voxel_data).fillna(standard_missing_char)
+
+            self.save_dataframe(base_df, output_path_prefix + "." + str(voxel_idx) + ".csv")
+
+    def getBaseDataFrame(self, only_save_columns, path_to_voxel_mappings):
+        if len(only_save_columns) > 0:
+            for mapping in path_to_voxel_mappings:
+                target_new_column_name = mapping[1]
+                if target_new_column_name in only_save_columns:
+                    only_save_columns.remove(target_new_column_name)
         base_df = self._data.copy(deep=True)
-
-        if len(only_save_columns)>0:
+        if len(only_save_columns) > 0:
             base_df = base_df[only_save_columns]
-
         for mapping in path_to_voxel_mappings:
             source_col_name = mapping[0]
             if source_col_name in base_df:
                 base_df = base_df.drop(source_col_name, 1)
+        return base_df
 
-
+    def loadAllCiftis(self, path_to_voxel_mappings):
+        self.validatePathsToCiftis(path_to_voxel_mappings)
+        self.ciftiSets = {}
+        self.cifti_vector_size = None
+        threads = []
         for mapping in path_to_voxel_mappings:
-            source_col_name = mapping[0]
-            new_voxel_col_name = mapping[1]
-            ciftiSet = self.ciftiSets[source_col_name]
+            # start each io intensive process of loading a ciftiset in a new thread
+            t = threading.Thread(target=self.loadCiftiSetFromMapping, args=[mapping])
+            t.start()
+            threads.append(t)
+        for t in threads:
+            t.join()
 
-            n_elements = ciftiSet.shape
+        # verify that they are all the same size cifti vectors
+        sizes = [v.shape for k, v in self.ciftiSets.items()]
 
-            if self.cifti_vector_size is None:
-                self.cifti_vector_size = n_elements
-            else:
-                if self.cifti_vector_size != n_elements:
-                    raise ValueError("Ciftset for source column %s size does not match" % source_col_name)
+        if len(set(sizes)) > 1:
+            raise ValueError(
+                "The length of the Cifti vector did not match for all %d columns.  Vectors lengts where %s " % (
+                len(path_to_voxel_mappings, str(sizes))))
 
-            for i in range(n_elements):
-                voxel_data = ciftiSet.getVectorPosition(i)
-                base_df[new_voxel_col_name] = pd.Series(voxel_data).fillna(standard_missing_char)
-                self.save_dataframe(base_df, output_path_prefix + "." + str(i) + ".csv")
-
-                if testing_only_limit_to_n_voxels > 0 and i > testing_only_limit_to_n_voxels:
-                    break
-
-
-        #release the memory, we don't need them anymore!
-        self.ciftiSets.clear()
-
-#        self.ciftiSet = ciftiSet
+        self.cifti_vector_size = sizes[0]
