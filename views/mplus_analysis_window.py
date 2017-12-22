@@ -333,9 +333,10 @@ class MplusAnalysisWindow(AnalysisWindow):
 
     def addCheckBoxAndField(self, container, checkLabel, fieldInitialValue):
         row = QHBoxLayout()
-        fld = QLineEdit("10")
+        fld = QLineEdit(str(fieldInitialValue))
         fld.setFixedWidth(30)
-        chk = QCheckBox("Limit # of Voxels")
+        chk = QCheckBox(checkLabel)
+        chk.setChecked(True)
         row.addWidget(chk)
         row.addWidget(fld)
 
