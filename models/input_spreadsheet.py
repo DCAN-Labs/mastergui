@@ -102,7 +102,7 @@ class InputSpreadsheet():
         else:
             upper_bound = base_df.shape[0]
 
-        num_threads = 4
+        num_threads = 1
 
         threads = []
 
@@ -176,7 +176,7 @@ class InputSpreadsheet():
             t.join()
 
         # verify that they are all the same size cifti vectors
-        sizes = [v.shape for k, v in self.ciftiSets.items()]
+        sizes = [v.voxel_count for k, v in self.ciftiSets.items()]
 
         if len(set(sizes)) > 1:
             raise ValueError(
