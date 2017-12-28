@@ -382,16 +382,13 @@ class MplusAnalysisWindow(AnalysisWindow):
     def updateGeneratedMPlusInputFile(self, save_to_path=""):
         columns = self.input.columnnames()
 
+        self.model.set_voxelized_mappings(self.dataPreview.selected_voxelized_columns())
+
         self.model.set_column_names(columns)
 
         generated_mplus_model = self.model.to_string()
+
         self.generatedModelViewer.setText(generated_mplus_model)
-
-        if False:
-
-            if len(save_to_path) > 0:
-                with open(save_to_path, "w") as f:
-                    f.write(self.model.to_string())
 
     def launchWorkbench(self, cifti_output_path):
         try:
@@ -408,6 +405,8 @@ class MplusAnalysisWindow(AnalysisWindow):
 
     def appendTextToOutputDisplay(self, txt):
         self.modelOutput.setText("%s\n%s" % (self.modelOutput.toPlainText(), txt))
+
+        self.modelOutput.verticalScrollBar().setValue(self.modelOutput.verticalScrollBar().maximum())
 
     def onAnalysisProgressMessage(self, txt):
         self.appendTextToOutputDisplay(txt)
@@ -431,7 +430,7 @@ class MplusAnalysisWindow(AnalysisWindow):
                                                       progress_callback=progress_callback,
                                                       error_callback=error_callback)
 
-        finished_callback.emit()
+        #finished_callback.emit()  this is called when the worker completes automatically
 
         return "Done."
 
@@ -460,6 +459,8 @@ class MplusAnalysisWindow(AnalysisWindow):
 
         self.threadpool = QThreadPool()
         print("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount())
+
+        #self.updateGeneratedMPlusInputFile()  #this probably shouldn't be here
 
         self.modelOutput.setText("Starting Analysis...")
 

@@ -74,7 +74,7 @@ class DataPreviewWidget(QWidget):
         for c in range(self.inputTable.columnCount()):
             item = self.inputTable.item(include_col_idx, c)
             if item.checkState() == Qt.Checked:
-                mapped_value = self.inputTable.item(voxel_mapping_idx, c).text()
+                mapped_value = self.getVoxelizedColumnName(c)
 
                 if len(mapped_value)>0:
                     source_name = self.inputTable.horizontalHeaderItem(c).text()
@@ -88,14 +88,20 @@ class DataPreviewWidget(QWidget):
 
     def selectColumn(self, originalName):
         for c in range(self.inputTable.columnCount()):
+
+            header_col_name = self.inputTable.horizontalHeaderItem(c).text()
+            mapped_col_name = self.getVoxelizedColumnName(c)
             if self.inputTable.horizontalHeaderItem(c).text() == originalName:
                 item = self.inputTable.item(include_col_idx, c)
                 item.setCheckState(Qt.Checked)
 
+    def getVoxelizedColumnName(self, col):
+        return self.inputTable.item(voxel_mapping_idx, col).text()
+
     def possibleColumnNames(self):
         result = []
         for c in range(self.inputTable.columnCount()):
-            any_mapped_name = self.inputTable.item(voxel_mapping_idx, c).text()
+            any_mapped_name = self.getVoxelizedColumnName(c)
             if len(any_mapped_name)>0:
                 result.append(any_mapped_name)
             else:

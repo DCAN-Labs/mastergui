@@ -79,10 +79,14 @@ class CiftiSet():
 
             row_index = int(t[0])
             path = t[1]
-            print("begin %d  %s" % (row_index, path))
+
             if os.path.exists(path):
-                print("reading path %s" % path)
+
+                start_time = time.time()
+
                 c = Cifti(path)
+                end_time = time.time()
+                print("time to read cifti : %s sec " % (end_time - start_time))
                 m = c.matrix
 
                 if m.shape != self.cifti_shape:
@@ -90,11 +94,13 @@ class CiftiSet():
                                      "%s with a shape of %s does not match the others with a shape of %s" % (
                                          path, str(m.shape), str(self.cifti_shape)))
 
+                start_time = time.time()
                 voxels_from_cifti = c.matrix[0, :]
 
                 with threading.Lock():
                     self.matrix[row_index, :] = voxels_from_cifti
-
+                end_time = time.time()
+                print("time to add cifti vector to matrix : %s sec " % (end_time - start_time))
             else:
                 raise ValueError('Cifti missing', "%s not found" % path)
 

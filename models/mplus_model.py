@@ -10,6 +10,7 @@ class MplusModel():
             self.load(path)
         self._title = "UntitledMplusModel"
         self.rules = []
+        self.voxelizedMappings = {}
 
         # track a unique list of variables used in the analysis
         self.using_variables = set([])
@@ -83,14 +84,13 @@ class MplusModel():
             return "cluster=%s;\n" % self.cluster
 
     def set_column_names(self, names):
-        print(self.key_order)
         #        self.mplus_data["VARIABLE"] = (
         #        "Names are %s;\nUSEVARIABLES = %s;\n!auxiliary = #todo, \nMISSING=.;\ncluster= #todo" %
         #        ("\n\t".join(names), "\n\t".join(self.using_variables)))
 
         #assumes will be dropping all names but the column you are using.
 
-        keeping_column_names = [name for name in names if name in self.using_variables]
+        keeping_column_names = [self.getMappedName(name) for name in names if self.getMappedName(name) in self.using_variables]
         self.mplus_data["VARIABLE"] = ("Names are %s;\nUSEVARIABLES = %s;\nMISSING=.;\n%s" %
                                        ("\n\t".join(keeping_column_names), "\n\t".join(self.using_variables), self.cluster_clause))
 
@@ -109,6 +109,16 @@ class MplusModel():
         :return:
         """
         return ["Analysis", "Fields"]
+
+    def set_voxelized_mappings(self, mappings):
+        for m in mappings:
+            self.add_voxelized_colname_mapping(m[0],m[1])
+
+    def add_voxelized_colname_mapping(self, from_col, new_name):
+        self.voxelizedMappings[from_col] = new_name
+
+    def getMappedName(self, from_col):
+        return self.voxelizedMappings.get(from_col,from_col)
 
     def add_rule(self, fields_from, operator, fields_to):
         new_rule_text = "%s %s %s;" % (",".join(fields_from), operator, fields_to[0])
