@@ -35,6 +35,11 @@ class AnalysisWindow(QWidget):
         self.tabs = QTabWidget()
         self.grid.addWidget(self.tabs)
         self.tabs.show()
+        self.tabs.currentChanged.connect(self.onTabChanged)
+
+    def onTabChanged(self, p_int):
+        #placeholder for subclasses to override if they need to handle a change in tabs.
+        print("Tab changed %d" % p_int)
 
     def addTab(self, widget, title):
         self.tabs.addTab(widget, title)

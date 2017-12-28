@@ -12,6 +12,9 @@ import traceback
 import time
 
 
+tab_modelbuilder = 2
+tab_datapreview = 1
+
 # threading worker example from https://martinfitzpatrick.name/article/multithreading-pyqt-applications-with-qthreadpool/
 class WorkerSignals(QObject):
     '''
@@ -143,6 +146,8 @@ class MplusAnalysisWindow(AnalysisWindow):
 
         model = listView.model()
 
+        model.clear()
+
         for col in columnNames:
             item = QStandardItem(col)
             # check = Qt.Checked if 1 == 1 else Qt.Unchecked
@@ -151,7 +156,8 @@ class MplusAnalysisWindow(AnalysisWindow):
             model.appendRow(item)
 
     def addInputColumnNamesToListViews(self):
-        cols = ["VOXEL", "i", "q", "s", "r"] + self.input.columnnames()
+
+        cols = ["i", "q", "s", "r"] + self.dataPreview.possibleColumnNames()
         self.addColumnNamesToListView(self.columnSelectA, cols)
         self.addColumnNamesToListView(self.columnSelectB, cols)
 
@@ -200,6 +206,8 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.ruleDisplay.setText(self.model.rules_to_s())
 
         self.updateGeneratedMPlusInputFile()
+
+        self.dataPreview.update_selected_checks_from_analysis(self.model)
 
     def createRuleOperatorWidget(self):
         group = QButtonGroup()
@@ -250,6 +258,12 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.progress = QProgressBar()
 
         [self.tabs.setTabEnabled(i, False) for i in range(1, self.tabs.count())]
+
+    def onTabChanged(self, p_int):
+        if p_int == tab_modelbuilder:
+            self.addInputColumnNamesToListViews()
+        elif p_int == tab_modelbuilder:
+            self.dataPreview.update_selected_checks_from_analysis(self.model)
 
     def initModelBuilder(self):
         """
@@ -406,7 +420,10 @@ class MplusAnalysisWindow(AnalysisWindow):
         # for testing, halt after n rows of data processing. Set to 0 to do everything.
         halt_after_n = int(self.config.getOptional('testing_halt_after_n_voxels', 0))
 
-        mappings = self.dataPreview.voxelized_columns
+        #mappings = self.dataPreview.voxelized_columns
+
+        mappings = self.dataPreview.selected_voxelized_columns()
+
         self.mplus_output_contents = ""
         self.mplus_output_contents = self.analysis.go(self.model, self.title, self.input,
                                                       self.dataPreview.missing_tokens, halt_after_n,

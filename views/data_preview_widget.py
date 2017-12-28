@@ -68,6 +68,40 @@ class DataPreviewWidget(QWidget):
         # store tuples of column mapping for later usage when generating data.
         self.voxelized_columns.append((source_name, colname))
 
+    def selected_voxelized_columns(self):
+        #or for each column in grid see if the voxelized row is set and selected.
+        result = []
+        for c in range(self.inputTable.columnCount()):
+            item = self.inputTable.item(include_col_idx, c)
+            if item.checkState() == Qt.Checked:
+                mapped_value = self.inputTable.item(voxel_mapping_idx, c).text()
+
+                if len(mapped_value)>0:
+                    source_name = self.inputTable.horizontalHeaderItem(c).text()
+                    result.append((source_name, mapped_value))
+
+        return result
+
+    def update_selected_checks_from_analysis(self, model):
+        for v in model.using_variables:
+            self.selectColumn(v)
+
+    def selectColumn(self, originalName):
+        for c in range(self.inputTable.columnCount()):
+            if self.inputTable.horizontalHeaderItem(c).text() == originalName:
+                item = self.inputTable.item(include_col_idx, c)
+                item.setCheckState(Qt.Checked)
+
+    def possibleColumnNames(self):
+        result = []
+        for c in range(self.inputTable.columnCount()):
+            any_mapped_name = self.inputTable.item(voxel_mapping_idx, c).text()
+            if len(any_mapped_name)>0:
+                result.append(any_mapped_name)
+            else:
+                result.append(self.inputTable.horizontalHeaderItem(c).text())
+        return result
+
     @property
     def missing_tokens(self):
         return self.missingDataTokens.text().split(",")
@@ -150,6 +184,7 @@ class DataPreviewWidget(QWidget):
         """by convention we will assume that any column names that start with "PATH_" are intended for voxelization
         """
         for c in range(self.inputTable.columnCount()):
+            item = self.inputTable.item(include_col_idx,c)
 
             colname = self.inputTable.horizontalHeaderItem(c).text()
             if colname[0:5] == "PATH_":
