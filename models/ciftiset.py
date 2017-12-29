@@ -54,10 +54,7 @@ class CiftiSet():
 
         begin_time = time.time()
 
-        print("LEN SETS OF PATHS %d" % len(sets_of_paths))
-
         for list_of_paths in sets_of_paths:
-            print("len listofpaths %d" % len(list_of_paths))
             t = threading.Thread(target=self.readListOfCiftis,
                                  args=[list_of_paths])
             t.start()
@@ -72,7 +69,7 @@ class CiftiSet():
             end_time - begin_time))
 
     def readListOfCiftis(self,indexed_path_list):
-        print("STARTING READLISTOFCIFTS %d " % len(indexed_path_list))
+
         #each entry in the indexed_path_list is a tuple (final_array_row_index, path_to_cifti)
 
         for t in indexed_path_list:
