@@ -100,7 +100,7 @@ class InputSpreadsheet():
         if testing_only_limit_to_n_voxels > 0:
             upper_bound = testing_only_limit_to_n_voxels
         else:
-            upper_bound = cifti_vector_size
+            upper_bound = self.cifti_vector_size
 
         num_threads = 1
 
