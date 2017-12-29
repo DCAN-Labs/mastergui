@@ -1,5 +1,4 @@
-import yaml
-
+import json
 
 class Config():
     def __init__(self, path=""):
@@ -8,8 +7,9 @@ class Config():
             self.load()
 
     def load(self):
+
         with open(self._path, 'r') as f:
-            self._data = yaml.load(f)
+            self._data = json.load(f, strict=False)
 
     def getOptional(self,key, default = ""):
         if key in self._data:
