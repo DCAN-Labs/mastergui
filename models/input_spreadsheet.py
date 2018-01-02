@@ -142,9 +142,12 @@ class InputSpreadsheet():
                 source_col_name = mapping[0]
                 new_voxel_col_name = mapping[1]
                 ciftiSet = self.ciftiSets[source_col_name]
-                voxel_data = ciftiSet.getVectorPosition(voxel_idx)
-                base_df[new_voxel_col_name] = pd.Series(voxel_data).fillna(standard_missing_char)
 
+                voxel_data = ciftiSet.getVectorPosition(voxel_idx)
+
+                base_df[new_voxel_col_name] = voxel_data
+
+            base_df.fillna(standard_missing_char, inplace = True)
             self.save_dataframe(base_df, output_path_prefix + "." + str(voxel_idx) + ".csv")
 
     def getBaseDataFrame(self, only_save_columns, path_to_voxel_mappings):
