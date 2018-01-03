@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from views.analysis_window_base import *
 from views.data_preview_widget import *
+from views.output_browser import *
 import views.workbench_launcher
 import models
 import datetime
@@ -253,6 +254,8 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.addTab(self.modelBuilderTab, "Model Builder")
         self.addTab(self.execAnalysisWidget, "Execution Tab")
 
+        self.outputViewer = OutputBrowserWidget()
+        self.addTab(self.outputViewer, "Output")
         self.tabs.setCurrentIndex(0)
 
         self.progress = QProgressBar()
@@ -464,11 +467,13 @@ class MplusAnalysisWindow(AnalysisWindow):
 
         self.modelOutput.setText("Starting Analysis...")
 
-        title = self.title + str(datetime.datetime.now()).replace(" ", ".").replace(":", ".")
-
-        self.model.title = title
-
         self.analysis = models.mplus_analysis.MplusAnalysis(self.config)
+
+        self.analysis.setBatchTitle(self.title)
+
+        self.model.title = self.analysis.batchTitle
+
+        self.outputViewer.loadOutputFiles(self.analysis.batchOutputDir,"*.inp.out")
 
         worker = Worker(self.runAnalysisBackgroundWorker)  # Any other args, kwargs are passed to the run function
 

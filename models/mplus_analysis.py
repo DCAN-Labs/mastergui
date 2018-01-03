@@ -74,7 +74,8 @@ class MplusAnalysis:
         if len(title) == 0:
             title = "Untitled"
 
-        self.setBatchTitle(title)
+        #todo remove title parameter from this method
+        #self.setBatchTitle(title)
 
         self.progressMessage("Beginning analysis job %s, output will be generated in %s" % (title,self.batchOutputDir))
 

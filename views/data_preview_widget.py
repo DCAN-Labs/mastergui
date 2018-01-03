@@ -18,6 +18,9 @@ class DataPreviewWidget(QWidget):
         self.default_missing_tokens_list = ["-888", "-888.0", "NA", ".", "", "nan"]
 
         layout = QVBoxLayout()
+        layout.addWidget(QLabel("Non-imaging Data File:"))
+        self.filePathWidget = QLineEdit()
+        layout.addWidget(self.filePathWidget)
 
         layout.addWidget(QLabel("Missing Data Tokens:"))
         self.missingDataTokens = QLineEdit()
@@ -86,12 +89,12 @@ class DataPreviewWidget(QWidget):
         for v in model.using_variables:
             self.selectColumn(v)
 
-    def selectColumn(self, originalName):
+    def selectColumn(self, col_name):
         for c in range(self.inputTable.columnCount()):
 
             header_col_name = self.inputTable.horizontalHeaderItem(c).text()
             mapped_col_name = self.getVoxelizedColumnName(c)
-            if self.inputTable.horizontalHeaderItem(c).text() == originalName:
+            if header_col_name == col_name or mapped_col_name == col_name:
                 item = self.inputTable.item(include_col_idx, c)
                 item.setCheckState(Qt.Checked)
 
@@ -112,10 +115,10 @@ class DataPreviewWidget(QWidget):
     def missing_tokens(self):
         return self.missingDataTokens.text().split(",")
 
-    def render_dataframe(self, data):
+    def render_dataframe(self, data, path = ""):
 
         self.data = data
-
+        self.filePathWidget.setText(path)
         t = self.inputTable
         t.setColumnCount(len(data.columns))
 

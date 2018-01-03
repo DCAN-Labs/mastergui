@@ -64,7 +64,7 @@ class AnalysisWindow(QWidget):
         # try:
         self.input = input_spreadsheet.InputSpreadsheet(path)
         self.updateUIAfterInput()
-        self.dataPreview.render_dataframe(self.input._data)
+        self.dataPreview.render_dataframe(self.input._data, path)
         # except:
         #    self.alert("Error while opening file " + path)
 

@@ -9,6 +9,11 @@ class Cifti():
         # http: // nipy.org / nibabel / reference / nibabel.cifti2.html  # nibabel.cifti2.cifti2.Cifti2Image
         self._cifti = nibabel.cifti2.cifti2.load(path)
 
+
+        #alternative :  wb_command -cifti-convert -to-text cub-sub-NDARINV02EBX0JJ_FNL_preproc_v2_Atlas_SMOOTHED_1.7.dtseries.nii_10_minutes_of_data_at_FD_0.2.dconn.nii_to_Merged_HCP_best80_dtseries.conc_AVG.dconn.dscalar.nii
+
+
+
     @property
     def matrix(self):
 
