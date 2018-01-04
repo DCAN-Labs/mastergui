@@ -118,7 +118,7 @@ class FconnanovaAnalysisWindow(AnalysisWindow):
         :return:
         """
 
-        self.dataPreview = DataPreviewWidget()
+        self.dataPreview = DataPreviewWidget(self)
 
         self.initExecAnalysisWidget()
 

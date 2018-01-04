@@ -9,6 +9,7 @@ class CiftiSet():
     def __init__(self, path_list):
         self._path_list = path_list
         self.ciftis = {}
+        self.cancelling = False
 
     def verify_paths(self):
         not_found = []
@@ -73,6 +74,9 @@ class CiftiSet():
         #each entry in the indexed_path_list is a tuple (final_array_row_index, path_to_cifti)
 
         for t in indexed_path_list:
+
+            if self.cancelling:
+                return
 
             row_index = int(t[0])
             path = t[1]

@@ -158,18 +158,7 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.modelTemplateViewer.setText(model_text)
         self.analysis.model = self.model
 
-    def addColumnNamesToListView(self, listView, columnNames):
 
-        model = listView.model()
-
-        model.clear()
-
-        for col in columnNames:
-            item = QStandardItem(col)
-            # check = Qt.Checked if 1 == 1 else Qt.Unchecked
-            # item.setCheckState(check)
-            item.setCheckable(True)
-            model.appendRow(item)
 
     def addInputColumnNamesToListViews(self):
 
@@ -177,19 +166,6 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.addColumnNamesToListView(self.columnSelectA, cols)
         self.addColumnNamesToListView(self.columnSelectB, cols)
 
-    def createColumnNameListWidget(self, single_selection=False):
-        model = QStandardItemModel()
-
-        view = QListView()
-
-        view.setModel(model)
-
-        if single_selection:
-            # todo #bug this is not governing the checkbox-ing, just the row level selection. we want the
-            # to restrict it to single checkbox selection
-            view.setSelectionMode(QAbstractItemView.SingleSelection)
-
-        return view
 
     def selectedLabelsFromListView(self, list):
 
@@ -373,9 +349,7 @@ class MplusAnalysisWindow(AnalysisWindow):
         if reply == QMessageBox.Yes:
             self.appendTextToOutputDisplay("Attempting to cancel...")
             self.cancelling = True
-
-            self.analysis.cancelling = True
-            self.input.cancelling = True
+            self.analysis.cancelAnalysis()
             self.cancelBtn.setEnabled(False)
 
 
@@ -403,7 +377,7 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.checkLimitRows, self.wLimitRows = self.addCheckBoxAndField(options, "Limit # of rows", 10)
         self.checkLimitVoxels, self.wLimitVoxels = self.addCheckBoxAndField(options, "Limit # of voxels", 10)
 
-        self.addButton("Test Analysis", options, self.testAnalysis, 120)
+        self.testBtn = self.addButton("Test Analysis", options, self.testAnalysis, 120)
 
         optionsFrame.setLayout(options)
 
@@ -458,8 +432,11 @@ class MplusAnalysisWindow(AnalysisWindow):
         mappings = self.dataPreview.selected_voxelized_columns()
 
         self.mplus_output_contents = ""
-        self.mplus_output_contents = self.analysis.go(self.model, self.title, self.input,
-                                                      self.dataPreview.missing_tokens, halt_after_n,
+
+        self.analysis.model = self.model
+        self.analysis.title = self.title
+        self.mplus_output_contents = self.analysis.go( self.input,
+                                                      self.dataPreview.missing_tokens,
                                                       path_to_voxel_mappings=mappings,
                                                       progress_callback=progress_callback,
                                                       error_callback=error_callback)
@@ -468,10 +445,15 @@ class MplusAnalysisWindow(AnalysisWindow):
 
         return "Done."
 
+    def setExecuteButtonState(self, in_progress):
+        self.cancelBtn.setEnabled(in_progress)
+        self.runBtn.setEnabled(not in_progress)
+        self.testBtn.setEnabled(not in_progress)
+
     def onAnalysisFinish(self):
 
-        self.cancelBtn.setEnabled(False)
-        self.runBtn.setEnabled(True)
+        self.setExecuteButtonState(False)
+
         self.appendTextToOutputDisplay("Analysis Complete")
 
         self.appendTextToOutputDisplay(self.mplus_output_contents)
@@ -481,7 +463,7 @@ class MplusAnalysisWindow(AnalysisWindow):
         else:
             cifti_output_path = ""
 
-        if len(cifti_output_path) > 0:
+        if len(cifti_output_path) > 0 and not self.cancelling:
             if self.chkAutoLaunchWorkbench.isChecked():
 
                 if hasattr(self, 'analysis'):
@@ -496,8 +478,8 @@ class MplusAnalysisWindow(AnalysisWindow):
 
         self.cancelling = False
         self.analysis.cancelling = False
-        self.runBtn.setEnabled(False)
-        self.cancelBtn.setEnabled(True)
+
+        self.setExecuteButtonState(True)
 
         if hasattr(self,"input"):
             self.input.cancelling = False
@@ -514,6 +496,10 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.model.title = self.analysis.batchTitle
 
         self.outputViewer.loadOutputFiles(self.analysis.batchOutputDir,"*.inp.out")
+
+        self.analysis.limit_by_row = limit_by_row
+        self.analysis.limit_by_voxel = limit_by_voxel
+
 
         worker = Worker(self.runAnalysisBackgroundWorker)  # Any other args, kwargs are passed to the run function
 

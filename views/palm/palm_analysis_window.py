@@ -4,6 +4,7 @@ from PyQt5.QtGui import *
 from views.analysis_window_base import *
 from views.data_preview_widget import *
 from views.output_browser import *
+from views.palm.palm_reader_options import *
 import views.workbench_launcher
 import models
 import datetime
@@ -117,11 +118,14 @@ class PalmAnalysisWindow(AnalysisWindow):
         :return:
         """
 
-        self.dataPreview = DataPreviewWidget()
+        self.dataPreview = DataPreviewWidget(self)
 
         self.initExecAnalysisWidget()
 
+        self.palmReaderOptions = PalmReaderOptions()
+
         self.addTab(self.dataPreview, "Input Data Review")
+        self.addTab(self.palmReaderOptions, "PalmReader Options")
         self.addTab(self.execAnalysisWidget, "Execution Tab")
 
         self.outputViewer = OutputBrowserWidget()
@@ -183,11 +187,9 @@ class PalmAnalysisWindow(AnalysisWindow):
         container.addWidget(optionsFrame)
 
     def updateUIAfterInput(self):
-
-        self.addInputColumnNamesToListViews()
-
-
-
+        print("updateUIAfterInput")
+        #stub
+        True
 
     def launchWorkbench(self, cifti_output_path):
         try:
@@ -255,46 +257,47 @@ class PalmAnalysisWindow(AnalysisWindow):
                     "The output file %s is available for opening in Connectome Workbench" % cifti_output_path)
 
     def runAnalysis(self, limit_by_row=-1, limit_by_voxel=-1):
+        if False:
+            self.threadpool = QThreadPool()
+            print("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount())
 
-        self.threadpool = QThreadPool()
-        print("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount())
+            #self.updateGeneratedMPlusInputFile()  #this probably shouldn't be here
 
-        #self.updateGeneratedMPlusInputFile()  #this probably shouldn't be here
+            self.modelOutput.setText("Starting Analysis...")
 
-        self.modelOutput.setText("Starting Analysis...")
+            self.analysis = models.mplus_analysis.MplusAnalysis(self.config)
 
-        self.analysis = models.mplus_analysis.MplusAnalysis(self.config)
+            self.analysis.setBatchTitle(self.title)
 
-        self.analysis.setBatchTitle(self.title)
+            self.model.title = self.analysis.batchTitle
 
-        self.model.title = self.analysis.batchTitle
+            self.outputViewer.loadOutputFiles(self.analysis.batchOutputDir,"*.inp.out")
 
-        self.outputViewer.loadOutputFiles(self.analysis.batchOutputDir,"*.inp.out")
+            worker = Worker(self.runAnalysisBackgroundWorker)  # Any other args, kwargs are passed to the run function
 
-        worker = Worker(self.runAnalysisBackgroundWorker)  # Any other args, kwargs are passed to the run function
-
-        worker.signals.progress.connect(self.onAnalysisProgressMessage)
-        worker.signals.finished.connect(self.onAnalysisFinish)
-        worker.signals.error.connect(self.onAnalysisError)
-        # Execute
-        self.threadpool.start(worker)
+            worker.signals.progress.connect(self.onAnalysisProgressMessage)
+            worker.signals.finished.connect(self.onAnalysisFinish)
+            worker.signals.error.connect(self.onAnalysisError)
+            # Execute
+            self.threadpool.start(worker)
 
     def testAnalysis(self):
+        if False:
 
-        limit_by_row = -1
-        limit_by_voxel = -1
+            limit_by_row = -1
+            limit_by_voxel = -1
 
-        try:
-            if self.checkLimitRows.isChecked():
-                limit_by_row = int(self.wLimitRows.text())
-        except:
-            self.alert("Invalid value in the Limit By Row field.  Test not started.")
-            return
+            try:
+                if self.checkLimitRows.isChecked():
+                    limit_by_row = int(self.wLimitRows.text())
+            except:
+                self.alert("Invalid value in the Limit By Row field.  Test not started.")
+                return
 
-        try:
-            if self.checkLimitVoxels.isChecked():
-                limit_by_voxel = int(self.wLimitVoxels.text())
-        except:
-            self.alert("Invalid value in the Limit By Voxel field.  Test not started.")
-            return
-        self.runAnalysis(limit_by_row, limit_by_voxel)
+            try:
+                if self.checkLimitVoxels.isChecked():
+                    limit_by_voxel = int(self.wLimitVoxels.text())
+            except:
+                self.alert("Invalid value in the Limit By Voxel field.  Test not started.")
+                return
+            self.runAnalysis(limit_by_row, limit_by_voxel)

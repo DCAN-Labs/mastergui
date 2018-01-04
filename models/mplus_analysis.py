@@ -14,6 +14,8 @@ class MplusAnalysis(Analysis):
     def __init__(self, config, filename=""):
         super(MplusAnalysis, self).__init__(config,"mplus",filename)
         self.required_config_keys = ['default_maps', 'Base_cifti_for_output', 'MPlus_command', 'output_dir']
+        self.limit_by_voxel = -1
+        self.limit_by_row = -1
 
     def updateGeneratedMPlusInputFile(self, save_to_path, add_voxel_column_name=None):
         columns = self.input.columnnames()
@@ -46,28 +48,18 @@ class MplusAnalysis(Analysis):
     def dir_name_for_title(self, raw_title):
         return raw_title + str(datetime.datetime.now()).replace(" ", ".").replace(":", ".")
 
-    def go(self, model, title, input, missing_tokens_list, testing_only_limit_to_n_rows=3, path_to_voxel_mappings = [], progress_callback = None, error_callback = None):
+    def go(self, input, missing_tokens_list, path_to_voxel_mappings = [], progress_callback = None, error_callback = None):
 
         self.progress_callback = progress_callback
         self.error_callback = error_callback
 
-        if len(title) == 0:
-            title = "Untitled"
-
-        #todo remove title parameter from this method
-        #self.setBatchTitle(title)
-
-        self.progressMessage("Beginning analysis job %s, output will be generated in %s" % (title,self.batchOutputDir))
+        self.progressMessage("Beginning analysis job %s, output will be generated in %s" % (self.title,self.batchOutputDir))
 
         # create a directory composed of the analysis title and a timestamp into which all the writing will happen
 
         os.mkdir(self.batchOutputDir)
 
-        title = self.batchTitle
-
-        self.model = model
-
-        self.model.title = title
+        self.model.title = self.title
 
         self.input = input
 
@@ -78,7 +70,7 @@ class MplusAnalysis(Analysis):
 
 
         if self.needCiftiProcessing:
-            return self.runAnalysisWithCiftiProcessing(path_to_voxel_mappings, testing_only_limit_to_n_rows)
+            return self.runAnalysisWithCiftiProcessing(path_to_voxel_mappings)
         else:
             return self.runAnalysis()
 
@@ -92,16 +84,16 @@ class MplusAnalysis(Analysis):
 
 
 
-    def runAnalysisWithCiftiProcessing(self, path_to_voxel_mappings, testing_only_limit_to_n_voxels):
+    def runAnalysisWithCiftiProcessing(self, path_to_voxel_mappings):
         """
 
         :param path_to_voxel_mappings: an array of tuples (sourcecolumnname, columnnameforvoxel)
-        :param testing_only_limit_to_n_voxels:
+
         :return:
         """
         start_time = time.time()
 
-        self.input.prepare_with_cifti(path_to_voxel_mappings, self.output_path, testing_only_limit_to_n_voxels, only_save_columns=list(self.model.using_variables))
+        self.input.prepare_with_cifti(path_to_voxel_mappings, self.output_path, testing_only_limit_to_n_voxels = self.limit_by_voxel, only_save_columns=list(self.model.using_variables), limit_by_row = self.limit_by_row)
 
         time2 = time.time()
         self.progressMessage("Time to read cifti data and prepare csvs with cifti data: %f seconds" % (time2 - start_time))
@@ -109,7 +101,7 @@ class MplusAnalysis(Analysis):
 
         if self.cancelling:
             return
-        self.generateInputModelsWithVoxel(testing_only_limit_to_n_voxels)
+        self.generateInputModelsWithVoxel()
 
         if self.cancelling:
             return
@@ -120,7 +112,7 @@ class MplusAnalysis(Analysis):
         if self.cancelling:
             return
 
-        self.runAllVoxelBasedModels(testing_only_limit_to_n_voxels)
+        self.runAllVoxelBasedModels()
 
         if self.cancelling:
             return
@@ -142,7 +134,7 @@ class MplusAnalysis(Analysis):
         aggregated_results = self.model.aggregate_results(self.input.cifti_vector_size, path_template_for_data_including_voxel,
                                                           ["Akaike (AIC)"],
                                                           [output_cifti],
-                                                          testing_only_limit_to_n_rows=testing_only_limit_to_n_voxels)
+                                                          testing_only_limit_to_n_rows=self.limit_by_row)
         time5 = time.time()
 
         self.progressMessage("Time to aggregate mplus results %f seconds" % (time5 - time4))
@@ -164,7 +156,7 @@ class MplusAnalysis(Analysis):
         self.progressMessage("TOTAL TIME %f seconds" % (time.time() - start_time))
         return "Ran vectorized model. %i of %s failed" % ( self.mplus_exec_errors, self.mplus_exec_count)
 
-    def generateInputModelsWithVoxel(self, testing_only_limit_to_n_rows):
+    def generateInputModelsWithVoxel(self):
         for i in range(self.input.cifti_vector_size):
 
             model_input_file_path = self.modelPathByVoxel(i)
@@ -173,13 +165,13 @@ class MplusAnalysis(Analysis):
 
             self.updateGeneratedMPlusInputFile(model_input_file_path, add_voxel_column_name="VOXEL")
 
-            if testing_only_limit_to_n_rows > 0 and i >= testing_only_limit_to_n_rows - 1:
+            if self.limit_by_voxel > 0 and i >= self.limit_by_voxel - 1:
                 break
 
-    def runAllVoxelBasedModels(self, testing_only_limit_to_n_rows):
+    def runAllVoxelBasedModels(self):
         num_threads = self.config.getOptional("mplus_threads", 4)
-        if testing_only_limit_to_n_rows > 0:
-            n = testing_only_limit_to_n_rows
+        if self.limit_by_voxel > 0:
+            n = self.limit_by_voxel
         else:
             n = self.input.cifti_vector_size
 
@@ -311,4 +303,9 @@ class MplusAnalysis(Analysis):
         save_data["template_raw_model"] = self.model._raw
 
         save_data["input_data_path"] = self.input.path
+
+    def cancelAnalysis(self):
+        """attempt to cancel the running analyis"""
+        self.cancelling = True
+        self.input.cancelAnalysis()
 

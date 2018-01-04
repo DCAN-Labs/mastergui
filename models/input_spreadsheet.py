@@ -78,20 +78,39 @@ class InputSpreadsheet():
     def loadCiftiSetFromMapping(self, mapping_tuple):
         source_col_name = mapping_tuple[0]
 
-        ciftiSet = ciftiset.CiftiSet(list(self._data[source_col_name]))
-        ciftiSet.load_all()
+        paths = list(self._data[source_col_name])
+
+        #in testing mode we can limit how many actual ciftis are loaded for time savings
+
+        if self.limit_by_row > 0:
+            paths = paths[0:self.limit_by_row]
+
+        ciftiSet = ciftiset.CiftiSet(paths)
 
         with threading.Lock():
             self.ciftiSets[source_col_name] = ciftiSet
 
+        ciftiSet.load_all()
+
+    def cancelAnalysis(self):
+        """attempt to cancel the running analyis"""
+        self.cancelling = True
+
+        for k,v in self.ciftiSets.items():
+            with threading.Lock():
+                v.cancelling = True
+
+
     def prepare_with_cifti(self, path_to_voxel_mappings, output_path_prefix, testing_only_limit_to_n_voxels=0,
-                           standard_missing_char=".", only_save_columns=[]):
+                           standard_missing_char=".", only_save_columns=[], limit_by_row = -1):
         """generate a separate file for each voxel in a cift
         :param path_to_voxel_mappings: an array of tuples (sourcecolumnname, columnnameforvoxel)
         :param output_path_prefix:
         :param testing_only_limit_to_n_voxels:  pass a number greater than 0 here ot have it only process that number of voxels, to facillitate testing
         :return:
         """
+
+        self.limit_by_row = limit_by_row
 
         # this is a slow and memory intensive step
         self.loadAllCiftis(path_to_voxel_mappings)
@@ -167,6 +186,10 @@ class InputSpreadsheet():
             source_col_name = mapping[0]
             if source_col_name in base_df:
                 base_df = base_df.drop(source_col_name, 1)
+
+        if self.limit_by_row >0:
+            base_df = base_df.iloc[0:self.limit_by_row,:]
+
         return base_df
 
     def loadAllCiftis(self, path_to_voxel_mappings):

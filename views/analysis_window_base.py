@@ -65,7 +65,8 @@ class AnalysisWindow(QWidget):
         self.input = input_spreadsheet.InputSpreadsheet(path)
         self.updateUIAfterInput()
         self.dataPreview.render_dataframe(self.input._data, path)
-        self.analysis.input = self.input
+        if hasattr(self,"analysis"):
+            self.analysis.input = self.input
 
         # except:
         #    self.alert("Error while opening file " + path)
@@ -156,3 +157,30 @@ class AnalysisWindow(QWidget):
             event.ignore()
         else:
             event.accept()
+
+    def addColumnNamesToListView(self, listView, columnNames):
+
+        model = listView.model()
+
+        model.clear()
+
+        for col in columnNames:
+            item = QStandardItem(col)
+            # check = Qt.Checked if 1 == 1 else Qt.Unchecked
+            # item.setCheckState(check)
+            item.setCheckable(True)
+            model.appendRow(item)
+
+    def createColumnNameListWidget(self, single_selection=False):
+        model = QStandardItemModel()
+
+        view = QListView()
+
+        view.setModel(model)
+
+        if single_selection:
+            # todo #bug this is not governing the checkbox-ing, just the row level selection. we want the
+            # to restrict it to single checkbox selection
+            view.setSelectionMode(QAbstractItemView.SingleSelection)
+
+        return view
