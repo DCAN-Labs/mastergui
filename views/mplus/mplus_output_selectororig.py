@@ -5,14 +5,12 @@ import glob
 import os
 import numpy as np
 
+class MplusOutputSelector2(QWidget):
+    def __init__(self, parentAnalysisWidget):
+        super(MplusOutputSelector2, self).__init__()
 
+        self.parentAnalysisWidget = parentAnalysisWidget
 
-class OutputBrowserWidget(QWidget):
-    def __init__(self):
-        super(OutputBrowserWidget, self).__init__()
-        self.initUI()
-
-    def initUI(self):
         layout = QVBoxLayout()
 
         layout.addWidget(QLabel("Output Directory:"))
@@ -20,42 +18,44 @@ class OutputBrowserWidget(QWidget):
         self.outputDirWidget.returnPressed.connect(self.on_click_refresh)
         layout.addWidget(self.outputDirWidget)
 
-        self.patternLabel = QLabel("File Pattern:")
-
-        layout.addWidget(self.patternLabel)
-
-        exploreLayout = QHBoxLayout()
-
-        self.exploreLayout = exploreLayout
+        layout.addWidget(QLabel("File Pattern:"))
 
         layout.addWidget(self.createRadioButtons())
         self.patternWidget = QLineEdit()
         self.patternWidget.returnPressed.connect(self.on_click_refresh)
-        layout.addWidget(self.patternWidget)
+        #layout.addWidget(self.patternWidget)
 
         self.fileViewer = QTextEdit()
         self.fileViewer.setReadOnly(True)
+        #layout.addWidget(self.fileViewer)
+
 
         button = QPushButton("Refresh")
 
         button.clicked.connect(self.on_click_refresh)
         layout.addWidget(button)
-        button.setFixedWidth(70)
+
         self.listView = QListView()
+
+        model = QStandardItemModel()
+
+        self.listView.setModel(model)
 
         self.listView.setSelectionMode(QAbstractItemView.SingleSelection)
 
-        exploreLayout.addWidget(self.listView, stretch = 1)
-        self.initDetailUI(exploreLayout)
-        layout.addLayout(exploreLayout)
 
+        self.selectableOutput = QListView()
+
+        model = QStandardItemModel()
+
+        self.selectableOutput.setModel(model)
+
+        layout.addWidget(self.listView)
+        layout.addWidget(self.selectableOutput)
         self.setLayout(layout)
 
         self.output_dir = ""
         self.pattern = ""
-
-    def initDetailUI(self, exploreLayout):
-        exploreLayout.addWidget(self.fileViewer, stretch=5)
 
     def createRadioButtons(self):
         labels = ["CSVs","Mplus Input Files","Mplus Output Files"]
@@ -73,11 +73,8 @@ class OutputBrowserWidget(QWidget):
             idx += 1
 
         groupWidget.setLayout(layout)
-        groupWidget.setFixedWidth(400)
         group.buttonClicked.connect(self.on_pattern_btn_clicked)
         self.patternButtonGroup = group
-        self.groupWidget = groupWidget
-
         return groupWidget
 
     def on_pattern_btn_clicked(self,i):
@@ -105,8 +102,8 @@ class OutputBrowserWidget(QWidget):
         templates = {}
 
         for p in paths:
-            name = os.path.basename(p)
-            item = QStandardItem(name)
+
+            item = QStandardItem(p)
             model.appendRow(item)
 
 
@@ -115,12 +112,40 @@ class OutputBrowserWidget(QWidget):
         self.listView.selectionModel().currentChanged.connect(self.on_row_changed)
 
     def on_row_changed(self, current, previous):
-        path = os.path.join(self.output_dir, current.data())
+        path = current.data()
+
 
         with open(path,'r') as f:
             contents = f.readlines()
 
-        self.fileViewer.setText("".join(contents))
 
-    def hidePatternSelector(self):
-        self.groupWidget.setVisible(False)
+        self.addValuesToList(self.selectableOutput, contents)
+        #self.fileViewer.setText("".join(contents))
+
+
+    def addValuesToList(self, listView, columnNames):
+
+        model = listView.model()
+
+        model.clear()
+
+        original_line_number = 0
+
+        item_number = 0
+
+        item_to_line_numbers = {}
+
+        for col in columnNames:
+            if len(col.strip())>0:
+                item = QStandardItem(col)
+                # check = Qt.Checked if 1 == 1 else Qt.Unchecked
+                # item.setCheckState(check)
+                item.setCheckable(True)
+                item.setSizeHint(QSize(300,15))
+                model.appendRow(item)
+                item_to_line_numbers[item_number] = original_line_number
+                item_number+=1
+
+            original_line_number += 1
+
+        self.item_to_line_numbers = item_to_line_numbers

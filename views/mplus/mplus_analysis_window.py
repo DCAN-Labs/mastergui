@@ -4,6 +4,7 @@ from PyQt5.QtGui import *
 from views.analysis_window_base import *
 from views.data_preview_widget import *
 from views.output_browser import *
+from views.mplus.mplus_output_selector import *
 import views.workbench_launcher
 import models
 import datetime
@@ -12,9 +13,11 @@ import threading
 import traceback
 import time
 
-
-tab_modelbuilder = 2
 tab_datapreview = 1
+tab_modelbuilder = 2
+tab_output=4
+tab_outputselector=5
+
 
 # threading worker example from https://martinfitzpatrick.name/article/multithreading-pyqt-applications-with-qthreadpool/
 class WorkerSignals(QObject):
@@ -247,6 +250,10 @@ class MplusAnalysisWindow(AnalysisWindow):
 
         self.outputViewer = OutputBrowserWidget()
         self.addTab(self.outputViewer, "Output")
+
+
+        self.outputSelector = MplusOutputSelector(self)
+        self.addTab(self.outputSelector, "Output Value Selector")
         self.tabs.setCurrentIndex(0)
 
         self.progress = QProgressBar()
@@ -254,10 +261,15 @@ class MplusAnalysisWindow(AnalysisWindow):
         [self.tabs.setTabEnabled(i, False) for i in range(1, self.tabs.count())]
 
     def onTabChanged(self, p_int):
+        #print("tab select %d " % p_int)
         if p_int == tab_modelbuilder:
             self.addInputColumnNamesToListViews()
         elif p_int == tab_modelbuilder:
             self.dataPreview.update_selected_checks_from_analysis(self.model)
+        elif p_int == tab_output:
+            self.outputViewer.on_click_refresh()
+        elif p_int == tab_outputselector:
+            self.outputSelector.on_click_refresh()
 
     def initModelBuilder(self):
         """
@@ -333,7 +345,7 @@ class MplusAnalysisWindow(AnalysisWindow):
         command_bar.addWidget(self.chkAutoLaunchWorkbench)
 
         self.cancelBtn =  self.addButton("Cancel Analysis", command_bar, self.on_click_cancel, width = 130)
-
+        self.cancelBtn.setEnabled(False)
         self.initTestAnalysisFrame(command_bar)
 
         l.addLayout(command_bar)
@@ -496,7 +508,7 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.model.title = self.analysis.batchTitle
 
         self.outputViewer.loadOutputFiles(self.analysis.batchOutputDir,"*.inp.out")
-
+        self.outputSelector.loadOutputFiles(self.analysis.batchOutputDir,"*.inp.out")
         self.analysis.limit_by_row = limit_by_row
         self.analysis.limit_by_voxel = limit_by_voxel
 
