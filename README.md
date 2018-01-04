@@ -11,6 +11,15 @@ Python 3
 
 pip install packages from requirements.txt
 
+The MatLab Python API needs to be installed separately from PIP
+
+After activating your virtualenv at the command line, cd to your "{matlabroot}\extern\engines\python"
+and run:
+
+```
+python setup.py build - -build - base = "{replace_with_path_to_your_mastergui_installation}/venv/build" install
+```
+
 # Configuration
 Change config.yml.default to config.yml and populate with appropriate values for your local environment
 
