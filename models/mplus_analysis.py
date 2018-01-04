@@ -2,22 +2,18 @@ import datetime
 import os
 import subprocess
 from models.cifti import *
-import re
+
 import time
 import logging
 import numpy as np
 import threading
 import queue
+from models.analysis import *
 
-
-class MplusAnalysis:
-    def __init__(self, config):
-        self.config = config
-
-    def missingRequiredConfigKeys(self):
-        keys = ['default_maps', 'Base_cifti_for_output', 'MPlus_command', 'output_dir']
-        missing_keys = [k for k in keys if not k in self.config._data]
-        return missing_keys
+class MplusAnalysis(Analysis):
+    def __init__(self, config, filename=""):
+        super(MplusAnalysis, self).__init__(config,"mplus",filename)
+        self.required_config_keys = ['default_maps', 'Base_cifti_for_output', 'MPlus_command', 'output_dir']
 
     def updateGeneratedMPlusInputFile(self, save_to_path, add_voxel_column_name=None):
         columns = self.input.columnnames()
@@ -33,25 +29,12 @@ class MplusAnalysis:
                 f.write(self.model.to_string())
 
     @property
-    def filename_prefix(self):
-        # make data file with non alphanumeric characters replaced with _
-        return "input"  # self.model.title_for_filename
-
-    @property
-    def base_output_path(self):
-        return os.path.join(self.batchOutputDir, self.filename_prefix)
-
-    @property
     def data_filename(self):
         return "input.csv"
 
     @property
     def output_path(self):
         return os.path.join(self.batchOutputDir, self.data_filename)
-
-    @property
-    def output_dir(self):
-        return self.config._data.get("output_dir", "")
 
     @property
     def batchOutputDir(self):
@@ -62,9 +45,6 @@ class MplusAnalysis:
 
     def dir_name_for_title(self, raw_title):
         return raw_title + str(datetime.datetime.now()).replace(" ", ".").replace(":", ".")
-
-    def setBatchTitle(self, raw_title):
-        self.batchTitle = re.sub('[^0-9a-zA-Z]+', '_', self.dir_name_for_title(raw_title))
 
     def go(self, model, title, input, missing_tokens_list, testing_only_limit_to_n_rows=3, path_to_voxel_mappings = [], progress_callback = None, error_callback = None):
 
@@ -110,11 +90,6 @@ class MplusAnalysis:
 
         return model_input_file_path
 
-    def progressMessage(self, txt):
-
-        logging.info(txt)
-        if self.progress_callback is not None:
-            self.progress_callback.emit(txt)
 
 
     def runAnalysisWithCiftiProcessing(self, path_to_voxel_mappings, testing_only_limit_to_n_voxels):
@@ -131,12 +106,24 @@ class MplusAnalysis:
         time2 = time.time()
         self.progressMessage("Time to read cifti data and prepare csvs with cifti data: %f seconds" % (time2 - start_time))
 
+
+        if self.cancelling:
+            return
         self.generateInputModelsWithVoxel(testing_only_limit_to_n_voxels)
+
+        if self.cancelling:
+            return
 
         time3 = time.time()
         self.progressMessage("Time to prepare prepare mplus model files %f seconds" % (time3 - time2))
 
+        if self.cancelling:
+            return
+
         self.runAllVoxelBasedModels(testing_only_limit_to_n_voxels)
+
+        if self.cancelling:
+            return
 
         time4 = time.time()
 
@@ -146,6 +133,9 @@ class MplusAnalysis:
         output_cifti = self.base_cifti_for_output()
 
         path_template_for_data_including_voxel = self.base_output_path + ".voxel%s.inp.out"
+
+        if self.cancelling:
+            return
 
         # note this code is a little confusing, there are updates happening to the cifti objects
         # while it is return a data frame that contains all the aggregated values
@@ -157,10 +147,16 @@ class MplusAnalysis:
 
         self.progressMessage("Time to aggregate mplus results %f seconds" % (time5 - time4))
 
+        if self.cancelling:
+            return
+
         cifti_output_path = self.output_path + ".out.dscalar.nii"
         output_cifti.save(cifti_output_path)
         time6 = time.time()
         self.progressMessage("Time to run generate new cifti %f seconds" % (time6 - time5))
+
+        if self.cancelling:
+            return
 
         aggregated_results.to_csv(cifti_output_path + ".raw.csv", header=True, index=False)
         self._cifti_output_path = cifti_output_path
@@ -235,6 +231,9 @@ class MplusAnalysis:
     def runMplusForSetOfVoxels(self, set_of_voxels):
 
         for i in set_of_voxels:
+            if self.cancelling:
+                return
+
             model_input_file_path = self.modelPathByVoxel(i)
 
             result = self.runMplus(model_input_file_path)
@@ -305,3 +304,11 @@ class MplusAnalysis:
         output_cifti.nullify()
 
         return output_cifti
+
+    def module_specific_save_data(self, save_data):
+        save_data["voxelizedMappings"] = self.model.voxelizedMappings
+        save_data["current_model"] = self.model.to_string()
+        save_data["template_raw_model"] = self.model._raw
+
+        save_data["input_data_path"] = self.input.path
+

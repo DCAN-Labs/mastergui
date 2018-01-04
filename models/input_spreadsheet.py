@@ -11,7 +11,8 @@ import time
 
 class InputSpreadsheet():
     def __init__(self, path):
-        # todo detect extension (.csv, .xls) and treat appropriately
+        self.path = path
+
         path = path.strip()
         if path[-4:].lower() == ".csv":
             self._data = pd.read_csv(path)
@@ -149,6 +150,9 @@ class InputSpreadsheet():
 
             base_df.fillna(standard_missing_char, inplace = True)
             self.save_dataframe(base_df, output_path_prefix + "." + str(voxel_idx) + ".csv")
+
+            if self.cancelling:
+                return
 
     def getBaseDataFrame(self, only_save_columns, path_to_voxel_mappings):
         if len(only_save_columns) > 0:

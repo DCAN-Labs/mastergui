@@ -12,15 +12,20 @@ include_col_idx = 4
 
 
 class DataPreviewWidget(QWidget):
-    def __init__(self):
+    def __init__(self, parentAnalysisWindow = None):
         super(DataPreviewWidget, self).__init__()
 
+        self.parentAnalysisWindow = parentAnalysisWindow
         self.default_missing_tokens_list = ["-888", "-888.0", "NA", ".", "", "nan"]
 
         layout = QVBoxLayout()
         layout.addWidget(QLabel("Non-imaging Data File:"))
         self.filePathWidget = QLineEdit()
         layout.addWidget(self.filePathWidget)
+
+        self.btnBrowse = QPushButton("Browse")
+        layout.addWidget(self.btnBrowse)
+        self.btnBrowse.clicked.connect(self.on_click_browse)
 
         layout.addWidget(QLabel("Missing Data Tokens:"))
         self.missingDataTokens = QLineEdit()
@@ -38,6 +43,12 @@ class DataPreviewWidget(QWidget):
         self.setLayout(layout)
 
         self.voxelized_columns = []
+
+    def on_click_browse(self):
+
+        if self.parentAnalysisWindow is not None:
+            self.parentAnalysisWindow.openDataFileDialog()
+
 
     def clickHighlighting(self):
         self.render_dataframe(self.data)

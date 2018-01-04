@@ -8,7 +8,7 @@ class MplusTemplate():
         if 'name' in template_info:
             name = template_info['name']
         else:
-            name = "Unnamed Template %s" % p
+            name = "Unnamed Template %s" % path
         self.name = name
         self.data = template_info
 

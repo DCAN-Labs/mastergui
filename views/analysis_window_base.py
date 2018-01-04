@@ -65,6 +65,8 @@ class AnalysisWindow(QWidget):
         self.input = input_spreadsheet.InputSpreadsheet(path)
         self.updateUIAfterInput()
         self.dataPreview.render_dataframe(self.input._data, path)
+        self.analysis.input = self.input
+
         # except:
         #    self.alert("Error while opening file " + path)
 
@@ -115,3 +117,42 @@ class AnalysisWindow(QWidget):
         container.addWidget(button)
 
         return button
+
+    def save(self):
+        print("SAVE!")
+        if hasattr(self,'savedFilePath') and len(self.savedFilePath)>0:
+            print('save existing path')
+        else:
+            savefile, ok = QFileDialog.getSaveFileName(self)
+            self.analysis.save(savefile)
+            self.savedFilePath = savefile
+
+    def open(self,file_contents, from_path):
+        print("opening ")
+        print(file_contents)
+        self.savedFilePath = from_path
+        self.handle_open(file_contents)
+
+    def handle_open_specifically(self,file_contents):
+        """for subclass overriding"""
+        print("implement in subclass")
+
+    def loadAnalysis(self, analysis):
+        self.analysis = analysis
+
+    def loadAnalysisSpecifics(self):
+        print("override in subclass")
+
+    def closeEvent(self, event):
+
+        close_msg = "Save this analysis before closing?"
+        reply = QMessageBox.question(self, 'Message',
+                                           close_msg, QMessageBox.Yes, QMessageBox.No)
+
+        if reply == QMessageBox.Yes:
+            self.save()
+            event.accept()
+        elif reply == QMessageBox.Cancel:
+            event.ignore()
+        else:
+            event.accept()

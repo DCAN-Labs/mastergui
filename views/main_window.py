@@ -1,8 +1,15 @@
 import sys
 import os
-from views.mplus_analysis_window import *
+from views.mplus.mplus_analysis_window import *
+from views.palm.palm_analysis_window import *
+from views.fconnanova.fconnanova_analysis_window import *
+from views.analysis_window_base import *
 from models import config
-from views import mplus_analysis_window
+from models.analysis import *
+from models.fconnanova_analysis import *
+from models.mplus_analysis import *
+from models.palm_analysis import  *
+#from views import mplus_analysis_window
 from views import other_analysis
 
 
@@ -91,26 +98,28 @@ class MasterGuiApp(QMainWindow):
         openfile, ok = QFileDialog.getOpenFileName(self)
 
         if openfile:
-            self.handle_open_action(openfile)
-        else:
-            print("something not ok")
+
+            analysis = Analysis.load(openfile,self.config)
+
+            if analysis is not None:
+                if type(analysis) is MplusAnalysis:
+                    self.new_mplus_analysis(analysis)
+
 
     def save_action(self):
-        savefile, ok = QFileDialog.getSaveFileName(self)
-        if savefile:
-            self.handle_save_action(savefile)
 
-    def handle_open_action(self, filename):
+        active = self.activeAnalysisWindow()
+        if active is not None:
+            active.save()
 
-        if self.mdimode:
-            # todo discern what window to send command to if any
-            self.mdi.activeSubWindow().widget().handle_open_action(filename)
+    def activeAnalysisWindow(self):
+        win = self.mdi.activeSubWindow()
+        if win is not None:
+            for w in win.children():
+                if isinstance(w,AnalysisWindow):
+                    return w
         else:
-            # default is to hand it to the running window
-            self.graphapp.handle_open_action(filename)
-
-    def handle_save_action(self, filename):
-        self.graphapp.handle_save_action(filename)
+            return None
 
     def menu_item(self, caption, statustip, shortcut, icon, connected_method):
         action = QAction(QIcon(icon), caption, self)
@@ -131,7 +140,7 @@ class MasterGuiApp(QMainWindow):
         self.menuBar().setNativeMenuBar(False)
 
         filemenu_metadata = [
-            ['&New', 'New Analysis', 'Ctrl+N', 'exit.png', self.new_mplus_analysis],
+            ['&New', 'New Analysis', 'Ctrl+N', 'exit.png', self.on_click_new_mplus_analysis],
             ['&Open', 'Open', 'Ctrl+O', 'exit.png', self.open_action],
             ['&Save', 'Save', 'Ctrl+S', 'exit.png', self.save_action],
             ['&Exit', 'Exit Application', 'Ctrl+Q', 'exit.png', qApp.quit]
@@ -140,18 +149,30 @@ class MasterGuiApp(QMainWindow):
         for m in filemenu_metadata:
             fileMenu.addAction(self.menu_item(*m))
 
-    def new_mplus_analysis(self):
+    def on_click_new_mplus_analysis(self):
+        self.new_mplus_analysis()
 
-        analysis = mplus_analysis_window.MplusAnalysisWindow(self.config)
+    def new_mplus_analysis(self, analysis = None):
+
+        analysis_window = MplusAnalysisWindow(self.config)
+
+        if analysis is not None:
+            analysis_window.loadAnalysis(analysis)
+
+        self.displayNewAnalysis(analysis_window)
+
+    def new_palm_analysis(self):
+
+        analysis = PalmAnalysisWindow(self.config)
 
         self.displayNewAnalysis(analysis)
 
-    def new_other_analysis(self):
 
-        analysis = other_analysis.OtherAnalysisWindow(self.config)
+    def new_fconnanova_analysis(self):
+
+        analysis = FconnanovaAnalysisWindow(self.config)
 
         self.displayNewAnalysis(analysis)
-
 
     def displayNewAnalysis(self,analysis):
         if self.mdimode:
@@ -167,14 +188,20 @@ class MasterGuiApp(QMainWindow):
     def init_toolbars(self):
         mplusAction = QAction('Mplus', self)
         mplusAction.setShortcut('Ctrl+M')
-        mplusAction.triggered.connect(self.new_mplus_analysis)
+        mplusAction.triggered.connect(self.on_click_new_mplus_analysis)
 
-        otherAction = QAction('Other Analysis Type (Demo)', self)
-        otherAction.triggered.connect(self.new_other_analysis)
+        palmAction = QAction('Palm Analysis', self)
+        palmAction.setShortcut('Ctrl+P')
+        palmAction.triggered.connect(self.new_palm_analysis)
+
+        fconnanovaAction = QAction('FCONNANOVA Analysis', self)
+        fconnanovaAction.setShortcut('Ctrl+F')
+        fconnanovaAction.triggered.connect(self.new_fconnanova_analysis)
 
         self.analysistoolbar = self.addToolBar('analysis_toolbar')
         self.analysistoolbar.addAction(mplusAction)
-        self.analysistoolbar.addAction(otherAction)
+        self.analysistoolbar.addAction(palmAction)
+        self.analysistoolbar.addAction(fconnanovaAction)
 
 
 """
