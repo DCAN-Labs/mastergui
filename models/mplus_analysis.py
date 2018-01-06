@@ -11,11 +11,20 @@ import queue
 from models.analysis import *
 
 class MplusAnalysis(Analysis):
-    def __init__(self, config, filename=""):
+    def __init__(self, config, filename="", saved_data = None):
         super(MplusAnalysis, self).__init__(config,"mplus",filename)
         self.required_config_keys = ['default_maps', 'Base_cifti_for_output', 'MPlus_command', 'output_dir']
         self.limit_by_voxel = -1
         self.limit_by_row = -1
+        if saved_data is not None:
+            # then we are loading from a saved file.
+
+            #todo load all the attributes from the save file
+            if "input_data_path" in saved_data:
+                self.input_data_path = saved_data["input_data_path"]
+
+            self.loaded_from_data = saved_data
+
 
     def updateGeneratedMPlusInputFile(self, save_to_path, add_voxel_column_name=None):
         columns = self.input.columnnames()
@@ -301,8 +310,8 @@ class MplusAnalysis(Analysis):
         save_data["voxelizedMappings"] = self.model.voxelizedMappings
         save_data["current_model"] = self.model.to_string()
         save_data["template_raw_model"] = self.model._raw
-
-        save_data["input_data_path"] = self.input.path
+        if hasattr(self,"input"):
+            save_data["input_data_path"] = self.input.path
 
     def cancelAnalysis(self):
         """attempt to cancel the running analyis"""

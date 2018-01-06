@@ -435,6 +435,16 @@ class MplusAnalysisWindow(AnalysisWindow):
         # (exctype, value, traceback.format_exc())
         self.appendTextToOutputDisplay("Error! %s" % exception_info[1])
 
+    def loadAnalysisModuleSpecific(self):
+        """for overriding in subclasses"""
+        if hasattr(self.analysis, "loaded_from_data"):
+            saved_state = self.analysis.loaded_from_data
+            if "template_raw_model" in saved_state:
+                self.onSelectTemplate(saved_state["template_raw_model"])
+            if "current_model" in saved_state:
+                self.generatedModelViewer.setText(saved_state["current_model"])
+
+
     def runAnalysisBackgroundWorker(self, progress_callback, finished_callback, error_callback):
         # for testing, halt after n rows of data processing. Set to 0 to do everything.
         halt_after_n = int(self.config.getOptional('testing_halt_after_n_voxels', 0))

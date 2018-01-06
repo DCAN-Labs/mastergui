@@ -12,6 +12,6 @@ import queue
 from models.analysis import *
 
 class FconnanovaAnalysis(Analysis):
-    def __init__(self, config, filename = ""):
+    def __init__(self, config, filename = "", saved_data = None):
         super(FconnanovaAnalysis, self).__init__(config, "fconnanova", filename)
         self.required_config_keys = ['output_dir']

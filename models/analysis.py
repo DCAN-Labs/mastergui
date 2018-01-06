@@ -72,11 +72,11 @@ class Analysis():
         module_name = load_data["module"]
 
         if module_name == "mplus":
-            a = models.mplus_analysis.MplusAnalysis(config, filename)
+            a = models.mplus_analysis.MplusAnalysis(config, filename, load_data)
         elif module_name == "palm":
-            a = models.palm_analysis.PalmAnalysis(config, filename)
+            a = models.palm_analysis.PalmAnalysis(config, filename, load_data)
         elif module_name == "fconnanova":
-            a = models.fconnanova_analysis.FconnanovaAnalysis(config, filename)
+            a = models.fconnanova_analysis.FconnanovaAnalysis(config, filename, load_data)
         else:
             raise ValueError("unknown module name: %s " % module_name)
         return a

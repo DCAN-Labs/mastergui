@@ -3,6 +3,8 @@ from models import cifti
 from models import ciftiset
 import numpy as np
 import pandas as pd
+import logging
+
 
 class MplusModel():
     def __init__(self, path=""):
@@ -167,6 +169,35 @@ class MplusModel():
 
         return all_results_df
 
+    def aggregate_results_by_line_number(self, n_elements, path_template, line_matching_info):
+        """
+        parse results out of the per-voxel output files and aggregate them into cifti files. it accepts a list
+        of fields to extract from the outputs and there must be one Cifti instance provided per field as
+        we only write one given output field to one cifti at present
+        :param inputspreadsheet:
+        :param path_template:
+        :param look_for_fields:
+        :param ciftis:
+        :return: a pandas data frame with the extracted values from the mplus output files
+        """
+
+        all_found_results = np.zeros((n_elements, len(line_matching_info)), dtype=np.float32)
+        all_found_results[:] = np.nan
+
+        for i in range(n_elements):
+            path = path_template % str(i)  # + ".voxel" + str(i) + ".inp.out"
+            results = self.extract_mplus_output_by_line_number(path, line_matching_info)
+            for j in range(len(line_matching_info)):
+                name = line_matching_info[j][2]
+                # todo how to handle NA's if field not found in results?
+                value = results[name]
+                all_found_results[i,j] = value
+
+        column_names = [m[2] for m in line_matching_info]
+        all_results_df = pd.DataFrame(all_found_results, columns = column_names)
+
+        return all_results_df
+
     def parse_mplus_results(self, path, look_for_fields=[]):
 
         seeking = len(look_for_fields)
@@ -187,5 +218,55 @@ class MplusModel():
                             break
                 if found == seeking:
                     break
+
+        return values
+
+
+    def extract_mplus_output_by_line_number(self, path, line_matching_info):
+        """
+        line_matching_info: tuple of form (line_number, sample_line, output name)
+        """
+        seeking = len(line_matching_info)
+        found = 0
+        values = {}
+        with open(path, "r") as f:
+            lines = f.readlines()
+
+        for match in line_matching_info:
+            line_number = match[0]
+            sample_line = match[1]
+            output_name = match[2]
+
+            found = False
+            tries = 0
+            while tries < 5:
+
+                line = lines[line_number]
+                line_split = line.strip().split(" ")
+                sample_split = sample_line.strip().split(" ")
+
+                if line_split[0] == sample_split[0]:
+
+                    last_value_in_line = line_split[-1]
+                    try:
+                        value = float(last_value_in_line)
+                    except:
+                        value = -999
+                        err_msg = "Error extracting number for line %d of %s. Expected: \n%s, found: \n%s" % (line_number, path, sample_line, line)
+                        logging.error(err_msg)
+
+                        #raise ValueError(err_msg)
+
+                    values[output_name] =  value
+                    found = True
+                    break
+                else:
+                    line_number += 1
+                    tries+=1
+            if not found:
+                err_msg = "Mplus Output File Line %d in file %s in unexpected shape. Expected: \n%s, found: \n%s" % (line_number, path, sample_line, line)
+                logging.error(err_msg)
+                values[output_name] = -888
+                #raise ValueError(err_msg)
 
         return values

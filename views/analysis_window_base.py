@@ -3,8 +3,8 @@ from PyQt5.QtGui import *
 from models import *
 import glob
 import os
-from views.template_chooser_widget import *
 from models import input_spreadsheet
+from views.template_chooser_widget import *
 
 
 class AnalysisWindow(QWidget):
@@ -140,6 +140,14 @@ class AnalysisWindow(QWidget):
 
     def loadAnalysis(self, analysis):
         self.analysis = analysis
+        if hasattr(analysis,"input_data_path"):
+            self.open_input_file(analysis.input_data_path)
+        self.loadAnalysisModuleSpecific()
+        #todo load all attributes from saved file format
+
+    def loadAnalysisModuleSpecific(self):
+        """for overriding in subclasses"""
+        print("override to map module specific attributes from saved data file")
 
     def loadAnalysisSpecifics(self):
         print("override in subclass")
