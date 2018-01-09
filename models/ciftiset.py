@@ -1,4 +1,5 @@
 from models.cifti import *
+from models.cifti_matrix import *
 import os
 import numpy as np
 import threading
@@ -23,12 +24,13 @@ class CiftiSet():
         #so somewhat arbitrarily we will assume that the first one in the list of
         #cifti paths has the correct size and compare all subsequent ones to taht
         first_path = self._path_list[0]
-        c = Cifti(first_path)
+        c = CiftiMatrix(first_path)
         m = c.matrix
-        allCiftiMatrix = np.zeros((len(self._path_list), m.shape[1]))
+        size = m.size
+        allCiftiMatrix = np.zeros((len(self._path_list), m.size))
         allCiftiMatrix[:] = np.nan
-        self._voxel_count = m.shape[1]
-        self.cifti_shape= m.shape
+        self._voxel_count = size
+        self.cifti_size= size
 
         self.matrix = allCiftiMatrix
 
@@ -85,18 +87,18 @@ class CiftiSet():
 
                 start_time = time.time()
 
-                c = Cifti(path)
+                c = CiftiMatrix(path)
                 end_time = time.time()
                 print("time to read cifti : %s sec " % (end_time - start_time))
                 m = c.matrix
 
-                if m.shape != self.cifti_shape:
+                if c.size != self.cifti_size:
                     raise ValueError('Cifti Matrix Size Mismatch',
                                      "%s with a shape of %s does not match the others with a shape of %s" % (
-                                         path, str(m.shape), str(self.cifti_shape)))
+                                         path, str(c.size), str(self.cifti_size)))
 
                 start_time = time.time()
-                voxels_from_cifti = c.matrix[0, :]
+                voxels_from_cifti = c.data #matrix[0, :]
 
                 with threading.Lock():
                     self.matrix[row_index, :] = voxels_from_cifti
@@ -113,4 +115,4 @@ class CiftiSet():
     @property
     def voxel_count(self):
         """returns the number of elements in the vector"""
-        return self._voxel_count
+        return self.cifti_size

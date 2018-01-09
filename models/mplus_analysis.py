@@ -299,12 +299,6 @@ class MplusAnalysis(Analysis):
 
         return result
 
-    def base_cifti_for_output(self):
-        output_cifti = Cifti(self.config._data["Base_cifti_for_output"])
-
-        output_cifti.nullify()
-
-        return output_cifti
 
     def module_specific_save_data(self, save_data):
         save_data["voxelizedMappings"] = self.model.voxelizedMappings

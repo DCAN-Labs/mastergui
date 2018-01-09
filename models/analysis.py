@@ -5,6 +5,8 @@ import os
 import json
 import models.mplus_analysis
 #import models.palm_analysis
+from models.cifti import *
+from models.cifti_matrix import *
 
 
 class Analysis():
@@ -19,6 +21,7 @@ class Analysis():
         self.config = config
         self.required_config_keys = []
         self.filename = filename
+        self.execution_history = []
         self.cancelling = False
 
     @property
@@ -52,7 +55,7 @@ class Analysis():
 
     def save(self, filename):
 
-        save_data = {"title":"mytitle", "module":self.module_name, "version":0.1}
+        save_data = {"title":"mytitle", "module":self.module_name, "version":0.1, "execution_history":self.execution_history}
 
         self.module_specific_save_data(save_data)
 
@@ -62,6 +65,31 @@ class Analysis():
     def module_specific_save_data(self, save_data):
         """override in subclasses, add any attributes to save_data dictionary that should be included in the saved json file"""
         print("override in subclasses, add any attributes to save_data dictionary that should be included in the saved json file")
+
+    def add_execution_history(self, output_dir, limit_by_voxel, limit_by_row):
+        history_record = {"output_dir":output_dir, "limit_by_voxel":limit_by_voxel, "limit_by_row":limit_by_row}
+        self.execution_history.append(history_record)
+
+    def base_cifti_for_output(self):
+        output_cifti = Cifti(self.config._data["Base_cifti_for_output"])
+
+        output_cifti.nullify()
+
+        return output_cifti
+
+    def generate_ciftis_from_csv(self, csv_path):
+        data = pd.read_csv(csv_path)
+        self.generate_ciftis_from_dataframe(data)
+
+    def generate_ciftis_from_dataframe(self, data):
+
+        for c in data.columns:
+            cifti = self.base_cifti_for_output()
+            cifti.setVector(data[c])
+            cifti_output_path = os.path.join(self.output_path ,c,".dscalar.nii")
+            cifti.save(cifti_output_path)
+
+
 
     @classmethod
     def load(self, filename, config):
@@ -79,4 +107,8 @@ class Analysis():
             a = models.fconnanova_analysis.FconnanovaAnalysis(config, filename, load_data)
         else:
             raise ValueError("unknown module name: %s " % module_name)
+
+        if "execution_history" in load_data:
+            if len(self.execution_history) == 0:  #if the subclass hadn't already processed the load history add it in its raw form
+                a.execution_history = load_data.execution_history
         return a

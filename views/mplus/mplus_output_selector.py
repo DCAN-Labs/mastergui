@@ -6,6 +6,7 @@ import os
 import numpy as np
 from views.output_browser import *
 from views import view_utilities
+import sys
 
 class MplusOutputSelector(OutputBrowserWidget):
     def __init__(self, parentAnalysisWidget):
@@ -102,16 +103,14 @@ class MplusOutputSelector(OutputBrowserWidget):
     def extract(self):
         try:
             selected = self.selectedOutputRows()
-            print(selected)
+
             path_template_for_data_including_voxel = os.path.join(self.output_dir,"input.voxel%s.inp.out")
 
-            results = self.parentAnalysisWidget.model.aggregate_results_by_line_number(10, path_template_for_data_including_voxel, selected)
+            results = self.parentAnalysisWidget.model.aggregate_results_by_line_number(91282, path_template_for_data_including_voxel, selected)
             results.to_csv(os.path.join(self.output_dir,"extracted.csv"), index=False)
 
-            for col in results.column:
-                cifti = self.parentAnalysisWidget.analysis.base_cifti_for_output()
-                #todo reassign values from dataframe in the cifti vector.
-                #save file
+            self.parentAnalysisWidget.analysis.generate_ciftis_from_dataframe(results)
 
         except:
-            print("Uh oh")
+            self.parentAnalysisWidget.alert(sys.exc_info()[1])
+            return
