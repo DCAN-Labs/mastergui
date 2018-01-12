@@ -106,8 +106,21 @@ class MplusOutputSelector(OutputBrowserWidget):
 
             path_template_for_data_including_voxel = os.path.join(self.output_dir,"input.voxel%s.inp.out")
 
-            results = self.parentAnalysisWidget.model.aggregate_results_by_line_number(91282, path_template_for_data_including_voxel, selected)
+            input =  self.parentAnalysisWidget.input
+            analysis = self.parentAnalysisWidget.analysis
+
+
+            if analysis.limit_by_voxel>0:
+                cifti_vector_size = analysis.limit_by_voxel
+            else:
+                if hasattr(input,"cifti_vector_size"):
+                    cifti_vector_size = input.cifti_vector_size
+                else:
+                    cifti_vector_size = 0
+
+            results = self.parentAnalysisWidget.model.aggregate_results_by_line_number(cifti_vector_size, path_template_for_data_including_voxel, selected)
             results.to_csv(os.path.join(self.output_dir,"extracted.csv"), index=False)
+
 
             self.parentAnalysisWidget.analysis.generate_ciftis_from_dataframe(results)
 

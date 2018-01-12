@@ -14,6 +14,7 @@ class InputSpreadsheet():
         self.path = path
 
         path = path.strip()
+        self.wb_command_prefix = ""
         if path[-4:].lower() == ".csv":
             self._data = pd.read_csv(path)
         else:
@@ -76,21 +77,26 @@ class InputSpreadsheet():
             raise ValueError("%i paths to ciftis are not valid" % len(invalid_paths))
 
     def loadCiftiSetFromMapping(self, mapping_tuple):
-        source_col_name = mapping_tuple[0]
+        try:
+            source_col_name = mapping_tuple[0]
 
-        paths = list(self._data[source_col_name])
+            paths = list(self._data[source_col_name])
 
-        #in testing mode we can limit how many actual ciftis are loaded for time savings
+            #in testing mode we can limit how many actual ciftis are loaded for time savings
 
-        if self.limit_by_row > 0:
-            paths = paths[0:self.limit_by_row]
+            if self.limit_by_row > 0:
+                paths = paths[0:self.limit_by_row]
 
-        ciftiSet = ciftiset.CiftiSet(paths)
+            ciftiSet = ciftiset.CiftiSet(paths, self.wb_command_prefix)
 
-        with threading.Lock():
-            self.ciftiSets[source_col_name] = ciftiSet
+            with threading.Lock():
+                self.ciftiSets[source_col_name] = ciftiSet
 
-        ciftiSet.load_all()
+            ciftiSet.load_all()
+        except Exception as e:
+            with threading.Lock():
+                self.loadCiftiErrors.append(e)
+
 
     def cancelAnalysis(self):
         """attempt to cancel the running analyis"""
@@ -197,13 +203,21 @@ class InputSpreadsheet():
         self.ciftiSets = {}
         self.cifti_vector_size = None
         threads = []
+        self.loadCiftiErrors = []
         for mapping in path_to_voxel_mappings:
             # start each io intensive process of loading a ciftiset in a new thread
             t = threading.Thread(target=self.loadCiftiSetFromMapping, args=[mapping])
-            t.start()
+
             threads.append(t)
+            t.start()
+
         for t in threads:
             t.join()
+
+        if len(self.loadCiftiErrors)>0:
+
+            errors_text = str([str(e) for e in self.loadCiftiErrors])
+            raise ValueError("Error Loading Ciftis: %s" % errors_text)
 
         # verify that they are all the same size cifti vectors
         sizes = [v.voxel_count for k, v in self.ciftiSets.items()]

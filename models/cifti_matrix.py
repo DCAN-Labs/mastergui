@@ -6,7 +6,9 @@ import pandas as pd
 import os
 
 class CiftiMatrix():
-    def __init__(self, path):
+    def __init__(self, path, wb_command_path_prefix = ""):
+        # probably not necessary on normal environments but helpful for setting when running from pycharm during development
+        self.wb_command_path_prefix = wb_command_path_prefix
 
         # cift2.load returns a Cifti2Image
         # which inherits from a DataobjImage
@@ -15,7 +17,7 @@ class CiftiMatrix():
         output_path = path + ".csv"
         start_time = time.time()
 
-        result = subprocess.run(["wb_command", "-cifti-convert", "-to-text", path, output_path])
+        result = subprocess.run([os.path.join(self.wb_command_path_prefix, "wb_command"), "-cifti-convert", "-to-text", path, output_path])
 
         data_file = pd.read_csv(output_path)
 

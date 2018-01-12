@@ -122,7 +122,7 @@ class PalmAnalysisWindow(AnalysisWindow):
 
         self.initExecAnalysisWidget()
 
-        self.palmReaderOptions = PalmReaderOptions()
+        self.palmReaderOptions = PalmReaderOptions(self)
 
         self.addTab(self.dataPreview, "Input Data Review")
         self.addTab(self.palmReaderOptions, "PalmReader Options")

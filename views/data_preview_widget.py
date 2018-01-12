@@ -166,10 +166,6 @@ class DataPreviewWidget(QWidget):
         t.setVerticalHeaderItem(missing_idx, QTableWidgetItem("% Missing:"))
         t.setVerticalHeaderItem(include_col_idx, QTableWidgetItem("Include In Model:"))
 
-        f = QFont()
-        f.setBold(True)
-        # t.verticalHeader().setFont(f)
-
         for j in range(len(data.columns)):
 
             self.setupComputedCellsForCol(j)

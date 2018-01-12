@@ -4,11 +4,12 @@ from PyQt5.QtGui import *
 import glob
 import os
 import numpy as np
+from views.view_utilities import *
 
-
+from views.widgets.column_chooser import *
 
 class PalmReaderOptions(QWidget):
-    def __init__(self):
+    def __init__(self, parentAnalysisWindow):
         super(PalmReaderOptions, self).__init__()
         # AnalysisType
         # *'NumFactors'* -- an required scalar for between subject and combined ANOVAs
@@ -33,6 +34,7 @@ class PalmReaderOptions(QWidget):
         # Regressors will be automatically mean-centered, in case one forgot to do
         # so.
 
+        self.parentAnalysisWindow = parentAnalysisWindow
         params = [("NumFactors","scalar"),("LevelsPerFactor","vector"),
          ("NumRepeatedMeasures","scalar"),("Groups","vector"),
          ("SaveOuput","string"),("RegressorVector","vector")]
@@ -63,11 +65,21 @@ class PalmReaderOptions(QWidget):
 
         self.formGroupBox.setLayout(form_layout)
 
+        columnChooser = addButton("Add Categorical Variable",layout,self.test_column_chooser)
+        columnChooser2 = addButton("Add Scalar Variable", layout, self.test_column_chooser)
         layout.addWidget(self.formGroupBox)
         self.setLayout(layout)
 
         self.output_dir = ""
         self.pattern = ""
+
+    def test_column_chooser(self):
+
+        if hasattr(self.parentAnalysisWindow,"input"):
+            x = ColumnChooser(self.parentAnalysisWindow, self.parentAnalysisWindow.dataPreview)
+            x.setWindowModality(Qt.WindowModal)
+            x.show()
+            x.exec_()
 
     def createRadioButtons(self):
         #comments from PalmReader.m 1/3/18

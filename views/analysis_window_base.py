@@ -63,6 +63,11 @@ class AnalysisWindow(QWidget):
     def open_input_file(self, path):
         # try:
         self.input = input_spreadsheet.InputSpreadsheet(path)
+
+        wb_command_prefix = self.config.getOptional("wb_command_path_prefix","")
+        if len(wb_command_prefix) > 0:
+            self.input.wb_command_prefix = wb_command_prefix
+
         self.updateUIAfterInput()
         self.dataPreview.render_dataframe(self.input._data, path)
         if hasattr(self,"analysis"):
@@ -128,11 +133,24 @@ class AnalysisWindow(QWidget):
             self.analysis.save(savefile)
             self.savedFilePath = savefile
 
+    def addToRecentFileList(self, path):
+        path = self.config.getOptional("recent_files_path", "mastergui_recents")
+        if os.path.exists(path):
+            with open(path, 'r') as f:
+                files = f.readlines()
+                files.append(path)
+        else:
+            files = [path]
+
+        with open(path, 'w') as f:
+            f.writelines(files)
+
     def open(self,file_contents, from_path):
         print("opening ")
         print(file_contents)
         self.savedFilePath = from_path
         self.handle_open(file_contents)
+
 
     def handle_open_specifically(self,file_contents):
         """for subclass overriding"""

@@ -4,6 +4,8 @@ from views.mplus.mplus_analysis_window import *
 from views.palm.palm_analysis_window import *
 from views.fconnanova.fconnanova_analysis_window import *
 from views.analysis_window_base import *
+from views.splash_window import *
+from views.view_utilities import *
 from models import config
 from models.analysis import *
 from models.fconnanova_analysis import *
@@ -37,25 +39,29 @@ def excepthook(excType, excValue, tracebackobj):
 # sys.excepthook = excepthook
 
 class MasterGuiApp(QMainWindow):
-    def __init__(self, mdimode=True):
+    def __init__(self):
         super(MasterGuiApp, self).__init__()
 
+        self.load_config()
+
         self.init_ui()
-        self.mdimode = mdimode
 
         self.setGeometry(100, 100, 1200, 1000)
-        # this automatic launch of the mplus analysis is just temporary
-        # while there is only one analysis type available
-        # to facillitate debugging
-        self.load_config()
-        # self.analysis_class = appClass(self.config)
-        # self.analysis_class = other_analysis.OtherAnalysisWindow(self.config)
-        # self.new_mplus_analysis()
 
-        if self.mdimode:
-            self.mdi = QMdiArea()
-            # self.mdi.setViewMode(1)  # tabbed = 1, 0 = regular child windows
-            self.setCentralWidget(self.mdi)
+        self.mdi = QMdiArea()
+
+        self.setCentralWidget(self.mdi)
+
+        self.splash = SplashWindow(self)
+
+        sub = QMdiSubWindow()
+        sub.setWidget(self.splash)
+        self.mdi.addSubWindow(sub)
+        self.mdi.activateNextSubWindow()
+
+        self.splashSubWindow = sub
+
+        sub.showMaximized()
 
     def load_config(self):
         if hasattr(sys.modules['__main__'], "__file__"):
@@ -77,10 +83,17 @@ class MasterGuiApp(QMainWindow):
         if len(title) > 0:
             sub.setWindowTitle(title)
 
-        self.mdi.addSubWindow(sub)
-        self.mdi.activateNextSubWindow()
 
-        sub.showMaximized()
+        self.mdi.addSubWindow(sub)
+
+        self.splashSubWindow.showMinimized()
+
+        sub.show()
+
+        self.mdi.setActiveSubWindow(sub)
+
+        aw = self.mdi.activeSubWindow()
+        self.mdi.cascadeSubWindows()
 
     def init_ui(self):
         self.init_menus()
@@ -98,12 +111,41 @@ class MasterGuiApp(QMainWindow):
         openfile, ok = QFileDialog.getOpenFileName(self)
 
         if openfile:
+            self.open_file(openfile)
 
-            analysis = Analysis.load(openfile,self.config)
 
-            if analysis is not None:
-                if type(analysis) is MplusAnalysis:
-                    self.new_mplus_analysis(analysis)
+    def open_file(self, openfile):
+
+        #self.splash.showMinimized()
+        analysis = Analysis.load(openfile, self.config)
+
+        if analysis is not None:
+            if type(analysis) is MplusAnalysis:
+                self.new_mplus_analysis(analysis)
+        self.addToRecentFileList(openfile)
+
+    def addToRecentFileList(self, path):
+        recents_path = self.config.getOptional("recent_files_path", "mastergui_recents")
+
+        if os.path.exists(recents_path):
+            with open(recents_path, 'r') as f:
+                files = f.readlines()
+                files.insert(0,path)
+
+                unique_tracker = {}
+                unique_files = []
+                for p in files:
+                    p = p.strip()
+                    if len(p)>0:
+                        if not p in unique_tracker:
+                            unique_files.append(p)
+                            unique_tracker[p] = True
+        else:
+            unique_files = [path]
+
+
+        with open(recents_path, 'w') as f:
+            f.writelines("\n".join(unique_files))
 
 
     def save_action(self):
@@ -175,10 +217,8 @@ class MasterGuiApp(QMainWindow):
         self.displayNewAnalysis(analysis)
 
     def displayNewAnalysis(self,analysis):
-        if self.mdimode:
-            self.add_analysiswindow_as_subwindow(analysis)
-        else:
-            self.setCentralWidget(analysis)
+
+        self.add_analysiswindow_as_subwindow(analysis)
 
     def alert(self, txt):
         errorbox = QMessageBox()
@@ -199,10 +239,36 @@ class MasterGuiApp(QMainWindow):
         fconnanovaAction.triggered.connect(self.new_fconnanova_analysis)
 
         self.analysistoolbar = self.addToolBar('analysis_toolbar')
+
+        for k,v in self.config.getOptional("analyzers", {}).items():
+            action = QAction(v.get("title","(missing analyzer title in config"),self)
+            shortcut = v.get("shortcut","")
+            if len(shortcut)>0:
+                action.setShortcut(shortcut)
+            action.triggered.connect(self.newClickHandler(k))
+            self.analysistoolbar.addAction(action)
+
+
+
         self.analysistoolbar.addAction(mplusAction)
         self.analysistoolbar.addAction(palmAction)
         self.analysistoolbar.addAction(fconnanovaAction)
 
+    def newClickHandler(self,module_name):
+        return lambda:self.new_analysis(module_name)
+
+    def new_analysis(self, module_name):
+        if module_name == "mplus":
+            analysis = MplusAnalysisWindow(self.config)
+        elif module_name == "palm":
+            analysis = PalmAnalysisWindow(self.config)
+        elif module_name == "fconnanova":
+            analysis = FconnanovaAnalysisWindow(self.config)
+        else:
+            self.alert("Unrecognized module name %s" % module_name)
+            return
+
+        self.displayNewAnalysis(analysis)
 
 """
 Modify base on:

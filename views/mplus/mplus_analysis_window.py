@@ -485,16 +485,25 @@ class MplusAnalysisWindow(AnalysisWindow):
         else:
             cifti_output_path = ""
 
-        if len(cifti_output_path) > 0 and not self.cancelling:
-            if self.chkAutoLaunchWorkbench.isChecked():
+        selected_outputs = self.outputSelector.selectedOutputRows()
 
-                if hasattr(self, 'analysis'):
-                    self.appendTextToOutputDisplay("Opening output file %s in Connectome Workbench" % cifti_output_path)
+        if len(selected_outputs)==0:
+            msg = "Analysis complete but no output fields were selected for extraction yet.  Go to the Output Selector tab and select the rows from the MPlus output that you would like aggregated and click Extract."
+            self.appendTextToOutputDisplay(msg)
+            self.alert(msg)
+        else:
+            self.outputSelector.extract()
 
-                    self.launchWorkbench(cifti_output_path)
-            else:
-                self.appendTextToOutputDisplay(
-                    "The output file %s is available for opening in Connectome Workbench" % cifti_output_path)
+            if len(cifti_output_path) > 0 and not self.cancelling:
+                if self.chkAutoLaunchWorkbench.isChecked():
+
+                    if hasattr(self, 'analysis'):
+                        self.appendTextToOutputDisplay("Opening output file %s in Connectome Workbench" % cifti_output_path)
+
+                        self.launchWorkbench(cifti_output_path)
+                else:
+                    self.appendTextToOutputDisplay(
+                        "The output file %s is available for opening in Connectome Workbench" % cifti_output_path)
 
     def runAnalysis(self, limit_by_row=-1, limit_by_voxel=-1):
 

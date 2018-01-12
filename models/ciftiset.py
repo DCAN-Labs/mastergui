@@ -7,10 +7,12 @@ import time
 
 
 class CiftiSet():
-    def __init__(self, path_list):
+    def __init__(self, path_list, wb_command_prefix = ""):
         self._path_list = path_list
         self.ciftis = {}
         self.cancelling = False
+        self.wb_command_prefix = wb_command_prefix
+
 
     def verify_paths(self):
         not_found = []
@@ -23,14 +25,16 @@ class CiftiSet():
         #we need all ciftis to be the same size in a given set.
         #so somewhat arbitrarily we will assume that the first one in the list of
         #cifti paths has the correct size and compare all subsequent ones to taht
+        print("Begein setupmatrix")
         first_path = self._path_list[0]
-        c = CiftiMatrix(first_path)
+        c = CiftiMatrix(first_path, self.wb_command_prefix)
         m = c.matrix
         size = m.size
         allCiftiMatrix = np.zeros((len(self._path_list), m.size))
         allCiftiMatrix[:] = np.nan
         self._voxel_count = size
-        self.cifti_size= size
+        print("Setting ciftisize")
+        self.cifti_size = size
 
         self.matrix = allCiftiMatrix
 
