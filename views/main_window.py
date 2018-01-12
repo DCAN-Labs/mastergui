@@ -226,17 +226,6 @@ class MasterGuiApp(QMainWindow):
         errorbox.exec_()
 
     def init_toolbars(self):
-        mplusAction = QAction('Mplus', self)
-        mplusAction.setShortcut('Ctrl+M')
-        mplusAction.triggered.connect(self.on_click_new_mplus_analysis)
-
-        palmAction = QAction('Palm Analysis', self)
-        palmAction.setShortcut('Ctrl+P')
-        palmAction.triggered.connect(self.new_palm_analysis)
-
-        fconnanovaAction = QAction('FCONNANOVA Analysis', self)
-        fconnanovaAction.setShortcut('Ctrl+F')
-        fconnanovaAction.triggered.connect(self.new_fconnanova_analysis)
 
         self.analysistoolbar = self.addToolBar('analysis_toolbar')
 
@@ -248,11 +237,6 @@ class MasterGuiApp(QMainWindow):
             action.triggered.connect(self.newClickHandler(k))
             self.analysistoolbar.addAction(action)
 
-
-
-        self.analysistoolbar.addAction(mplusAction)
-        self.analysistoolbar.addAction(palmAction)
-        self.analysistoolbar.addAction(fconnanovaAction)
 
     def newClickHandler(self,module_name):
         return lambda:self.new_analysis(module_name)
