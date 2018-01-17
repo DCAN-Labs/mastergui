@@ -21,6 +21,10 @@ class MplusTemplate():
         return self.return_if_exists("instructions")
 
     @property
+    def variables(self):
+        return self.return_if_exists("variables", {})
+
+    @property
     def rawModel(self):
         return self.return_if_exists("rawmodel")
 

@@ -27,6 +27,7 @@ class MplusAnalysis(Analysis):
 
 
     def updateGeneratedMPlusInputFile(self, save_to_path, add_voxel_column_name=None):
+        #todo this doesn't look right, still a single hard coded column name
         columns = self.input.columnnames()
         if add_voxel_column_name is not None:
             columns.append(add_voxel_column_name)
@@ -102,7 +103,7 @@ class MplusAnalysis(Analysis):
         """
         start_time = time.time()
 
-        self.input.prepare_with_cifti(path_to_voxel_mappings, self.output_path, testing_only_limit_to_n_voxels = self.limit_by_voxel, only_save_columns=list(self.model.using_variables), limit_by_row = self.limit_by_row)
+        self.input.prepare_with_cifti(path_to_voxel_mappings, self.output_path, testing_only_limit_to_n_voxels = self.limit_by_voxel, only_save_columns=self.model.input_column_names_in_order, limit_by_row = self.limit_by_row)
 
         time2 = time.time()
         self.progressMessage("Time to read cifti data and prepare csvs with cifti data: %f seconds" % (time2 - start_time))

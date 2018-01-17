@@ -33,7 +33,12 @@ class TemplateChooserWidget(QWidget):
         for p in template_paths:
 
             # template_info = json.load(f, strict=False)
-            template = models.mplus_template.MplusTemplate(p)
+            try:
+                template = models.mplus_template.MplusTemplate(p)
+            except Exception as e:
+                print("Error opening template %s" % p)
+                print(e)
+                continue
 
             while template.name in templates:
                 template.name += "[DupName]"
@@ -84,9 +89,8 @@ class TemplateChooserWidget(QWidget):
             view.setCurrentIndex(model.index(0, 0))
 
     def selectAndContinue(self):
-        raw_model = self.activeTemplate.return_if_exists("rawmodel")
 
-        self.parent.onSelectTemplate(raw_model)
+        self.parent.onSelectTemplate(self.activeTemplate)
 
     def createTemplateViewer(self):
         w = QWidget()

@@ -16,6 +16,8 @@ class MplusModel():
 
         # track a unique list of variables used in the analysis
         self.using_variables = set([])
+        self.input_column_names_in_order = []  #the order of this list MUST correspond to the order of columns in the input data files
+
 
     def load(self, path):
         with open(path, 'r') as f:
@@ -85,6 +87,16 @@ class MplusModel():
         else:
             return "cluster=%s;\n" % self.cluster
 
+    def add_using_variable(self,colname):
+        if not colname in self.using_variables:
+            self.using_variables = self.using_variables.union(set([colname]))
+
+    def add_input_column_name(self,colname):
+        if not colname in self.input_column_names_in_order:
+            self.input_column_names_in_order.append(colname)
+
+
+
     def set_column_names(self, names):
         #        self.mplus_data["VARIABLE"] = (
         #        "Names are %s;\nUSEVARIABLES = %s;\n!auxiliary = #todo, \nMISSING=.;\ncluster= #todo" %
@@ -94,7 +106,22 @@ class MplusModel():
 
         keeping_column_names = [self.getMappedName(name) for name in names if self.getMappedName(name) in self.using_variables]
         self.mplus_data["VARIABLE"] = ("Names are %s;\nUSEVARIABLES = %s;\nMISSING=.;\n%s" %
-                                       ("\n\t".join(keeping_column_names), "\n\t".join(self.using_variables), self.cluster_clause))
+                                       ("\n\t".join(self.input_column_names_in_order), "\n\t".join(self.using_variables), self.cluster_clause))
+
+    def apply_options(self, options_dict):
+        for k, v in options_dict.items():
+            colname = v[0]  # todo this assumes only one element there
+            self.add_input_column_name(colname)
+            self.add_using_variable(colname)
+
+        self.set_column_names(self.input_column_names_in_order)
+
+        generated_mplus_model = self.to_string()
+
+        for k, v in options_dict.items():
+            generated_mplus_model = generated_mplus_model.replace("{{%s}}" % k, str(v[0]))
+
+        return generated_mplus_model
 
     def to_string(self):
         output_str = ""
@@ -128,6 +155,9 @@ class MplusModel():
         self.mplus_data["MODEL"] = self.rules_to_s()
         # self.mplus_data["MODEL:"] = self.rules_to_s()
         self.using_variables = self.using_variables.union(set(fields_from + fields_to))
+
+        for colname in (fields_from + fields_to):
+            self.add_input_column_name(colname)
 
     def rules_to_s(self):
         return "\n".join(self.rules)

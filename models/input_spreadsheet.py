@@ -180,18 +180,27 @@ class InputSpreadsheet():
                 return
 
     def getBaseDataFrame(self, only_save_columns, path_to_voxel_mappings):
+
+        #the presence of only_save_columns list means not all columns of the original source data
+        #will be saved in the voxelized files daa
+
+        list_of_original_source_columns_only = []
         if len(only_save_columns) > 0:
             for mapping in path_to_voxel_mappings:
                 target_new_column_name = mapping[1]
                 if target_new_column_name in only_save_columns:
                     only_save_columns.remove(target_new_column_name)
+
+        generated_column_names = [mapping[1] for mapping in path_to_voxel_mappings]
+        list_of_original_source_columns_only = [colname for colname in only_save_columns if colname not in generated_column_names]
+
+        #it is very important that when the generated columns are added that they match the expected order
+        #mplus does not have column names in the input data files
+        #so order must be preserved.
+
         base_df = self._data.copy(deep=True)
-        if len(only_save_columns) > 0:
-            base_df = base_df[only_save_columns]
-        for mapping in path_to_voxel_mappings:
-            source_col_name = mapping[0]
-            if source_col_name in base_df:
-                base_df = base_df.drop(source_col_name, 1)
+
+        base_df = base_df[generated_column_names]
 
         if self.limit_by_row >0:
             base_df = base_df.iloc[0:self.limit_by_row,:]

@@ -76,7 +76,7 @@ class PalmReaderOptions(QWidget):
     def test_column_chooser(self):
 
         if hasattr(self.parentAnalysisWindow,"input"):
-            x = ColumnChooser(self.parentAnalysisWindow, self.parentAnalysisWindow.dataPreview)
+            x = ColumnChooserDialog(self.parentAnalysisWindow.input)
             x.setWindowModality(Qt.WindowModal)
             x.show()
             x.exec_()

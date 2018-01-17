@@ -1,10 +1,6 @@
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
-from views.analysis_window_base import *
-from views.data_preview_widget import *
-from views.output_browser import *
-from views.mplus.mplus_output_selector import *
 import views.workbench_launcher
 import models
 import datetime
@@ -12,6 +8,13 @@ import sys
 import threading
 import traceback
 import time
+from views.analysis_window_base import *
+from views.data_preview_widget import *
+from views.output_browser import *
+from views.mplus.mplus_output_selector import *
+from views.mplus.template_requirements import *
+from views.mplus.mplus_model_builder import *
+
 
 tab_datapreview = 1
 tab_modelbuilder = 2
@@ -158,16 +161,11 @@ class MplusAnalysisWindow(AnalysisWindow):
     def open_mplus_model_raw(self, model_text):
         self.model = models.mplus_model.MplusModel()
         self.model.loadFromString(model_text)
-        self.modelTemplateViewer.setText(model_text)
+        self.modelBuilder.modelTemplateViewer.setText(model_text)
         self.analysis.model = self.model
 
 
 
-    def addInputColumnNamesToListViews(self):
-
-        cols = ["i", "q", "s", "r"] + self.dataPreview.possibleColumnNames()
-        self.addColumnNamesToListView(self.columnSelectA, cols)
-        self.addColumnNamesToListView(self.columnSelectB, cols)
 
 
     def selectedLabelsFromListView(self, list):
@@ -180,53 +178,7 @@ class MplusAnalysisWindow(AnalysisWindow):
                 labels.append(item.text())
         return labels
 
-    def add_rule(self):
 
-        listA = self.selectedLabelsFromListView(self.columnSelectA)
-        listB = self.selectedLabelsFromListView(self.columnSelectB)
-
-        if len(listA) == 0:
-            self.alert("Please select 1 or more values from the list on the right.")
-            return
-
-        if len(listB) == 0 or len(listB) > 1:
-            self.alert("Please select one and only one variable on the right.")
-            return
-
-        operator = self.operatorButtonGroup.checkedButton().text()
-
-        # now it passes the user input to the underlying mplus model object
-        self.model.add_rule(listA, operator, listB)
-
-        self.ruleDisplay.setText(self.model.rules_to_s())
-
-        self.updateGeneratedMPlusInputFile()
-
-        self.dataPreview.update_selected_checks_from_analysis(self.model)
-
-    def createRuleOperatorWidget(self):
-        group = QButtonGroup()
-        groupWidget = QWidget()
-        layout = QVBoxLayout()
-        b1 = QRadioButton("on")
-        b1.setChecked(True)
-        layout.addWidget(b1)
-
-        b2 = QRadioButton("with")
-        layout.addWidget(b2)
-
-        b3 = QRadioButton("restricted")
-        layout.addWidget(b3)
-
-        self.addButton("Add Rule", layout, self.add_rule)
-
-        group.addButton(b1, 1)
-        group.addButton(b2, 2)
-        group.addButton(b3, 3)
-        groupWidget.setLayout(layout)
-
-        self.operatorButtonGroup = group
-        return groupWidget
 
 
 
@@ -245,7 +197,7 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.initExecAnalysisWidget()
 
         self.addTab(self.dataPreview, "Input Data Review")
-        self.addTab(self.modelBuilderTab, "Model Builder")
+        self.addTab(self.modelBuilder, "Model Builder")
         self.addTab(self.execAnalysisWidget, "Execution Tab")
 
         self.outputViewer = OutputBrowserWidget()
@@ -263,7 +215,7 @@ class MplusAnalysisWindow(AnalysisWindow):
     def onTabChanged(self, p_int):
         #print("tab select %d " % p_int)
         if p_int == tab_modelbuilder:
-            self.addInputColumnNamesToListViews()
+            self.modelBuilder.refresh()
         elif p_int == tab_modelbuilder:
             self.dataPreview.update_selected_checks_from_analysis(self.model)
         elif p_int == tab_output:
@@ -283,23 +235,18 @@ class MplusAnalysisWindow(AnalysisWindow):
         :return:
         """
 
-        self.modelBuilderTab = QWidget()
-        self.modelBuilderTabLayout = QHBoxLayout()
-        self.modelBuilderTab.setLayout(self.modelBuilderTabLayout)
+        #self.modelBuilderTab = QWidget()
+        #self.modelBuilderTabLayout = QHBoxLayout()
+        #self.modelBuilderTab.setLayout(self.modelBuilderTabLayout)
 
-        self.modelBuilderTemplateViewTabs = QTabWidget()
+        #self.modelBuilderTemplateViewTabs = QTabWidget()
 
-        self.modelBuilder = QWidget()
-        self.modelBuilderLayout = QVBoxLayout()
-        self.modelBuilderLayout.addWidget(QLabel("Select Covariates"))
-        self.modelBuilder.setLayout(self.modelBuilderLayout)
+        self.modelBuilder = MplusModelBuilder(self)
 
-        self.initModelBuilderPanel()
 
-        self.initModelBuilderViewTabs()
+        #self.modelBuilderTabLayout.addWidget(self.modelBuilder)
+        #self.modelBuilderTabLayout.addWidget(self.modelBuilderTemplateViewTabs)
 
-        self.modelBuilderTabLayout.addWidget(self.modelBuilder)
-        self.modelBuilderTabLayout.addWidget(self.modelBuilderTemplateViewTabs)
 
     def initModelBuilderPanel(self):
 
@@ -396,19 +343,8 @@ class MplusAnalysisWindow(AnalysisWindow):
         container.addWidget(optionsFrame)
 
     def updateUIAfterInput(self):
+        self.modelBuilder.refresh()
 
-        self.addInputColumnNamesToListViews()
-
-    def updateGeneratedMPlusInputFile(self, save_to_path=""):
-        columns = self.input.columnnames()
-
-        self.model.set_voxelized_mappings(self.dataPreview.selected_voxelized_columns())
-
-        self.model.set_column_names(columns)
-
-        generated_mplus_model = self.model.to_string()
-
-        self.generatedModelViewer.setText(generated_mplus_model)
 
     def launchWorkbench(self, cifti_output_path):
         try:
@@ -518,8 +454,6 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.threadpool = QThreadPool()
         print("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount())
 
-        #self.updateGeneratedMPlusInputFile()  #this probably shouldn't be here
-
         self.modelOutput.setText("Starting Analysis...")
 
         self.analysis.setBatchTitle(self.title)
@@ -560,7 +494,12 @@ class MplusAnalysisWindow(AnalysisWindow):
             return
         self.runAnalysis(limit_by_row, limit_by_voxel)
 
-    def onSelectTemplate(self, raw_mplus_model_text):
+    def onSelectTemplate(self, template):
+
+        self.template = template
+
+        raw_mplus_model_text = template.return_if_exists("rawmodel")
+
         self.open_mplus_model_raw(raw_mplus_model_text)
         [self.tabs.setTabEnabled(i, True) for i in range(1, self.tabs.count())]
         self.tabs.setTabEnabled(0, False)
