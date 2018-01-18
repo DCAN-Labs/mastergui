@@ -176,6 +176,15 @@ class MplusModelBuilder(QWidget):
     def on_click_apply_template_variables(self):
         options = self.template_requirements.selectedValues()
 
+        # todo temporary hack until change the list do drop down list, just want one item per
+        # at the moment
+        for k, v in options.items():
+            colname = v[0]
+            options[k] = colname
+
+
+
+
         generated_mplus_model = self.parentAnalysis.model.apply_options(options)
 
         self.generatedModelViewer.setText(generated_mplus_model)

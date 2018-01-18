@@ -25,21 +25,6 @@ class MplusAnalysis(Analysis):
 
             self.loaded_from_data = saved_data
 
-
-    def updateGeneratedMPlusInputFile(self, save_to_path, add_voxel_column_name=None):
-        #todo this doesn't look right, still a single hard coded column name
-        columns = self.input.columnnames()
-        if add_voxel_column_name is not None:
-            columns.append(add_voxel_column_name)
-        self.model.set_column_names(columns)
-
-        #        generated_mplus_model = self.model.to_string()
-        #        self.generatedModelViewer.setText(generated_mplus_model)
-
-        if len(save_to_path) > 0:
-            with open(save_to_path, "w") as f:
-                f.write(self.model.to_string())
-
     @property
     def data_filename(self):
         return "input.csv"
@@ -73,16 +58,16 @@ class MplusAnalysis(Analysis):
 
         self.input = input
 
-        self.input.save_cleaned_data(self.output_path, missing_tokens_list)
+        self.input.cleanMissingValues(missing_tokens_list)
+        self.input.save(self.output_path)
+
 
         self.needCiftiProcessing = len(path_to_voxel_mappings) > 0
-
-
 
         if self.needCiftiProcessing:
             return self.runAnalysisWithCiftiProcessing(path_to_voxel_mappings)
         else:
-            return self.runAnalysis()
+            return self.runAnalysisWithoutCiftiData()
 
     def modelPathByVoxel(self, voxel_idx):
 
@@ -171,9 +156,9 @@ class MplusAnalysis(Analysis):
 
             model_input_file_path = self.modelPathByVoxel(i)
 
-            self.model.datafile = self.data_filename + "." + str(i) + ".csv"
+            datafile_path = self.data_filename + "." + str(i) + ".csv"
 
-            self.updateGeneratedMPlusInputFile(model_input_file_path, add_voxel_column_name="VOXEL")
+            self.model.save_for_datafile(datafile_path, model_input_file_path)
 
             if self.limit_by_voxel > 0 and i >= self.limit_by_voxel - 1:
                 break
@@ -268,16 +253,24 @@ class MplusAnalysis(Analysis):
 
         return True
 
-    def runAnalysis(self):
+    def runAnalysisWithoutCiftiData(self):
         model_filename = "input.inp"
         model_input_file_path = os.path.join(self.batchOutputDir, model_filename)
         model_output_file_path = model_input_file_path + ".out"
-        self.model.datafile = self.data_filename
-        self.updateGeneratedMPlusInputFile(model_input_file_path)
+
+        nonimaging_data_path = self.output_path
+
+        self.input.save(nonimaging_data_path, self.model.input_column_names_in_order)
+
+        self.model.save_for_datafile(self.data_filename, model_input_file_path)
+
         result = self.runMplus(model_input_file_path)
+
         self.mplus_stdout = str(result.stdout, 'utf-8')
+
         with open(model_output_file_path, "r") as f:
             mplus_output_contents = f.read()
+
         return mplus_output_contents
 
     @property

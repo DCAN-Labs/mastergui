@@ -50,9 +50,15 @@ class InputSpreadsheet():
         self._data = output
         return output
 
-    def save_cleaned_data(self, path, list_of_missingvalues, standard_missing_char=".", exclude_columns=[]):
-        cleaned = self.cleanMissingValues(list_of_missingvalues, standard_missing_char, exclude_columns)
-        self.save_dataframe(cleaned, path)
+
+    def save(self, path, filter_by_columns=[]):
+
+        if len(filter_by_columns)>0:
+            d = self._data[filter_by_columns]
+        else:
+            d = self._data
+
+        self.save_dataframe(d, path)
 
     def save_dataframe(self, df, path):
         df.to_csv(path, header=False, index=False, quoting=csv.QUOTE_NONNUMERIC)
@@ -128,7 +134,7 @@ class InputSpreadsheet():
         else:
             upper_bound = self.cifti_vector_size
 
-        num_threads = 1
+        num_threads = 1   #todo parameterize this number
 
         threads = []
 
@@ -200,7 +206,7 @@ class InputSpreadsheet():
 
         base_df = self._data.copy(deep=True)
 
-        base_df = base_df[generated_column_names]
+        base_df = base_df[list_of_original_source_columns_only]
 
         if self.limit_by_row >0:
             base_df = base_df.iloc[0:self.limit_by_row,:]

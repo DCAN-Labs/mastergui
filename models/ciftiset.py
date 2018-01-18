@@ -25,7 +25,7 @@ class CiftiSet():
         #we need all ciftis to be the same size in a given set.
         #so somewhat arbitrarily we will assume that the first one in the list of
         #cifti paths has the correct size and compare all subsequent ones to taht
-        print("Begein setupmatrix")
+
         first_path = self._path_list[0]
         c = CiftiMatrix(first_path, self.wb_command_prefix)
         m = c.matrix
@@ -50,7 +50,7 @@ class CiftiSet():
 
         #todo this would benefit from multiple threads as there is a lot of disk i/o time
 
-        num_threads = 2
+        num_threads = 2 #todo parameterize this number of threads
 
         threads = []
 
@@ -90,8 +90,12 @@ class CiftiSet():
             if os.path.exists(path):
 
                 start_time = time.time()
+                try:
+                    c = CiftiMatrix(path, self.wb_command_prefix)
+                except Exception as e:
+                    print("error loading cifti")
+                    raise ValueError("Error loading cifti at path " + path)
 
-                c = CiftiMatrix(path)
                 end_time = time.time()
                 print("time to read cifti : %s sec " % (end_time - start_time))
                 m = c.matrix
