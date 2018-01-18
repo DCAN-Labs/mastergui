@@ -96,3 +96,12 @@ class ColumnChooser(QWidget):
             # item.setCheckState(check)
             item.setCheckable(True)
             model.appendRow(item)
+
+
+    def selectedRow(self):
+        m = self.columnListWidget.model()
+        idx = self.columnListWidget.selectedIndexes()
+        if len(idx)>0:
+            return m.itemFromIndex(idx[0]).text()
+
+        return None

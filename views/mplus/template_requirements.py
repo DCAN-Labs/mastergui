@@ -13,7 +13,7 @@ import views.view_utilities as util
 
 class TemplateRequirements(QGroupBox):
     def __init__(self):
-        super(TemplateRequirements, self).__init__()
+        super(TemplateRequirements, self).__init__("Template Requirements")
 
     def loadVariablesAsLists(self, variables_from_template, input_spreadsheet):
         self.variables_from_template = variables_from_template

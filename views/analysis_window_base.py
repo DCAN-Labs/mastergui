@@ -155,6 +155,7 @@ class AnalysisWindow(QWidget):
     def loadAnalysisModuleSpecific(self):
         """for overriding in subclasses"""
         print("override to map module specific attributes from saved data file")
+        
 
     def loadAnalysisSpecifics(self):
         print("override in subclass")

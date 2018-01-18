@@ -49,7 +49,11 @@ class ColumnList(QWidget):
         gb.setLayout(buttonLayout)
         layout.addWidget(gb)
 
+    def setAddClickHandler(self, handler):
+        self.btnAdd.clicked.connect(handler)
 
+    def setRemoveClickHandler(self, handler):
+        self.btnRemove.clicked.connect(handler)
 
     def on_click_add(self):
         print("add")
@@ -59,11 +63,11 @@ class ColumnList(QWidget):
 
     def loadValues(self, values):
 
-        self.addColumnNamesToListView(self.columnListWidget, values)
+        self.refreshList(values)
 
-    def addColumnNamesToListView(self, listView, columnNames):
+    def refreshList(self, columnNames):
 
-        model = listView.model()
+        model = self.columnListWidget.model()
 
         model.clear()
 
@@ -73,3 +77,10 @@ class ColumnList(QWidget):
             # item.setCheckState(check)
             item.setCheckable(True)
             model.appendRow(item)
+    def selectedRow(self):
+        m = self.columnListWidget.model()
+        idx = self.columnListWidget.selectedIndexes()
+        if len(idx)>0:
+            return m.itemFromIndex(idx[0]).text()
+
+        return None

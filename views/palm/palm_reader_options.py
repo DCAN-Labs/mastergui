@@ -7,6 +7,7 @@ import numpy as np
 from views.view_utilities import *
 
 from views.widgets.column_chooser import *
+from views.widgets.column_chooser_dialog import *
 
 class PalmReaderOptions(QWidget):
     def __init__(self, parentAnalysisWindow):
@@ -77,9 +78,8 @@ class PalmReaderOptions(QWidget):
 
         if hasattr(self.parentAnalysisWindow,"input"):
             x = ColumnChooserDialog(self.parentAnalysisWindow.input)
-            x.setWindowModality(Qt.WindowModal)
-            x.show()
-            x.exec_()
+            x.showModally()
+
 
     def createRadioButtons(self):
         #comments from PalmReader.m 1/3/18

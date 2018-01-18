@@ -8,6 +8,7 @@ from views.mplus.mplus_output_selector import *
 from views.mplus.template_requirements import *
 import views.view_utilities as util
 from views.widgets.column_list import *
+from views.mplus.voxelizer_dialog import *
 import views.workbench_launcher
 import models
 import datetime
@@ -18,10 +19,9 @@ import time
 
 
 class MplusModelBuilder(QWidget):
-    def __init__(self, parentAnalysis):
+    def __init__(self):
         super(MplusModelBuilder, self).__init__()
         self.variables_loaded = False
-        self.parentAnalysis = parentAnalysis
         self.initModelBuilder()
 
     def initModelBuilder(self):
@@ -53,20 +53,24 @@ class MplusModelBuilder(QWidget):
         self.setLayout(top_level_layout)
 
 
+
     def createLeftPanel(self):
 
         panelWidget = QWidget()
         layout = QVBoxLayout()
         #layout.addWidget(QLabel("Select Covariates"))
 
-        rulePanel = self.createRulePanel()
-
-        layout.addWidget(rulePanel)
-        rulePanel.setVisible(False)
-        layout.addWidget(self.ruleDisplay)
-
         w = self.createColumnsWidgets()
         layout.addWidget(w)
+
+
+        #rulePanel = self.createRulePanel()
+
+        #layout.addWidget(rulePanel)
+        #rulePanel.setVisible(False)
+        #layout.addWidget(self.ruleDisplay)
+        self.rule_list_widget = self.createRuleListWidget()
+        layout.addWidget(self.rule_list_widget)
 
         panelWidget.setLayout(layout)
 
@@ -82,6 +86,7 @@ class MplusModelBuilder(QWidget):
         self.ruleDisplay = QTextEdit()
 
         self.ruleDisplay.setVisible(False)  # we may be eliminating this UI element completely
+
         self.operationSelector = self.createRuleOperatorWidget()
 
         ruleLayout.addWidget(self.columnSelectA)
@@ -93,16 +98,49 @@ class MplusModelBuilder(QWidget):
         return rulePanel
 
     def createColumnsWidgets(self):
-        w = QGroupBox()
+        w = QGroupBox("Created Variables")
         layout = QHBoxLayout()
 
         self.voxelized_list = ColumnList("Voxelized Columns")
-
+        self.voxelized_list.setAddClickHandler(self.on_click_add_voxelized_column)
+        self.voxelized_list.setRemoveClickHandler(self.on_click_remove_voxelized_column)
         layout.addWidget(self.voxelized_list)
 
-        self.other_variables_list = ColumnList("Other Non-Data Variables")
+        self.other_variables_list = ColumnList("Latent Variables")
         layout.addWidget(self.other_variables_list)
 
+        w.setLayout(layout)
+        return w
+
+    def on_click_add_voxelized_column(self):
+        d = VoxelizerDialog(self.analysis.input)
+        mapping = d.mapping()
+
+        if not mapping is None:
+            self.analysis.addVoxelizedColumn(mapping[0],mapping[1])
+            self.displayVoxelizedColumns()
+
+    def displayVoxelizedColumns(self):
+        display_list = []
+        for mapping in self.analysis.voxelized_column_mappings:
+            display_list.append("%s => %s" % mapping)
+
+        self.voxelized_list.loadValues(display_list)
+
+    def on_click_remove_voxelized_column(self):
+        print("removing")
+
+        value = self.voxelized_list.selectedRow()
+        if not value is None:
+            parsed = value.split(" => ")
+            self.analysis.removeVoxelizedColumn(parsed[0], parsed[1])
+            self.displayVoxelizedColumns()
+
+    def createRuleListWidget(self):
+        w = QGroupBox("Additional Model Rules")
+        layout = QHBoxLayout()
+        rule_list = ColumnList("")
+        layout.addWidget(rule_list)
         w.setLayout(layout)
         return w
 
@@ -153,38 +191,40 @@ class MplusModelBuilder(QWidget):
         operator = self.operatorButtonGroup.checkedButton().text()
 
         # now it passes the user input to the underlying mplus model object
-        self.parentAnalysis.model.add_rule(listA, operator, listB)
+        self.analysis.model.add_rule(listA, operator, listB)
 
-        self.ruleDisplay.setText(self.parentAnalysis.model.rules_to_s())
+        self.ruleDisplay.setText(self.analysis.model.rules_to_s())
 
         self.updateGeneratedMPlusInputFile()
 
-        self.parentAnalysis.dataPreview.update_selected_checks_from_analysis(self.parentAnalysis.model)
+        self.analysis.dataPreview.update_selected_checks_from_analysis(self.analysis.model)
 
 
     def updateGeneratedMPlusInputFile(self, save_to_path=""):
-        columns = self.parentAnalysis.input.columnnames()
+        columns = self.analysis.input.columnnames()
 
-        self.parentAnalysis.model.set_voxelized_mappings(self.parentAnalysis.dataPreview.selected_voxelized_columns())
+        self.analysis.model.set_voxelized_mappings(self.analysis.voxelized_column_mappings)
 
-        self.parentAnalysis.model.set_column_names(columns)
+        self.analysis.model.set_column_names(columns)
 
-        generated_mplus_model = self.parentAnalysis.model.to_string()
+        generated_mplus_model = self.analysis.model.to_string()
 
         self.generatedModelViewer.setText(generated_mplus_model)
 
     def refresh(self):
         self.addInputColumnNamesToListViews()
 
-    def loadVariables(self):
 
+    def loadVariables(self):
+        if not hasattr(self,"analysis"):
+            return
         if self.variables_loaded:
             return
-        if hasattr(self.parentAnalysis, "template") and hasattr(self.parentAnalysis, "input"):
-            v = self.parentAnalysis.template.variables
+        if hasattr(self.analysis, "template") and hasattr(self.analysis, "input"):
+            v = self.analysis.template.variables
             if len(v) > 0:
                 template_requirements = TemplateRequirements()
-                template_requirements.loadVariables(v, self.parentAnalysis.input)
+                template_requirements.loadVariables(v, self.analysis.input)
                 template_requirements.setMaximumWidth(600)
                 self.left_panel.layout().insertWidget(0,template_requirements)
                 self.template_requirements = template_requirements
@@ -203,20 +243,23 @@ class MplusModelBuilder(QWidget):
         for k, colname in options.items():
             options[k] = colname
 
-        generated_mplus_model = self.parentAnalysis.model.apply_options(options)
+        generated_mplus_model = self.analysis.model.apply_options(options)
 
         self.generatedModelViewer.setText(generated_mplus_model)
 
 
     def addInputColumnNamesToListViews(self):
 
-        cols = ["i", "q", "s", "r"] + self.parentAnalysis.dataPreview.possibleColumnNames()
-        util.addColumnNamesToListView(self.columnSelectA, cols)
-        util.addColumnNamesToListView(self.columnSelectB, cols)
+        #cols = ["i", "q", "s", "r"] + self.parentAnalysis.dataPreview.possibleColumnNames()
+        #todo restore column refreshing if necessary in the updated ui
 
-        #        if hasattr(self,"template_requirements"):
-        #            self.template_requirements.loadVariables(self.template.variables, self.input)
+        #util.addColumnNamesToListView(self.columnSelectA, cols)
+        #util.addColumnNamesToListView(self.columnSelectB, cols)
+        print("what else to refresh?")
 
 
+    def loadAnalysis(self, analysis):
+        self.analysis = analysis
         self.loadVariables()
 
+        #todo refresh screen elements

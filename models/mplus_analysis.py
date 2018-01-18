@@ -16,12 +16,11 @@ class MplusAnalysis(Analysis):
         self.required_config_keys = ['default_maps', 'Base_cifti_for_output', 'MPlus_command', 'output_dir']
         self.limit_by_voxel = -1
         self.limit_by_row = -1
+        self.voxelized_column_mappings = []
         if saved_data is not None:
+            self.module_specific_load_data(saved_data)
             # then we are loading from a saved file.
 
-            #todo load all the attributes from the save file
-            if "input_data_path" in saved_data:
-                self.input_data_path = saved_data["input_data_path"]
 
             self.loaded_from_data = saved_data
 
@@ -295,11 +294,31 @@ class MplusAnalysis(Analysis):
 
 
     def module_specific_save_data(self, save_data):
-        save_data["voxelizedMappings"] = self.model.voxelizedMappings
+        save_data["voxelized_column_mappings"] = self.voxelized_column_mappings
         save_data["current_model"] = self.model.to_string()
         save_data["template_raw_model"] = self.model._raw
         if hasattr(self,"input"):
             save_data["input_data_path"] = self.input.path
+
+    def module_specific_load_data(self, load_data):
+        # todo load all the attributes from the save file
+        if "input_data_path" in load_data:
+            self.input_data_path = load_data["input_data_path"]
+
+        if "voxelized_column_mappings" in load_data:
+            self.voxelized_column_mappings = load_data["voxelized_column_mappings"]
+            #if hasattr(self,"model"):
+            #    self.model.voxelizedMappings = load_data["voxelizedMappings"]
+
+    def addVoxelizedColumn(self, from_column_of_paths, to_new_column_name):
+        t = (from_column_of_paths, to_new_column_name)
+        if not t in self.voxelized_column_mappings:
+            self.voxelized_column_mappings.append(t)
+
+    def removeVoxelizedColumn(self, from_column_of_paths, to_new_column_name):
+        t = (from_column_of_paths, to_new_column_name)
+        if t in self.voxelized_column_mappings:
+            self.voxelized_column_mappings.remove(t)
 
     def cancelAnalysis(self):
         """attempt to cancel the running analyis"""

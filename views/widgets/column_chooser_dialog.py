@@ -13,21 +13,21 @@ import threading
 import traceback
 import time
 from views.view_utilities import *
-
+from views.widgets.column_chooser import *
 class ColumnChooserDialog(QDialog):
     def __init__(self, input_spreadsheet ):
         super(ColumnChooserDialog, self).__init__()
         self.input_spreadsheet = input_spreadsheet
         self.initUI()
-        self.loadColumns()
+        #self.loadColumns()
 
     def initUI(self):
 
         layout = QVBoxLayout()
 
-        chooser = ColumnChooser(self.input_spreadsheet)
-        layout.addWidget(radio_group)
-        layout.addWidget(chooser)
+        self.chooser = ColumnChooser(self.input_spreadsheet)
+#        layout.addWidget(radio_group)
+        layout.addWidget(self.chooser)
 
         addButton("OK",layout, self.on_click_ok)
         addButton("Cancel", layout, self.on_click_ok)
@@ -72,6 +72,7 @@ class ColumnChooserDialog(QDialog):
 
 
         columns = list(self.input_spreadsheet.data().columns)
+
         self.addColumnNamesToListView(self.columnListWidget,columns)
 
 
@@ -88,3 +89,10 @@ class ColumnChooserDialog(QDialog):
                 item.setCheckable(True)
                 model.appendRow(item)
 
+    def showModally(self):
+        self.setWindowModality(Qt.WindowModal)
+        self.show()
+        self.exec_()
+
+    def selectedRow(self):
+        return self.chooser.selectedRow()

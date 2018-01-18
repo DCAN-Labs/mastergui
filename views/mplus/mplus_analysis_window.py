@@ -93,41 +93,29 @@ class Worker(QRunnable):
 
 
 class MplusAnalysisWindow(AnalysisWindow):
-    def __init__(self, config):
+    def __init__(self, config, analysis = None):
         self.default_missing_tokens_list = ["-888", "NA", "", "nan"]
         self.title = "Mplus Analysis"
         self.analyzerName = "mplus"
         super(MplusAnalysisWindow, self).__init__(config)
 
-        a = models.mplus_analysis.MplusAnalysis(self.config)
+        analysis_was_provided = analysis is not None
 
-        missing_keys = a.missingRequiredConfigKeys()
+        if analysis is None:
+            analysis = models.mplus_analysis.MplusAnalysis(self.config)
+
+        missing_keys = analysis.missingRequiredConfigKeys()
 
         if len(missing_keys) > 0:
             self.alert(
                 "Your configuration file is missing some items that are required for the full functionality.  Please provide the following keys: " + " ".join(
                     missing_keys))
 
-        self.analysis = models.mplus_analysis.MplusAnalysis(self.config)
+        self.analysis = analysis
 
-        self.needsTemplate = True
+        self.needsTemplate = not analysis_was_provided
 
-        if False:
-            data_path = self.config.getOptional("open_path_on_launch", "")
-            if len(data_path) == 0:
-                self.openDataFileDialog()
-            else:
-                self.open_input_file(data_path)
-
-            filename = self.config.getOptional("open_mplus_model_on_launch", "")
-
-            if len(filename) > 0:
-                if os.path.exists(filename):
-                    self.open_mplus_model_template_from_file(filename)
-                    self.needsTemplate = False
-                else:
-                    self.alert(
-                        filename + " does not exist. Check your config.yml file attribute open_mplus_model_on_launch.")
+        self.loadAnalysis(analysis)
 
         if not self.needsTemplate:
             self.tabs.setTabEnabled(0, False)
@@ -241,7 +229,7 @@ class MplusAnalysisWindow(AnalysisWindow):
 
         #self.modelBuilderTemplateViewTabs = QTabWidget()
 
-        self.modelBuilder = MplusModelBuilder(self)
+        self.modelBuilder = MplusModelBuilder()
 
 
         #self.modelBuilderTabLayout.addWidget(self.modelBuilder)
@@ -382,7 +370,7 @@ class MplusAnalysisWindow(AnalysisWindow):
 
             if "current_model" in saved_state:
                 self.modelBuilder.generatedModelViewer.setText(saved_state["current_model"])
-
+        self.modelBuilder.loadAnalysis(self.analysis)
 
     def runAnalysisBackgroundWorker(self, progress_callback, finished_callback, error_callback):
         # for testing, halt after n rows of data processing. Set to 0 to do everything.
@@ -509,6 +497,7 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.tabs.setTabEnabled(0, False)
         self.tabs.setStyleSheet(
             "QTabBar::tab::disabled {width: 0; height: 0; margin: 0; padding: 0; border: none;} ")
+        self.modelBuilder.loadAnalysis(self.analysis)
 
     #def closeEvent(self, event):
         # do stuff

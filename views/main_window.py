@@ -197,10 +197,7 @@ class MasterGuiApp(QMainWindow):
 
     def new_mplus_analysis(self, analysis = None):
 
-        analysis_window = MplusAnalysisWindow(self.config)
-
-        if analysis is not None:
-            analysis_window.loadAnalysis(analysis)
+        analysis_window = MplusAnalysisWindow(self.config, analysis)
 
         self.displayNewAnalysis(analysis_window)
 
