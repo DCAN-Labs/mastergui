@@ -125,27 +125,28 @@ class MasterGuiApp(QMainWindow):
         self.addToRecentFileList(openfile)
 
     def addToRecentFileList(self, path):
-        recents_path = self.config.getOptional("recent_files_path", "mastergui_recents")
-
-        if os.path.exists(recents_path):
-            with open(recents_path, 'r') as f:
-                files = f.readlines()
-                files.insert(0,path)
-
-                unique_tracker = {}
-                unique_files = []
-                for p in files:
-                    p = p.strip()
-                    if len(p)>0:
-                        if not p in unique_tracker:
-                            unique_files.append(p)
-                            unique_tracker[p] = True
-        else:
-            unique_files = [path]
-
-
-        with open(recents_path, 'w') as f:
-            f.writelines("\n".join(unique_files))
+        self.config.addToRecentFileList(path)
+        # recents_path = self.config.getOptional("recent_files_path", "mastergui_recents")
+        #
+        # if os.path.exists(recents_path):
+        #     with open(recents_path, 'r') as f:
+        #         files = f.readlines()
+        #         files.insert(0,path)
+        #
+        #         unique_tracker = {}
+        #         unique_files = []
+        #         for p in files:
+        #             p = p.strip()
+        #             if len(p)>0:
+        #                 if not p in unique_tracker:
+        #                     unique_files.append(p)
+        #                     unique_tracker[p] = True
+        # else:
+        #     unique_files = [path]
+        #
+        #
+        # with open(recents_path, 'w') as f:
+        #     f.writelines("\n".join(unique_files))
 
 
     def save_action(self):

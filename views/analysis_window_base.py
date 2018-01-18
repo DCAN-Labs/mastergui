@@ -125,31 +125,20 @@ class AnalysisWindow(QWidget):
         return button
 
     def save(self):
-        print("SAVE!")
         if hasattr(self,'savedFilePath') and len(self.savedFilePath)>0:
-            print('save existing path')
+            self.analysis.save(self.savedFilePath)
         else:
             savefile, ok = QFileDialog.getSaveFileName(self)
             self.analysis.save(savefile)
             self.savedFilePath = savefile
-
-    def addToRecentFileList(self, path):
-        path = self.config.getOptional("recent_files_path", "mastergui_recents")
-        if os.path.exists(path):
-            with open(path, 'r') as f:
-                files = f.readlines()
-                files.append(path)
-        else:
-            files = [path]
-
-        with open(path, 'w') as f:
-            f.writelines(files)
+            self.config.addToRecentFileList(savefile)
 
     def open(self,file_contents, from_path):
         print("opening ")
         print(file_contents)
         self.savedFilePath = from_path
         self.handle_open(file_contents)
+        self.handle_open_specifically(file_contents)
 
 
     def handle_open_specifically(self,file_contents):
