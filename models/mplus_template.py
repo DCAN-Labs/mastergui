@@ -2,13 +2,21 @@ import json
 
 
 class MplusTemplate():
-    def __init__(self, path):
-        with open(path, 'r') as f:
-            template_info = json.load(f, strict=False)
+    def __init__(self, path_or_dictionary):
+
+        if type(path_or_dictionary)==str:
+            with open(path_or_dictionary, 'r') as f:
+                template_info = json.load(f, strict=False)
+        elif type(path_or_dictionary)==dict:
+            template_info = path_or_dictionary
+        else:
+            raise ValueError("invalid parameter path_or_dictionary")
+
         if 'name' in template_info:
             name = template_info['name']
         else:
-            name = "Unnamed Template %s" % path
+
+            name = "Unnamed Template %s"
         self.name = name
         self.data = template_info
 

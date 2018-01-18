@@ -7,6 +7,7 @@ from views.output_browser import *
 from views.mplus.mplus_output_selector import *
 from views.mplus.template_requirements import *
 import views.view_utilities as util
+from views.widgets.column_list import *
 import views.workbench_launcher
 import models
 import datetime
@@ -56,9 +57,22 @@ class MplusModelBuilder(QWidget):
 
         panelWidget = QWidget()
         layout = QVBoxLayout()
-        layout.addWidget(QLabel("Select Covariates"))
+        #layout.addWidget(QLabel("Select Covariates"))
 
+        rulePanel = self.createRulePanel()
 
+        layout.addWidget(rulePanel)
+        rulePanel.setVisible(False)
+        layout.addWidget(self.ruleDisplay)
+
+        w = self.createColumnsWidgets()
+        layout.addWidget(w)
+
+        panelWidget.setLayout(layout)
+
+        return panelWidget
+
+    def createRulePanel(self):
         rulePanel = QWidget()
         ruleLayout = QHBoxLayout()
 
@@ -67,7 +81,7 @@ class MplusModelBuilder(QWidget):
 
         self.ruleDisplay = QTextEdit()
 
-        self.ruleDisplay.setVisible(False) #we may be eliminating this UI element completely
+        self.ruleDisplay.setVisible(False)  # we may be eliminating this UI element completely
         self.operationSelector = self.createRuleOperatorWidget()
 
         ruleLayout.addWidget(self.columnSelectA)
@@ -76,13 +90,21 @@ class MplusModelBuilder(QWidget):
 
         rulePanel.setLayout(ruleLayout)
 
-        layout.addWidget(rulePanel)
+        return rulePanel
 
-        layout.addWidget(self.ruleDisplay)
+    def createColumnsWidgets(self):
+        w = QGroupBox()
+        layout = QHBoxLayout()
 
-        panelWidget.setLayout(layout)
+        self.voxelized_list = ColumnList("Voxelized Columns")
 
-        return panelWidget
+        layout.addWidget(self.voxelized_list)
+
+        self.other_variables_list = ColumnList("Other Non-Data Variables")
+        layout.addWidget(self.other_variables_list)
+
+        w.setLayout(layout)
+        return w
 
     def initModelBuilderViewTabs(self):
         self.modelTemplateViewer = QTextEdit()
@@ -169,6 +191,7 @@ class MplusModelBuilder(QWidget):
                 self.variables_loaded = True
 
                 button = QPushButton("Apply")
+                button.setMaximumWidth(140)
                 button.clicked.connect(self.on_click_apply_template_variables)
                 self.left_panel.layout().insertWidget(1,button)
 
@@ -176,14 +199,9 @@ class MplusModelBuilder(QWidget):
     def on_click_apply_template_variables(self):
         options = self.template_requirements.selectedValues()
 
-        # todo temporary hack until change the list do drop down list, just want one item per
-        # at the moment
-        for k, v in options.items():
-            colname = v[0]
+
+        for k, colname in options.items():
             options[k] = colname
-
-
-
 
         generated_mplus_model = self.parentAnalysis.model.apply_options(options)
 

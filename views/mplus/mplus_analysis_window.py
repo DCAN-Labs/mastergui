@@ -375,10 +375,13 @@ class MplusAnalysisWindow(AnalysisWindow):
         """for overriding in subclasses"""
         if hasattr(self.analysis, "loaded_from_data"):
             saved_state = self.analysis.loaded_from_data
-            if "template_raw_model" in saved_state:
-                self.onSelectTemplate(saved_state["template_raw_model"])
+            if "template" in saved_state:
+                t = models.mplus_template.MplusTemplate(saved_state['template'])
+
+                self.onSelectTemplate(t)
+
             if "current_model" in saved_state:
-                self.generatedModelViewer.setText(saved_state["current_model"])
+                self.modelBuilder.generatedModelViewer.setText(saved_state["current_model"])
 
 
     def runAnalysisBackgroundWorker(self, progress_callback, finished_callback, error_callback):
@@ -497,6 +500,7 @@ class MplusAnalysisWindow(AnalysisWindow):
     def onSelectTemplate(self, template):
 
         self.template = template
+        self.analysis.template = template
 
         raw_mplus_model_text = template.return_if_exists("rawmodel")
 

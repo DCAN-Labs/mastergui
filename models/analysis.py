@@ -57,6 +57,11 @@ class Analysis():
 
         save_data = {"title":"mytitle", "module":self.module_name, "version":0.1, "execution_history":self.execution_history}
 
+        if hasattr(self,'template'):
+            template = self.template
+            if hasattr(template,'data'):
+                save_data['template'] = self.template.data
+
         self.module_specific_save_data(save_data)
 
         with open(filename, "w") as f:
@@ -109,6 +114,7 @@ class Analysis():
             raise ValueError("unknown module name: %s " % module_name)
 
         if "execution_history" in load_data:
-            if len(self.execution_history) == 0:  #if the subclass hadn't already processed the load history add it in its raw form
-                a.execution_history = load_data.execution_history
+            exec_hist = load_data["execution_history"]
+            if len(exec_hist) == 0:  #if the subclass hadn't already processed the load history add it in its raw form
+                a.execution_history = exec_hist
         return a
