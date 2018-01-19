@@ -141,6 +141,11 @@ class MplusAnalysisWindow(AnalysisWindow):
             self.fileName = fileName
             self.open_input_file(fileName)
 
+    def open_input_file(self, path):
+        super(MplusAnalysisWindow,self).open_input_file(path)
+        self.modelBuilder.updateDataColumns()
+        self.modelBuilder.autoVoxelize()
+
     def open_mplus_model_template_from_file(self, path):
         self.model = models.mplus_model.MplusModel(path)
         self.modelTemplateViewer.setText(str(self.model._raw))
@@ -376,17 +381,12 @@ class MplusAnalysisWindow(AnalysisWindow):
         # for testing, halt after n rows of data processing. Set to 0 to do everything.
         halt_after_n = int(self.config.getOptional('testing_halt_after_n_voxels', 0))
 
-        #mappings = self.dataPreview.voxelized_columns
-
-        mappings = self.dataPreview.selected_voxelized_columns()
-
         self.mplus_output_contents = ""
 
-        self.analysis.model = self.model
+        self.analysis.model = self.model #todo this shouldn't be necessary, analysis.model should already be set but confirm
         self.analysis.title = self.title
         self.mplus_output_contents = self.analysis.go( self.input,
                                                       self.dataPreview.missing_tokens,
-                                                      path_to_voxel_mappings=mappings,
                                                       progress_callback=progress_callback,
                                                       error_callback=error_callback)
 

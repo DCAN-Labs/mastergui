@@ -73,6 +73,7 @@ class AnalysisWindow(QWidget):
         if hasattr(self,"analysis"):
             self.analysis.input = self.input
 
+
         # except:
         #    self.alert("Error while opening file " + path)
 
@@ -155,7 +156,7 @@ class AnalysisWindow(QWidget):
     def loadAnalysisModuleSpecific(self):
         """for overriding in subclasses"""
         print("override to map module specific attributes from saved data file")
-        
+
 
     def loadAnalysisSpecifics(self):
         print("override in subclass")

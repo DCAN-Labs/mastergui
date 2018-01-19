@@ -16,14 +16,27 @@ from views.view_utilities import *
 
 
 class ColumnChooserDropDown(QComboBox):
-    def __init__(self, input_spreadsheet):
+    def __init__(self, input_spreadsheet = None, initial_value = ""):
         super(ColumnChooserDropDown, self).__init__()
         self.input_spreadsheet = input_spreadsheet
         self.loadColumns()
+        self.setValueToColumn(initial_value)
+        self.setMinimumWidth(200)
 
     def loadColumns(self):
 
-        columns = list(self.input_spreadsheet.data().columns)
+        columns = [""]
+        if self.input_spreadsheet is not None:
+            columns += list(self.input_spreadsheet.data().columns)
 
         for col in columns:
             self.addItem(col)
+
+    def setValueToColumn(self, column_name):
+        index = self.findText(column_name, Qt.MatchFixedString)
+        if index >= 0:
+            self.setCurrentIndex(index)
+
+    def updateInputSpreadsheet(self, input):
+        self.input_spreadsheet = input
+        self.loadColumns()

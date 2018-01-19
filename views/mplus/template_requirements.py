@@ -39,14 +39,19 @@ class TemplateRequirements(QGroupBox):
         self.variables_from_template = variables_from_template
         layout = QFormLayout()
         listWidgets = {}
-        col_idx = 0
         for v in variables_from_template:
+            if "default" in v:
+                default = v["default"]
+            else:
+                default = ""
+
             if "type" in v and "name" in v:
                 if v["type"] == "column":
                     name = v["name"]
 
+
                     label = util.createBoldLabel(v.get("title", name) )
-                    list = ColumnChooserDropDown(input_spreadsheet)
+                    list = ColumnChooserDropDown(input_spreadsheet, default)
                     listWidgets[name] = list
                     layout.addRow(label,list)
 
@@ -67,3 +72,9 @@ class TemplateRequirements(QGroupBox):
 
 
         return results
+
+
+    def updateInputSpreadsheet(self, input):
+        self.input_spreadsheet = input
+        for k,v in self.listWidgets.items():
+            v.updateInputSpreadsheet(input)

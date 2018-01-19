@@ -42,7 +42,8 @@ class MplusAnalysis(Analysis):
     def dir_name_for_title(self, raw_title):
         return raw_title + str(datetime.datetime.now()).replace(" ", ".").replace(":", ".")
 
-    def go(self, input, missing_tokens_list, path_to_voxel_mappings = [], progress_callback = None, error_callback = None):
+    def go(self, input, missing_tokens_list, progress_callback = None, error_callback = None):
+
 
         self.progress_callback = progress_callback
         self.error_callback = error_callback
@@ -61,10 +62,10 @@ class MplusAnalysis(Analysis):
         self.input.save(self.output_path)
 
 
-        self.needCiftiProcessing = len(path_to_voxel_mappings) > 0
+        self.needCiftiProcessing = len(self.voxelized_column_mappings) > 0
 
         if self.needCiftiProcessing:
-            return self.runAnalysisWithCiftiProcessing(path_to_voxel_mappings)
+            return self.runAnalysisWithCiftiProcessing(self.voxelized_column_mappings)
         else:
             return self.runAnalysisWithoutCiftiData()
 

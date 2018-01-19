@@ -220,11 +220,16 @@ class MplusModelBuilder(QWidget):
             return
         if self.variables_loaded:
             return
-        if hasattr(self.analysis, "template") and hasattr(self.analysis, "input"):
+        if hasattr(self.analysis, "template"):
             v = self.analysis.template.variables
             if len(v) > 0:
                 template_requirements = TemplateRequirements()
-                template_requirements.loadVariables(v, self.analysis.input)
+
+                if hasattr(self.analysis, "input"):
+                    input = self.analysis.input
+                else:
+                    input = None
+                template_requirements.loadVariables(v, input)
                 template_requirements.setMaximumWidth(600)
                 self.left_panel.layout().insertWidget(0,template_requirements)
                 self.template_requirements = template_requirements
@@ -258,8 +263,29 @@ class MplusModelBuilder(QWidget):
         print("what else to refresh?")
 
 
+    def updateDataColumns(self):
+        if hasattr(self, "template_requirements"):
+            self.template_requirements.updateInputSpreadsheet(self.analysis.input)
+
     def loadAnalysis(self, analysis):
+        self.variables_loaded = False
         self.analysis = analysis
         self.loadVariables()
 
         #todo refresh screen elements
+
+    def autoVoxelize(self):
+        """by convention we will assume that any column names that start with "PATH_" are intended for voxelization
+        """
+
+        if hasattr(self, "analysis"):
+            columns = self.analysis.input.columnnames()
+
+            for colname in columns:
+                if colname[0:5] == "PATH_":
+                    new_colname = "VOXEL_" + colname[5:]
+                    self.analysis.addVoxelizedColumn(colname, new_colname)
+
+            self.displayVoxelizedColumns()
+
+

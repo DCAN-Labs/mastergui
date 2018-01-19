@@ -105,3 +105,7 @@ class ColumnChooser(QWidget):
             return m.itemFromIndex(idx[0]).text()
 
         return None
+
+    def updateInputSpreadsheet(self, input):
+        self.input_spreadsheet = input
+        self.loadColumns()
