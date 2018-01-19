@@ -1,0 +1,35 @@
+{"name":"Development Testing With Prompts",
+"description":"Using this for rapid testing in development ",
+ "input":"To run this you will need a csv of non-imaging data that contains full paths to cifti files for each subject",
+ "output":"a cifti file rendered in Connectome Workbench",
+ "instructions":"Get a data file from the database team, then run it.",
+ "Example":"To run the example model, do the following steps....",
+  "variables":[{"name":"A","title":"Paths to Ciftis","type":"column"},
+  {"name":"B","title":"Predictor","type":"column"}]
+  ,
+"rawmodel":"﻿TITLE:
+ DevDemo
+
+
+DATA:
+ FILE is missing.csv;
+
+
+VARIABLE:
+Names are PGS
+	VOXEL_HCP;
+USEVARIABLES = PGS
+	VOXEL_HCP;
+MISSING=.;
+
+ANALYSIS:
+
+          estimator=MLR;
+
+
+MODEL:
+          {{A}} on {{B}}
+
+OUTPUT:
+ stdyx;
+"}
