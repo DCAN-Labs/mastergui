@@ -3,3 +3,4 @@ __pycache__
 config.yml
 tmp_misc/
 output/
+*.pyc
