@@ -39,10 +39,15 @@ class Analysis():
         return self.config._data.get("output_dir", "")
 
     def missingRequiredConfigKeys(self):
-        missing_keys = [k for k in self.required_config_keys if not k in self.config._data]
-        return missing_keys
 
+        return self.config.missing_keys(self.required_config_keys)
 
+    def configValidationErrors(self):
+        missing = self.missingRequiredConfigKeys()
+        missing = [(m, "Missing Key") for m in missing]
+        invalid_directories = self.config.resolve_directories(['output_dir'])
+        #problems are returned, and empty return valid is good
+        return missing + invalid_directories
     def setBatchTitle(self, raw_title):
         self.batchTitle = re.sub('[^0-9a-zA-Z]+', '_', self.dir_name_for_title(raw_title))
 

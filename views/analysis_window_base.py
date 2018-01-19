@@ -77,6 +77,20 @@ class AnalysisWindow(QWidget):
         # except:
         #    self.alert("Error while opening file " + path)
 
+    def validateConfiguration(self):
+        config_problems = self.analysis.configValidationErrors()
+
+        if len(config_problems) > 0:
+            error_msg = "Your configuration file is missing some items that are required for the full functionality.\n"
+            for problem in config_problems:
+                # 2-tuples of key, description
+                error_msg += "\t%s: %s\n" % problem
+
+            error_msg += "\nPlease fix your configuration file %s" % self.config.path
+
+            self.alert(error_msg)
+
+
     def updateUIAfterInput(self):
         print("override in subclasses")
 

@@ -104,14 +104,9 @@ class MplusAnalysisWindow(AnalysisWindow):
         if analysis is None:
             analysis = models.mplus_analysis.MplusAnalysis(self.config)
 
-        missing_keys = analysis.missingRequiredConfigKeys()
-
-        if len(missing_keys) > 0:
-            self.alert(
-                "Your configuration file is missing some items that are required for the full functionality.  Please provide the following keys: " + " ".join(
-                    missing_keys))
-
         self.analysis = analysis
+
+        self.validateConfiguration()
 
         self.needsTemplate = not analysis_was_provided
 

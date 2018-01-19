@@ -15,8 +15,9 @@ class TemplateRequirements(QGroupBox):
     def __init__(self):
         super(TemplateRequirements, self).__init__("Template Requirements")
 
-    def loadVariablesAsLists(self, variables_from_template, input_spreadsheet):
+    def loadVariablesAsLists(self, variables_from_template, input_spreadsheet, non_spreadsheet_variables = []):
         self.variables_from_template = variables_from_template
+        self.non_spreadsheet_variables = non_spreadsheet_variables
         layout = QGridLayout()
         listWidgets = {}
         col_idx = 0
@@ -35,8 +36,9 @@ class TemplateRequirements(QGroupBox):
 
         self.setLayout(layout)
 
-    def loadVariables(self, variables_from_template, input_spreadsheet):
+    def loadVariables(self, variables_from_template, input_spreadsheet, non_spreadsheet_variables = []):
         self.variables_from_template = variables_from_template
+        self.non_spreadsheet_variables = non_spreadsheet_variables
         layout = QFormLayout()
         listWidgets = {}
         for v in variables_from_template:
@@ -51,7 +53,7 @@ class TemplateRequirements(QGroupBox):
 
 
                     label = util.createBoldLabel(v.get("title", name) )
-                    list = ColumnChooserDropDown(input_spreadsheet, default)
+                    list = ColumnChooserDropDown(input_spreadsheet, self.non_spreadsheet_variables, default)
                     listWidgets[name] = list
                     layout.addRow(label,list)
 
@@ -76,5 +78,13 @@ class TemplateRequirements(QGroupBox):
 
     def updateInputSpreadsheet(self, input):
         self.input_spreadsheet = input
+        self.refreshColumns()
+
+    def updateNonSpreadsheetVariables(self, non_spreadsheet_variables):
+        self.non_spreadsheet_variables = non_spreadsheet_variables
+
+        self.refreshColumns()
+
+    def refreshColumns(self):
         for k,v in self.listWidgets.items():
-            v.updateInputSpreadsheet(input)
+            v.updateInputSpreadsheet(self.input_spreadsheet, self.non_spreadsheet_variables)

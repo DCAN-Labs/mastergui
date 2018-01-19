@@ -9,6 +9,18 @@ Python 3
 
 # Installation
 
+After checking out, set up the virtual environment:
+
+cd into the root directory, then:
+
+```
+virtualenv venv --python=python3
+source venv/bin/activate
+pip install -r requirements.txt
+pip freeze > requirements.txt
+```
+
+
 pip install packages from requirements.txt
 
 The MatLab Python API needs to be installed separately from PIP

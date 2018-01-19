@@ -117,8 +117,7 @@ class MplusModelBuilder(QWidget):
         mapping = d.mapping()
 
         if not mapping is None:
-            self.analysis.addVoxelizedColumn(mapping[0],mapping[1])
-            self.displayVoxelizedColumns()
+            self.addVoxelizedColumn(mapping[0], mapping[1])
 
     def displayVoxelizedColumns(self):
         display_list = []
@@ -274,6 +273,21 @@ class MplusModelBuilder(QWidget):
 
         #todo refresh screen elements
 
+    def all_nonspreadsheet_variables_to_display(self):
+
+        if hasattr(self,"analysis"):
+            cols = [m[1] for m in self.analysis.voxelized_column_mappings]
+            #todo if and only if analysis should show time series related columns (add attribute to template json)
+            cols += ["i", "q", "s", "r"]
+        else:
+            cols = ["i", "q", "s", "r"]
+        return cols
+
+    def addVoxelizedColumn(self, from_col, new_colname):
+        self.analysis.addVoxelizedColumn(from_col, new_colname)
+        self.template_requirements.updateNonSpreadsheetVariables(self.all_nonspreadsheet_variables_to_display())
+        self.displayVoxelizedColumns()
+
     def autoVoxelize(self):
         """by convention we will assume that any column names that start with "PATH_" are intended for voxelization
         """
@@ -284,8 +298,9 @@ class MplusModelBuilder(QWidget):
             for colname in columns:
                 if colname[0:5] == "PATH_":
                     new_colname = "VOXEL_" + colname[5:]
-                    self.analysis.addVoxelizedColumn(colname, new_colname)
 
-            self.displayVoxelizedColumns()
+                    self.addVoxelizedColumn(colname, new_colname)
+
+
 
 

@@ -1,9 +1,11 @@
 from views.main_window import *
 import logging
-
+import os
 if __name__ == '__main__':
     formatter_str = '%(levelname)s:%(asctime)s %(message)s'
-    logging.basicConfig(filename='mastergui.log', filemode='w', level=logging.DEBUG, format=formatter_str,
+    #todo: better logging destination
+    mastergui_log_path = os.path.expanduser("mastergui.log")
+    logging.basicConfig(filename=mastergui_log_path, filemode='w', level=logging.DEBUG, format=formatter_str,
                         datefmt='%m/%d/%Y %I:%M:%S %p')
 
     # add log messages to console output too
