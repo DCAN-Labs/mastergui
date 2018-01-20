@@ -19,23 +19,17 @@ class DataPreviewWidget(QWidget):
         self.default_missing_tokens_list = ["-888", "-888.0", "NA", ".", "", "nan"]
 
         layout = QVBoxLayout()
-        layout.addWidget(QLabel("Non-imaging Data File:"))
-        self.filePathWidget = QLineEdit()
-        layout.addWidget(self.filePathWidget)
 
-        self.btnBrowse = QPushButton("Browse")
-        layout.addWidget(self.btnBrowse)
-        self.btnBrowse.clicked.connect(self.on_click_browse)
+        topOptions = QWidget()
+        topLayout = QGridLayout()
 
-        layout.addWidget(QLabel("Missing Data Tokens:"))
-        self.missingDataTokens = QLineEdit()
-        self.missingDataTokens.setText(",".join(self.default_missing_tokens_list))
-        layout.addWidget(self.missingDataTokens)
-        self.highlightMissing = QCheckBox("Highlight Missing Values")
-        self.highlightMissing.setChecked(True)
+        self.addPathEntryBar(topLayout)
 
-        self.highlightMissing.stateChanged.connect(self.clickHighlighting)
-        layout.addWidget(self.highlightMissing)
+        self.addMissingOptions(topLayout)
+
+        topOptions.setLayout(topLayout)
+
+        layout.addWidget(topOptions)
         self.inputTable = QTableWidget()
 
         layout.addWidget(self.inputTable)
@@ -43,6 +37,39 @@ class DataPreviewWidget(QWidget):
         self.setLayout(layout)
 
         self.voxelized_columns = []
+
+    def addPathEntryBar(self,layout):
+        #pathEntryWidget = QWidget()
+        #pathEntryLayout = QHBoxLayout()
+
+        layout.addWidget(QLabel("Non-imaging Data File:"),0,0)
+        self.filePathWidget = QLineEdit()
+        layout.addWidget(self.filePathWidget,0,1)
+
+        self.btnBrowse = QPushButton("Browse")
+        layout.addWidget(self.btnBrowse,0,2)
+        self.btnBrowse.clicked.connect(self.on_click_browse)
+
+        #pathEntryWidget.setLayout(pathEntryLayout)
+
+        #layout.addWidget(pathEntryWidget)
+
+    def addMissingOptions(self,layout):
+        #missingBarWidget = QWidget()
+        #missingLayout = QHBoxLayout()
+
+        layout.addWidget(QLabel("Missing Data Tokens:"),1,0)
+        self.missingDataTokens = QLineEdit()
+        self.missingDataTokens.setText(",".join(self.default_missing_tokens_list))
+        layout.addWidget(self.missingDataTokens,1,1)
+        self.highlightMissing = QCheckBox("Highlight Missing Values")
+        self.highlightMissing.setChecked(True)
+
+        self.highlightMissing.stateChanged.connect(self.clickHighlighting)
+        layout.addWidget(self.highlightMissing,1,2)
+
+        #missingBarWidget.setLayout(missingLayout)
+        #layout.addWidget(missingBarWidget)
 
     def on_click_browse(self):
 

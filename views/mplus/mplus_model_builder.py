@@ -127,12 +127,12 @@ class MplusModelBuilder(QWidget):
         self.voxelized_list.loadValues(display_list)
 
     def on_click_remove_voxelized_column(self):
-        print("removing")
 
         value = self.voxelized_list.selectedRow()
         if not value is None:
             parsed = value.split(" => ")
             self.analysis.removeVoxelizedColumn(parsed[0], parsed[1])
+            self.refreshNonDataColumnViews()
             self.displayVoxelizedColumns()
 
     def createRuleListWidget(self):
@@ -243,13 +243,9 @@ class MplusModelBuilder(QWidget):
     def on_click_apply_template_variables(self):
         options = self.template_requirements.selectedValues()
 
+        generated_mplus_model_text = self.analysis.updateModel(options, self.all_nonspreadsheet_variables_to_display())
 
-        for k, colname in options.items():
-            options[k] = colname
-
-        generated_mplus_model = self.analysis.model.apply_options(options)
-
-        self.generatedModelViewer.setText(generated_mplus_model)
+        self.generatedModelViewer.setText(generated_mplus_model_text)
 
 
     def addInputColumnNamesToListViews(self):
@@ -285,8 +281,14 @@ class MplusModelBuilder(QWidget):
 
     def addVoxelizedColumn(self, from_col, new_colname):
         self.analysis.addVoxelizedColumn(from_col, new_colname)
-        self.template_requirements.updateNonSpreadsheetVariables(self.all_nonspreadsheet_variables_to_display())
+
+        self.refreshNonDataColumnViews()
+
         self.displayVoxelizedColumns()
+
+    def refreshNonDataColumnViews(self):
+        if hasattr(self, "template_requirements"):
+            self.template_requirements.updateNonSpreadsheetVariables(self.all_nonspreadsheet_variables_to_display())
 
     def autoVoxelize(self):
         """by convention we will assume that any column names that start with "PATH_" are intended for voxelization

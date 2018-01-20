@@ -34,7 +34,7 @@ class MplusModel():
             self.load(path)
         self._title = "UntitledMplusModel"
         self.rules = []
-        self.voxelizedMappings = {}
+
 
         # track a unique list of variables used in the analysis
         self.using_variables = set([])
@@ -127,9 +127,8 @@ class MplusModel():
 
         #assumes will be dropping all names but the column you are using.
 
-        keeping_column_names = [self.getMappedName(name) for name in names if self.getMappedName(name) in self.using_variables]
         self.mplus_data["VARIABLE"] = ("Names are %s;\nUSEVARIABLES = %s;\nMISSING=.;\n%s" %
-                                       ("\n\t".join(self.input_column_names_in_order), "\n\t".join(self.using_variables), self.cluster_clause))
+                                       ("\n\t".join(self.final_column_list()), "\n\t".join(self.using_variables), self.cluster_clause))
 
     def final_column_list(self):
         return self.input_column_names_in_order + self.voxelized_column_names_in_order
@@ -150,11 +149,14 @@ class MplusModel():
                                        "\n\t".join(column_name_list), "\n\t".join(self.using_variables),
                                        self.cluster_clause))
 
-    def apply_options(self, options_dict):
+    def apply_options(self, options_dict, non_original_data_columnlist):
         for k, v in options_dict.items():
             colname = v
-            self.add_input_column_name(colname)
-            self.add_using_variable(colname)
+            if colname not in non_original_data_columnlist:
+                self.add_input_column_name(colname)
+
+            if colname not in self.using_variables:
+                self.add_using_variable(colname)
 
         self.set_column_names(self.input_column_names_in_order)
 
@@ -202,14 +204,6 @@ class MplusModel():
         """
         return ["Analysis", "Fields"]
 
-    def set_voxelized_mappings(self, mappings):
-        for m in mappings:
-            self.add_voxelized_colname_mapping(m[0],m[1])
-
-    def add_voxelized_colname_mapping(self, from_col, new_name):
-        self.voxelizedMappings[from_col] = new_name
-        if not new_name in self.voxelized_column_names_in_order:
-            self.voxelized_column_names_in_order.append(new_name)
 
     def getMappedName(self, from_col):
         return self.voxelizedMappings.get(from_col,from_col)

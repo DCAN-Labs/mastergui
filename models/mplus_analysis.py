@@ -321,8 +321,16 @@ class MplusAnalysis(Analysis):
         if t in self.voxelized_column_mappings:
             self.voxelized_column_mappings.remove(t)
 
+    def voxelizedColumnNames(self):
+        return [m[1] for m in self.voxelized_column_mappings]
+
     def cancelAnalysis(self):
         """attempt to cancel the running analyis"""
         self.cancelling = True
         self.input.cancelAnalysis()
+
+    def updateModel(self, options, non_original_data_columnlist):
+        self.model.voxelized_column_names_in_order = self.voxelizedColumnNames()
+        return self.model.apply_options(options, non_original_data_columnlist)
+
 
