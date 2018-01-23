@@ -263,7 +263,7 @@ class MplusModelBuilder(QWidget):
             self.template_requirements.updateInputSpreadsheet(self.analysis.input)
 
     def loadAnalysis(self, analysis):
-        self.variables_loaded = False
+
         self.analysis = analysis
         self.loadVariables()
 

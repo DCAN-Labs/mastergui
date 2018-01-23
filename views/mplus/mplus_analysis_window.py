@@ -370,7 +370,7 @@ class MplusAnalysisWindow(AnalysisWindow):
 
             if "current_model" in saved_state:
                 self.modelBuilder.generatedModelViewer.setText(saved_state["current_model"])
-        self.modelBuilder.loadAnalysis(self.analysis)
+        
 
     def runAnalysisBackgroundWorker(self, progress_callback, finished_callback, error_callback):
         # for testing, halt after n rows of data processing. Set to 0 to do everything.
