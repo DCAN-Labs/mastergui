@@ -218,6 +218,12 @@ class MplusModel():
         for colname in (fields_from + fields_to):
             self.add_input_column_name(colname)
 
+    def remove_rule_by_string(self, rule_as_string):
+        if rule_as_string in self.rules:
+            self.rules.remove(rule_as_string)
+            self.mplus_data["MODEL"] = self.rules_to_s()
+            #todo there may be less using variables now, check carefully and remove the necessary ones
+
     def rules_to_s(self):
         return "\n".join(self.rules)
 

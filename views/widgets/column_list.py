@@ -77,6 +77,7 @@ class ColumnList(QWidget):
             # item.setCheckState(check)
             item.setCheckable(True)
             model.appendRow(item)
+
     def selectedRow(self):
         m = self.columnListWidget.model()
         idx = self.columnListWidget.selectedIndexes()

@@ -15,26 +15,30 @@ class TemplateRequirements(QGroupBox):
     def __init__(self):
         super(TemplateRequirements, self).__init__("Template Requirements")
 
-    def loadVariablesAsLists(self, variables_from_template, input_spreadsheet, non_spreadsheet_variables = []):
-        self.variables_from_template = variables_from_template
-        self.non_spreadsheet_variables = non_spreadsheet_variables
-        layout = QGridLayout()
-        listWidgets = {}
-        col_idx = 0
-        for v in variables_from_template:
-            if "type" in v and "name" in v:
-                if v["type"] == "column":
-                    name = v["name"]
-
-                    layout.addWidget(util.createBoldLabel(v.get("title", name) ),0, col_idx)
-                    list = ColumnChooser(input_spreadsheet)
-                    listWidgets[name] = list
-                    layout.addWidget(list,1,col_idx)
-                    col_idx += 1
-
-        self.listWidgets = listWidgets
-
-        self.setLayout(layout)
+    # def loadVariablesAsLists(self, variables_from_template, input_spreadsheet, non_spreadsheet_variables = []):
+    #     self.variables_from_template = variables_from_template
+    #     self.non_spreadsheet_variables = non_spreadsheet_variables
+    #     layout = QGridLayout()
+    #     listWidgets = {}
+    #     col_idx = 0
+    #     for v in variables_from_template:
+    #         if "type" in v and "name" in v:
+    #             if v["type"] == "column":
+    #                 name = v["name"]
+    #
+    #                 if "default" in v:
+    #                     default = v["default"]
+    #                 else:
+    #                     default = None
+    #                 layout.addWidget(util.createBoldLabel(v.get("title", name) ),0, col_idx)
+    #                 list = ColumnChooser(input_spreadsheet, default)
+    #                 listWidgets[name] = list
+    #                 layout.addWidget(list,1,col_idx)
+    #                 col_idx += 1
+    #
+    #     self.listWidgets = listWidgets
+    #
+    #     self.setLayout(layout)
 
     def loadVariables(self, variables_from_template, input_spreadsheet, non_spreadsheet_variables = []):
         self.variables_from_template = variables_from_template

@@ -9,6 +9,7 @@ from views.mplus.template_requirements import *
 import views.view_utilities as util
 from views.widgets.column_list import *
 from views.mplus.voxelizer_dialog import *
+from views.mplus.rule_builder_dialog import *
 import views.workbench_launcher
 import models
 import datetime
@@ -64,6 +65,7 @@ class MplusModelBuilder(QWidget):
         layout.addWidget(w)
 
 
+
         #rulePanel = self.createRulePanel()
 
         #layout.addWidget(rulePanel)
@@ -75,27 +77,6 @@ class MplusModelBuilder(QWidget):
         panelWidget.setLayout(layout)
 
         return panelWidget
-
-    def createRulePanel(self):
-        rulePanel = QWidget()
-        ruleLayout = QHBoxLayout()
-
-        self.columnSelectA = util.createColumnNameListWidget()
-        self.columnSelectB = util.createColumnNameListWidget(True)
-
-        self.ruleDisplay = QTextEdit()
-
-        self.ruleDisplay.setVisible(False)  # we may be eliminating this UI element completely
-
-        self.operationSelector = self.createRuleOperatorWidget()
-
-        ruleLayout.addWidget(self.columnSelectA)
-        ruleLayout.addWidget(self.operationSelector)
-        ruleLayout.addWidget(self.columnSelectB)
-
-        rulePanel.setLayout(ruleLayout)
-
-        return rulePanel
 
     def createColumnsWidgets(self):
         w = QGroupBox("Created Variables")
@@ -111,6 +92,8 @@ class MplusModelBuilder(QWidget):
 
         w.setLayout(layout)
         return w
+
+
 
     def on_click_add_voxelized_column(self):
         d = VoxelizerDialog(self.analysis.input)
@@ -139,6 +122,9 @@ class MplusModelBuilder(QWidget):
         w = QGroupBox("Additional Model Rules")
         layout = QHBoxLayout()
         rule_list = ColumnList("")
+        rule_list.setAddClickHandler(self.add_rule)
+        rule_list.setRemoveClickHandler(self.remove_rule)
+        self.rule_list = rule_list
         layout.addWidget(rule_list)
         w.setLayout(layout)
         return w
@@ -150,59 +136,41 @@ class MplusModelBuilder(QWidget):
         self.modelBuilderTemplateViewTabs.addTab(self.generatedModelViewer, "Model")
         self.modelBuilderTemplateViewTabs.addTab(self.modelTemplateViewer, "Template")
 
-    def createRuleOperatorWidget(self):
-        group = QButtonGroup()
-        groupWidget = QWidget()
-        layout = QVBoxLayout()
-        b1 = QRadioButton("on")
-        b1.setChecked(True)
-        layout.addWidget(b1)
 
-        b2 = QRadioButton("with")
-        layout.addWidget(b2)
-
-        b3 = QRadioButton("restricted")
-        layout.addWidget(b3)
-
-        util.addButton("Add Rule", layout, self.add_rule)
-
-        group.addButton(b1, 1)
-        group.addButton(b2, 2)
-        group.addButton(b3, 3)
-        groupWidget.setLayout(layout)
-
-        self.operatorButtonGroup = group
-        return groupWidget
 
     def add_rule(self):
 
-        listA = util.selectedLabelsFromListView(self.columnSelectA)
-        listB = util.selectedLabelsFromListView(self.columnSelectB)
+        rbd = RuleBuilderDialog(self.analysis.input, self.all_nonspreadsheet_variables_to_display())
+        rule = rbd.showModally()
 
-        if len(listA) == 0:
-            self.alert("Please select 1 or more values from the list on the right.")
-            return
+        if rule is not None:
 
-        if len(listB) == 0 or len(listB) > 1:
-            self.alert("Please select one and only one variable on the right.")
-            return
+            # now it passes the user input to the underlying mplus model object
+            self.analysis.model.add_rule(*rule)
+            self.rule_list.loadValues(self.analysis.model.rules)
+            #self.ruleDisplay.setText(self.analysis.model.rules)
 
-        operator = self.operatorButtonGroup.checkedButton().text()
+            self.updateGeneratedMPlusInputFile()
 
-        # now it passes the user input to the underlying mplus model object
-        self.analysis.model.add_rule(listA, operator, listB)
+            self.parentAnalysisWindow.dataPreview.update_selected_checks_from_analysis(self.analysis.model)
 
-        self.ruleDisplay.setText(self.analysis.model.rules_to_s())
+    def remove_rule(self):
+        #todo implement remove rule
+        print("remove rule")
+        rule = self.rule_list.selectedRow()
+        if rule is not None:
+            self.analysis.model.remove_rule_by_string(rule)
+            self.rule_list.loadValues(self.analysis.model.rules)
+            # self.ruleDisplay.setText(self.analysis.model.rules)
 
-        self.updateGeneratedMPlusInputFile()
+            self.updateGeneratedMPlusInputFile()
 
-        self.analysis.dataPreview.update_selected_checks_from_analysis(self.analysis.model)
-
+            self.parentAnalysisWindow.dataPreview.update_selected_checks_from_analysis(self.analysis.model)
 
     def updateGeneratedMPlusInputFile(self, save_to_path=""):
         columns = self.analysis.input.columnnames()
 
-        self.analysis.model.set_voxelized_mappings(self.analysis.voxelized_column_mappings)
+        #self.analysis.model.set_voxelized_mappings(self.analysis.voxelized_column_mappings)
 
         self.analysis.model.set_column_names(columns)
 
@@ -262,11 +230,11 @@ class MplusModelBuilder(QWidget):
         if hasattr(self, "template_requirements"):
             self.template_requirements.updateInputSpreadsheet(self.analysis.input)
 
-    def loadAnalysis(self, analysis):
+    def loadAnalysis(self, analysis, parentAnalysisWindow):
 
         self.analysis = analysis
         self.loadVariables()
-
+        self.parentAnalysisWindow = parentAnalysisWindow
         #todo refresh screen elements
 
     def all_nonspreadsheet_variables_to_display(self):

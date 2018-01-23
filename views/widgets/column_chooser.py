@@ -16,8 +16,9 @@ from views.view_utilities import *
 
 
 class ColumnChooser(QWidget):
-    def __init__(self, input_spreadsheet):
+    def __init__(self, input_spreadsheet, default_value = None):
         super(ColumnChooser, self).__init__()
+        self.default_value = default_value
         self.input_spreadsheet = input_spreadsheet
         self.initUI()
         self.loadColumns()
@@ -83,6 +84,13 @@ class ColumnChooser(QWidget):
 
         columns = list(self.input_spreadsheet.data().columns)
         self.addColumnNamesToListView(self.columnListWidget, columns)
+        self.set_default()
+
+    def set_default(self):
+        if self.default_value is not None:
+            m = self.columnListWidget.model()
+
+            print("do something")
 
     def addColumnNamesToListView(self, listView, columnNames):
 

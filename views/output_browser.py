@@ -104,6 +104,9 @@ class OutputBrowserWidget(QWidget):
 
         templates = {}
 
+        #todo possibly parameterize and/or change UI but loading 92k+ paths is not viable in the current model, hangs the UI
+        max_paths_to_show = 100
+        paths = paths[:100]
         for p in paths:
             name = os.path.basename(p)
             item = QStandardItem(name)

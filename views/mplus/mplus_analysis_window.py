@@ -370,7 +370,7 @@ class MplusAnalysisWindow(AnalysisWindow):
 
             if "current_model" in saved_state:
                 self.modelBuilder.generatedModelViewer.setText(saved_state["current_model"])
-        
+
 
     def runAnalysisBackgroundWorker(self, progress_callback, finished_callback, error_callback):
         # for testing, halt after n rows of data processing. Set to 0 to do everything.
@@ -492,7 +492,7 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.tabs.setTabEnabled(0, False)
         self.tabs.setStyleSheet(
             "QTabBar::tab::disabled {width: 0; height: 0; margin: 0; padding: 0; border: none;} ")
-        self.modelBuilder.loadAnalysis(self.analysis)
+        self.modelBuilder.loadAnalysis(self.analysis, self)
 
     #def closeEvent(self, event):
         # do stuff
