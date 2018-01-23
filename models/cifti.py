@@ -44,7 +44,7 @@ class Cifti():
         if len(new_values) == self.size:
             self._cifti.get_fdata()[0, :] = new_values
         else:
-            raise ValueError("Size mismatch when attempting to set Cifti Vector")
+            raise ValueError("Size mismatch when attempting to set Cifti Vector (new vector size: %d, existing size: %d" % (len(new_values),self.size))
 
     @property
     def size(self):
