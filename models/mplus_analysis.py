@@ -308,6 +308,16 @@ class MplusAnalysis(Analysis):
 
         if "voxelized_column_mappings" in load_data:
             self.voxelized_column_mappings = load_data["voxelized_column_mappings"]
+
+            if type(self.voxelized_column_mappings)==list:
+                for i in range(len(self.voxelized_column_mappings)):
+                    #by convention we are treating the mappings as tuples (from_col_name, to_col_name)
+                    #but json reads them in as lists to we are just converting each mapping from a list to a tuple here
+                    self.voxelized_column_mappings[i]= tuple(self.voxelized_column_mappings[i])
+
+
+
+
             #if hasattr(self,"model"):
             #    self.model.voxelizedMappings = load_data["voxelizedMappings"]
 
