@@ -43,6 +43,7 @@ class TemplateRequirements(QGroupBox):
     def loadVariables(self, variables_from_template, input_spreadsheet, non_spreadsheet_variables = []):
         self.variables_from_template = variables_from_template
         self.non_spreadsheet_variables = non_spreadsheet_variables
+        self.input_spreadsheet = input_spreadsheet
         layout = QFormLayout()
         listWidgets = {}
         for v in variables_from_template:
