@@ -1,8 +1,17 @@
 import json
 import os
+import sys
+import datetime
 
+
+log_path_key = "log_path"
 class Config():
     def __init__(self, path=""):
+        if len(path)==0:
+            if hasattr(sys.modules['__main__'], "__file__"):
+                rootdir = os.path.dirname(sys.modules['__main__'].__file__)
+                path = os.path.join(rootdir, "config.json")
+
         self.path = os.path.abspath(os.path.expanduser(path))
         if len(path) > 0:
             self.load()
@@ -14,15 +23,70 @@ class Config():
 
         self.expand_all_known_paths()
 
+        self.setSystemDefaultsForMissing()
+
+        self.setupLogPath()
+
+    def __getitem__(self, key):
+        """makes the config object instance indexable by config key (top level keys only)
+
+        if not found just falls back to the dictionaries standard exception raising
+        """
+
+        return self.data[key]
+
+    def __setitem__(self, key, value):
+
+        self.data[key] = value
+
+
     def getOptional(self,key, default = ""):
-        if key in self._data:
-            return self._data[key]
+        """returns key value from config data if it exists,
+        otherwise the provided default value
+        """
+        if key in self.data:
+            return self.data[key]
         else:
             return default
 
     @property
     def data(self):
         return self._data
+
+    def setSystemDefaultsForMissing(self):
+        defaults = [(log_path_key, "/mnt/max/shared/projects/mastergui/logs")]
+        for default in defaults:
+            key = default[0]
+            value = default[1]
+            if not key in self.data:
+                self.data[default] = value
+
+    def setupLogPath(self):
+        path = self.getOptional(log_path_key)
+
+        #the preferred usage is the config.json for the mastergui instance has a "log_path" key that
+        #specifies a directory. If so we create a subdirectory under the system standard with their
+        #username and create a timestamped log file underneath.
+        #if the original config had not provided a directory it is assumed they provided a specific path
+        #for the log and we will simply use that without any further manipulation (no user specific subfolder,
+        # no timestamp in the log filename)
+
+        if os.path.isdir(path) or len(path)==0:
+            default_filename = "mastergui%s.log" % \
+                        str(datetime.datetime.now()).replace(" ", "_").replace(":","_").replace(
+                ".", "_")
+            #then we will append their username to it
+            username = os.getlogin()
+
+            user_dir_path = os.path.join(path, username)
+            if not os.path.isdir(user_dir_path):
+                os.mkdir(user_dir_path)
+
+            path = os.path.join(user_dir_path, default_filename)
+
+            path = os.path.abspath(path)
+
+            self.data[log_path_key]= path
 
     def addToRecentFileList(self, path):
         recents_path = self.getOptional("recent_files_path", "mastergui_recents")
@@ -83,7 +147,8 @@ class Config():
         path_keys = ["output_dir",
                      "Base_cifti_for_output",
                      "default_maps",
-                     "recent_files_path"]
+                     "recent_files_path",
+                     "log_path"]
 
         for path in path_keys:
             self.fixPath(d,path)

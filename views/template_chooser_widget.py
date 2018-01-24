@@ -5,6 +5,7 @@ import os
 import glob
 import json
 import models
+import views.view_utilities as util
 
 
 class TemplateChooserWidget(QWidget):
@@ -36,8 +37,9 @@ class TemplateChooserWidget(QWidget):
             try:
                 template = models.mplus_template.MplusTemplate(p)
             except Exception as e:
-                print("Error opening template %s" % p)
-                print(e)
+
+                util.alert("Error opening template %s\n%s" % (p,str(e)))
+
                 continue
 
             while template.name in templates:

@@ -1,11 +1,13 @@
 import sys
 import os
+import logging
+
 from views.mplus.mplus_analysis_window import *
 from views.palm.palm_analysis_window import *
 from views.fconnanova.fconnanova_analysis_window import *
 from views.analysis_window_base import *
 from views.splash_window import *
-from views.view_utilities import *
+import views.view_utilities as util
 from models import config
 from models.analysis import *
 from models.fconnanova_analysis import *
@@ -13,6 +15,24 @@ from models.mplus_analysis import *
 from models.palm_analysis import  *
 #from views import mplus_analysis_window
 from views import other_analysis
+import traceback
+
+def init_logging(config):
+    formatter_str = '%(levelname)s:%(asctime)s %(message)s'
+
+    mastergui_log_path = config["log_path"]
+
+    logging.basicConfig(filename=mastergui_log_path, filemode='w', level=logging.DEBUG, format=formatter_str,
+                        datefmt='%m/%d/%Y %I:%M:%S %p')
+
+    # add log messages to console output too
+    ch = logging.StreamHandler()
+    root_logger = logging.getLogger()
+    root_logger.addHandler(ch)
+    ch.setLevel(logging.DEBUG)
+    formatter = logging.Formatter(formatter_str)
+    ch.setFormatter(formatter)
+
 
 
 # https://riverbankcomputing.com/pipermail/pyqt/2009-May/022961.html
@@ -25,53 +45,62 @@ def excepthook(excType, excValue, tracebackobj):
     @param tracebackobj traceback object
     """
 
+    log_notice = "".join(traceback.format_exception(excType, excValue, tracebackobj))
+
+
     notice = \
-        """An unhandled exception occurred.\n""" \
-        """Error information:\n%s:%s\n%s""" % \
-        (excType, excValue, tracebackobj)
+        """An unexpected error occurred.\n""" \
+        """Error information:\n%s:%s""" % \
+        (excType, excValue)
+
+    logging.error("Globally unhandled error occurred:" + log_notice)
 
     errorbox = QMessageBox()
-    errorbox.setText(str(notice))
+    errorbox.setText(notice)
     errorbox.exec_()
+    print("ok")
 
 
-# global exception handler
-# sys.excepthook = excepthook
+#global exception handler, usually disabled during development but should be enabled in production
+sys.excepthook = excepthook
 
 class MasterGuiApp(QMainWindow):
-    def __init__(self):
+    def __init__(self, optional_path_to_config_file = ""):
         super(MasterGuiApp, self).__init__()
 
-        self.load_config()
+        try:
+            self.load_config(optional_path_to_config_file)
 
-        self.init_ui()
+            init_logging(self.config)
 
-        self.setGeometry(100, 100, 1200, 1000)
+            self.init_ui()
 
-        self.mdi = QMdiArea()
+            self.setGeometry(100, 100, 1200, 1000)
 
-        self.setCentralWidget(self.mdi)
+            self.mdi = QMdiArea()
 
-        self.splash = SplashWindow(self)
+            self.setCentralWidget(self.mdi)
 
-        sub = QMdiSubWindow()
-        sub.setWidget(self.splash)
-        self.mdi.addSubWindow(sub)
-        self.mdi.activateNextSubWindow()
+            self.splash = SplashWindow(self)
 
-        self.splashSubWindow = sub
+            sub = QMdiSubWindow()
+            sub.setWidget(self.splash)
+            self.mdi.addSubWindow(sub)
+            self.mdi.activateNextSubWindow()
 
-        sub.showMaximized()
+            self.splashSubWindow = sub
 
-    def load_config(self):
-        if hasattr(sys.modules['__main__'], "__file__"):
-            rootdir = os.path.dirname(sys.modules['__main__'].__file__)
-            config_path = os.path.join(rootdir, "config.json")
-            self.config = config.Config(config_path)
-        else:
-            print("config not available")
+            sub.showMaximized()
+        except Exception as e:
+            util.alert(str(e))
+            raise e
+
+    def load_config(self, config_path = ""):
+
+        self.config = config.Config(config_path)
 
     def add_analysiswindow_as_subwindow(self, gw):
+
         sub = QMdiSubWindow()
         sub.setWidget(gw)
 
@@ -126,31 +155,8 @@ class MasterGuiApp(QMainWindow):
 
     def addToRecentFileList(self, path):
         self.config.addToRecentFileList(path)
-        # recents_path = self.config.getOptional("recent_files_path", "mastergui_recents")
-        #
-        # if os.path.exists(recents_path):
-        #     with open(recents_path, 'r') as f:
-        #         files = f.readlines()
-        #         files.insert(0,path)
-        #
-        #         unique_tracker = {}
-        #         unique_files = []
-        #         for p in files:
-        #             p = p.strip()
-        #             if len(p)>0:
-        #                 if not p in unique_tracker:
-        #                     unique_files.append(p)
-        #                     unique_tracker[p] = True
-        # else:
-        #     unique_files = [path]
-        #
-        #
-        # with open(recents_path, 'w') as f:
-        #     f.writelines("\n".join(unique_files))
-
 
     def save_action(self):
-
         active = self.activeAnalysisWindow()
         if active is not None:
             active.save()
