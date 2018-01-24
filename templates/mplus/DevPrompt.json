@@ -32,8 +32,11 @@ MISSING=.;
 ANALYSIS:
           estimator=MLR;
 MODEL:
-          {{C}} on {{A}} {{B}};
-          {{A}} on {{B}}
+          {{A}} on {{B}} {{C}};
+          {{C}} on {{B}};
+
+model indirect:
+{{A}} ind {{B}};
 
 OUTPUT:
  stdyx;
