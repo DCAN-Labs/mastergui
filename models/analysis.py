@@ -97,7 +97,7 @@ class Analysis():
         for c in data.columns:
             cifti = self.base_cifti_for_output()
             cifti.setVector(data[c])
-            cifti_output_path = os.path.join(self.output_path, c, ".dscalar.nii")
+            cifti_output_path =  "%s.%d.%s" % (self.output_path, c, ".dscalar.nii")
             cifti.save(cifti_output_path)
 
     @classmethod

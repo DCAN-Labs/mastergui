@@ -104,6 +104,9 @@ class MplusOutputSelector(OutputBrowserWidget):
 
     def extract(self):
         try:
+
+            self.output_dir = self.outputDirWidget.text()
+            
             selected = self.selectedOutputRows()
 
             path_template_for_data_including_voxel = os.path.join(self.output_dir, "input.voxel%s.inp.out")
