@@ -204,7 +204,7 @@ class MplusAnalysis(Analysis):
                     errors_so_far = self.mplus_exec_errors
                     self.mplus_exec_count = count
 
-                if count > 0 and count % 100 == 0:
+                if count > 0 and count % 1000 == 0:
                     seconds = time.time() - self.mplus_exec_start_time
                     rate = seconds / count
 
