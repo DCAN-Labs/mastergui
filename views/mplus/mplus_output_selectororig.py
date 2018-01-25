@@ -5,6 +5,7 @@ import glob
 import os
 import numpy as np
 
+
 class MplusOutputSelector2(QWidget):
     def __init__(self, parentAnalysisWidget):
         super(MplusOutputSelector2, self).__init__()
@@ -23,11 +24,11 @@ class MplusOutputSelector2(QWidget):
         layout.addWidget(self.createRadioButtons())
         self.patternWidget = QLineEdit()
         self.patternWidget.returnPressed.connect(self.on_click_refresh)
-        #layout.addWidget(self.patternWidget)
+        # layout.addWidget(self.patternWidget)
 
         self.fileViewer = QTextEdit()
         self.fileViewer.setReadOnly(True)
-        #layout.addWidget(self.fileViewer)
+        # layout.addWidget(self.fileViewer)
 
 
         button = QPushButton("Refresh")
@@ -43,7 +44,6 @@ class MplusOutputSelector2(QWidget):
 
         self.listView.setSelectionMode(QAbstractItemView.SingleSelection)
 
-
         self.selectableOutput = QListView()
 
         model = QStandardItemModel()
@@ -58,7 +58,7 @@ class MplusOutputSelector2(QWidget):
         self.pattern = ""
 
     def createRadioButtons(self):
-        labels = ["CSVs","Mplus Input Files","Mplus Output Files"]
+        labels = ["CSVs", "Mplus Input Files", "Mplus Output Files"]
         self.patterns = ["*.csv", "*.inp", "*.out"]
         group = QButtonGroup()
         groupWidget = QWidget()
@@ -77,7 +77,7 @@ class MplusOutputSelector2(QWidget):
         self.patternButtonGroup = group
         return groupWidget
 
-    def on_pattern_btn_clicked(self,i):
+    def on_pattern_btn_clicked(self, i):
         selected_id = i.group().checkedId()
         pattern = self.patterns[selected_id]
         self.patternWidget.setText(pattern)
@@ -87,7 +87,7 @@ class MplusOutputSelector2(QWidget):
 
         self.loadOutputFiles(self.outputDirWidget.text(), self.patternWidget.text())
 
-    def loadOutputFiles(self,output_dir, pattern):
+    def loadOutputFiles(self, output_dir, pattern):
         self.output_dir = output_dir
         self.pattern = pattern
 
@@ -102,10 +102,8 @@ class MplusOutputSelector2(QWidget):
         templates = {}
 
         for p in paths:
-
             item = QStandardItem(p)
             model.appendRow(item)
-
 
         self.listView.setModel(model)
 
@@ -114,14 +112,11 @@ class MplusOutputSelector2(QWidget):
     def on_row_changed(self, current, previous):
         path = current.data()
 
-
-        with open(path,'r') as f:
+        with open(path, 'r') as f:
             contents = f.readlines()
 
-
         self.addValuesToList(self.selectableOutput, contents)
-        #self.fileViewer.setText("".join(contents))
-
+        # self.fileViewer.setText("".join(contents))
 
     def addValuesToList(self, listView, columnNames):
 
@@ -136,15 +131,15 @@ class MplusOutputSelector2(QWidget):
         item_to_line_numbers = {}
 
         for col in columnNames:
-            if len(col.strip())>0:
+            if len(col.strip()) > 0:
                 item = QStandardItem(col)
                 # check = Qt.Checked if 1 == 1 else Qt.Unchecked
                 # item.setCheckState(check)
                 item.setCheckable(True)
-                item.setSizeHint(QSize(300,15))
+                item.setSizeHint(QSize(300, 15))
                 model.appendRow(item)
                 item_to_line_numbers[item_number] = original_line_number
-                item_number+=1
+                item_number += 1
 
             original_line_number += 1
 

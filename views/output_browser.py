@@ -6,7 +6,6 @@ import os
 import numpy as np
 
 
-
 class OutputBrowserWidget(QWidget):
     def __init__(self):
         super(OutputBrowserWidget, self).__init__()
@@ -45,7 +44,7 @@ class OutputBrowserWidget(QWidget):
 
         self.listView.setSelectionMode(QAbstractItemView.SingleSelection)
 
-        exploreLayout.addWidget(self.listView, stretch = 1)
+        exploreLayout.addWidget(self.listView, stretch=1)
         self.initDetailUI(exploreLayout)
         layout.addLayout(exploreLayout)
 
@@ -58,7 +57,7 @@ class OutputBrowserWidget(QWidget):
         exploreLayout.addWidget(self.fileViewer, stretch=5)
 
     def createRadioButtons(self):
-        labels = ["CSVs","Mplus Input Files","Mplus Output Files"]
+        labels = ["CSVs", "Mplus Input Files", "Mplus Output Files"]
         self.patterns = ["*.csv", "*.inp", "*.out"]
         group = QButtonGroup()
         groupWidget = QWidget()
@@ -80,7 +79,7 @@ class OutputBrowserWidget(QWidget):
 
         return groupWidget
 
-    def on_pattern_btn_clicked(self,i):
+    def on_pattern_btn_clicked(self, i):
         selected_id = i.group().checkedId()
         pattern = self.patterns[selected_id]
         self.patternWidget.setText(pattern)
@@ -90,7 +89,7 @@ class OutputBrowserWidget(QWidget):
 
         self.loadOutputFiles(self.outputDirWidget.text(), self.patternWidget.text())
 
-    def loadOutputFiles(self,output_dir, pattern):
+    def loadOutputFiles(self, output_dir, pattern):
         self.output_dir = output_dir
         self.pattern = pattern
 
@@ -104,14 +103,13 @@ class OutputBrowserWidget(QWidget):
 
         templates = {}
 
-        #todo possibly parameterize and/or change UI but loading 92k+ paths is not viable in the current model, hangs the UI
+        # todo possibly parameterize and/or change UI but loading 92k+ paths is not viable in the current model, hangs the UI
         max_paths_to_show = 100
         paths = paths[:100]
         for p in paths:
             name = os.path.basename(p)
             item = QStandardItem(name)
             model.appendRow(item)
-
 
         self.listView.setModel(model)
 
@@ -120,7 +118,7 @@ class OutputBrowserWidget(QWidget):
     def on_row_changed(self, current, previous):
         path = os.path.join(self.output_dir, current.data())
 
-        with open(path,'r') as f:
+        with open(path, 'r') as f:
             contents = f.readlines()
 
         self.fileViewer.setText("".join(contents))

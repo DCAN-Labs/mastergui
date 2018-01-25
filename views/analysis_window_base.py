@@ -38,7 +38,7 @@ class AnalysisWindow(QWidget):
         self.tabs.currentChanged.connect(self.onTabChanged)
 
     def onTabChanged(self, p_int):
-        #placeholder for subclasses to override if they need to handle a change in tabs.
+        # placeholder for subclasses to override if they need to handle a change in tabs.
         print("Tab changed %d" % p_int)
 
     def addTab(self, widget, title):
@@ -64,18 +64,18 @@ class AnalysisWindow(QWidget):
         # try:
         self.input = input_spreadsheet.InputSpreadsheet(path)
 
-        wb_command_prefix = self.config.getOptional("wb_command_path_prefix","")
+        wb_command_prefix = self.config.getOptional("wb_command_path_prefix", "")
         if len(wb_command_prefix) > 0:
             self.input.wb_command_prefix = wb_command_prefix
 
         self.updateUIAfterInput()
         self.dataPreview.render_dataframe(self.input._data, path)
-        if hasattr(self,"analysis"):
+        if hasattr(self, "analysis"):
             self.analysis.input = self.input
 
 
-        # except:
-        #    self.alert("Error while opening file " + path)
+            # except:
+            #    self.alert("Error while opening file " + path)
 
     def validateConfiguration(self):
         config_problems = self.analysis.configValidationErrors()
@@ -89,7 +89,6 @@ class AnalysisWindow(QWidget):
             error_msg += "\nPlease fix your configuration file %s" % self.config.path
 
             self.alert(error_msg)
-
 
     def updateUIAfterInput(self):
         print("override in subclasses")
@@ -140,7 +139,7 @@ class AnalysisWindow(QWidget):
         return button
 
     def save(self):
-        if hasattr(self,'savedFilePath') and len(self.savedFilePath)>0:
+        if hasattr(self, 'savedFilePath') and len(self.savedFilePath) > 0:
             self.analysis.save(self.savedFilePath)
         else:
             savefile, ok = QFileDialog.getSaveFileName(self)
@@ -148,29 +147,27 @@ class AnalysisWindow(QWidget):
             self.savedFilePath = savefile
             self.config.addToRecentFileList(savefile)
 
-    def open(self,file_contents, from_path):
+    def open(self, file_contents, from_path):
         print("opening ")
         print(file_contents)
         self.savedFilePath = from_path
         self.handle_open(file_contents)
         self.handle_open_specifically(file_contents)
 
-
-    def handle_open_specifically(self,file_contents):
+    def handle_open_specifically(self, file_contents):
         """for subclass overriding"""
         print("implement in subclass")
 
     def loadAnalysis(self, analysis):
         self.analysis = analysis
-        if hasattr(analysis,"input_data_path"):
+        if hasattr(analysis, "input_data_path"):
             self.open_input_file(analysis.input_data_path)
         self.loadAnalysisModuleSpecific()
-        #todo load all attributes from saved file format
+        # todo load all attributes from saved file format
 
     def loadAnalysisModuleSpecific(self):
         """for overriding in subclasses"""
         print("override to map module specific attributes from saved data file")
-
 
     def loadAnalysisSpecifics(self):
         print("override in subclass")
@@ -179,7 +176,7 @@ class AnalysisWindow(QWidget):
 
         close_msg = "Save this analysis before closing?"
         reply = QMessageBox.question(self, 'Message',
-                                           close_msg, QMessageBox.Yes, QMessageBox.No)
+                                     close_msg, QMessageBox.Yes, QMessageBox.No)
 
         if reply == QMessageBox.Yes:
             self.save()

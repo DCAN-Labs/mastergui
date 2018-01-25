@@ -13,6 +13,7 @@ import threading
 import traceback
 import time
 
+
 # threading worker example from https://martinfitzpatrick.name/article/multithreading-pyqt-applications-with-qthreadpool/
 class WorkerSignals(QObject):
     '''
@@ -85,7 +86,7 @@ class Worker(QRunnable):
 
 class PalmAnalysisWindow(AnalysisWindow):
     def __init__(self, config):
-        #self.default_missing_tokens_list = ["-888", "NA", "", "nan"]
+        # self.default_missing_tokens_list = ["-888", "NA", "", "nan"]
         self.title = "Palm Analysis"
         self.analyzerName = "palm"
         super(PalmAnalysisWindow, self).__init__(config)
@@ -109,8 +110,6 @@ class PalmAnalysisWindow(AnalysisWindow):
             self.fileName = fileName
             self.open_input_file(fileName)
 
-
-
     def initUISpecific(self):
         """
         This method is invoked by the base class upon initial loading and should contain the GUI
@@ -133,7 +132,6 @@ class PalmAnalysisWindow(AnalysisWindow):
         self.tabs.setCurrentIndex(0)
 
         self.progress = QProgressBar()
-
 
     def initExecAnalysisWidget(self):
         self.execAnalysisWidget = QWidget()
@@ -188,7 +186,7 @@ class PalmAnalysisWindow(AnalysisWindow):
 
     def updateUIAfterInput(self):
         print("updateUIAfterInput")
-        #stub
+        # stub
         True
 
     def launchWorkbench(self, cifti_output_path):
@@ -220,7 +218,7 @@ class PalmAnalysisWindow(AnalysisWindow):
         # for testing, halt after n rows of data processing. Set to 0 to do everything.
         halt_after_n = int(self.config.getOptional('testing_halt_after_n_voxels', 0))
 
-        #mappings = self.dataPreview.voxelized_columns
+        # mappings = self.dataPreview.voxelized_columns
 
         mappings = self.dataPreview.selected_voxelized_columns()
 
@@ -231,7 +229,7 @@ class PalmAnalysisWindow(AnalysisWindow):
                                                       progress_callback=progress_callback,
                                                       error_callback=error_callback)
 
-        #finished_callback.emit()  this is called when the worker completes automatically
+        # finished_callback.emit()  this is called when the worker completes automatically
 
         return "Done."
 
@@ -261,7 +259,7 @@ class PalmAnalysisWindow(AnalysisWindow):
             self.threadpool = QThreadPool()
             print("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount())
 
-            #self.updateGeneratedMPlusInputFile()  #this probably shouldn't be here
+            # self.updateGeneratedMPlusInputFile()  #this probably shouldn't be here
 
             self.modelOutput.setText("Starting Analysis...")
 
@@ -271,7 +269,7 @@ class PalmAnalysisWindow(AnalysisWindow):
 
             self.model.title = self.analysis.batchTitle
 
-            self.outputViewer.loadOutputFiles(self.analysis.batchOutputDir,"*.inp.out")
+            self.outputViewer.loadOutputFiles(self.analysis.batchOutputDir, "*.inp.out")
 
             worker = Worker(self.runAnalysisBackgroundWorker)  # Any other args, kwargs are passed to the run function
 

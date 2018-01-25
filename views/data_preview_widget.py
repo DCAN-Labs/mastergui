@@ -12,7 +12,7 @@ include_col_idx = 4
 
 
 class DataPreviewWidget(QWidget):
-    def __init__(self, parentAnalysisWindow = None):
+    def __init__(self, parentAnalysisWindow=None):
         super(DataPreviewWidget, self).__init__()
 
         self.parentAnalysisWindow = parentAnalysisWindow
@@ -38,44 +38,43 @@ class DataPreviewWidget(QWidget):
 
         self.voxelized_columns = []
 
-    def addPathEntryBar(self,layout):
-        #pathEntryWidget = QWidget()
-        #pathEntryLayout = QHBoxLayout()
+    def addPathEntryBar(self, layout):
+        # pathEntryWidget = QWidget()
+        # pathEntryLayout = QHBoxLayout()
 
-        layout.addWidget(QLabel("Non-imaging Data File:"),0,0)
+        layout.addWidget(QLabel("Non-imaging Data File:"), 0, 0)
         self.filePathWidget = QLineEdit()
-        layout.addWidget(self.filePathWidget,0,1)
+        layout.addWidget(self.filePathWidget, 0, 1)
 
         self.btnBrowse = QPushButton("Browse")
-        layout.addWidget(self.btnBrowse,0,2)
+        layout.addWidget(self.btnBrowse, 0, 2)
         self.btnBrowse.clicked.connect(self.on_click_browse)
 
-        #pathEntryWidget.setLayout(pathEntryLayout)
+        # pathEntryWidget.setLayout(pathEntryLayout)
 
-        #layout.addWidget(pathEntryWidget)
+        # layout.addWidget(pathEntryWidget)
 
-    def addMissingOptions(self,layout):
-        #missingBarWidget = QWidget()
-        #missingLayout = QHBoxLayout()
+    def addMissingOptions(self, layout):
+        # missingBarWidget = QWidget()
+        # missingLayout = QHBoxLayout()
 
-        layout.addWidget(QLabel("Missing Data Tokens:"),1,0)
+        layout.addWidget(QLabel("Missing Data Tokens:"), 1, 0)
         self.missingDataTokens = QLineEdit()
         self.missingDataTokens.setText(",".join(self.default_missing_tokens_list))
-        layout.addWidget(self.missingDataTokens,1,1)
+        layout.addWidget(self.missingDataTokens, 1, 1)
         self.highlightMissing = QCheckBox("Highlight Missing Values")
         self.highlightMissing.setChecked(True)
 
         self.highlightMissing.stateChanged.connect(self.clickHighlighting)
-        layout.addWidget(self.highlightMissing,1,2)
+        layout.addWidget(self.highlightMissing, 1, 2)
 
-        #missingBarWidget.setLayout(missingLayout)
-        #layout.addWidget(missingBarWidget)
+        # missingBarWidget.setLayout(missingLayout)
+        # layout.addWidget(missingBarWidget)
 
     def on_click_browse(self):
 
         if self.parentAnalysisWindow is not None:
             self.parentAnalysisWindow.openDataFileDialog()
-
 
     def clickHighlighting(self):
         self.render_dataframe(self.data)
@@ -87,37 +86,36 @@ class DataPreviewWidget(QWidget):
 
         insert_where = self.inputTable.columnCount()
 
-        #self.inputTable.insertColumn(insert_where)
+        # self.inputTable.insertColumn(insert_where)
 
-        #self.inputTable.setHorizontalHeaderItem(insert_where, QTableWidgetItem(colname))
+        # self.inputTable.setHorizontalHeaderItem(insert_where, QTableWidgetItem(colname))
 
-        #self.setupComputedCellsForCol(insert_where)
+        # self.setupComputedCellsForCol(insert_where)
 
-        #self.inputTable.item(include_col_idx, insert_where).setCheckState(Qt.Checked)
+        # self.inputTable.item(include_col_idx, insert_where).setCheckState(Qt.Checked)
 
         source_name = self.inputTable.horizontalHeaderItem(path_col_index).text()
 
         # copy the % missing from the source column
-        #self.inputTable.item(missing_idx, insert_where).setText(
+        # self.inputTable.item(missing_idx, insert_where).setText(
         #    self.inputTable.item(missing_idx, path_col_index).text())
 
         item = QTableWidgetItem(colname)
         item.setBackground(Qt.gray)
-        self.inputTable.setItem(voxel_mapping_idx, path_col_index,  item)
-
+        self.inputTable.setItem(voxel_mapping_idx, path_col_index, item)
 
         # store tuples of column mapping for later usage when generating data.
         self.voxelized_columns.append((source_name, colname))
 
     def selected_voxelized_columns(self):
-        #or for each column in grid see if the voxelized row is set and selected.
+        # or for each column in grid see if the voxelized row is set and selected.
         result = []
         for c in range(self.inputTable.columnCount()):
             item = self.inputTable.item(include_col_idx, c)
             if item.checkState() == Qt.Checked:
                 mapped_value = self.getVoxelizedColumnName(c)
 
-                if len(mapped_value)>0:
+                if len(mapped_value) > 0:
                     source_name = self.inputTable.horizontalHeaderItem(c).text()
                     result.append((source_name, mapped_value))
 
@@ -143,7 +141,7 @@ class DataPreviewWidget(QWidget):
         result = []
         for c in range(self.inputTable.columnCount()):
             any_mapped_name = self.getVoxelizedColumnName(c)
-            if len(any_mapped_name)>0:
+            if len(any_mapped_name) > 0:
                 result.append(any_mapped_name)
             else:
                 result.append(self.inputTable.horizontalHeaderItem(c).text())
@@ -153,7 +151,7 @@ class DataPreviewWidget(QWidget):
     def missing_tokens(self):
         return self.missingDataTokens.text().split(",")
 
-    def render_dataframe(self, data, path = ""):
+    def render_dataframe(self, data, path=""):
 
         self.data = data
         self.filePathWidget.setText(path)
@@ -184,8 +182,6 @@ class DataPreviewWidget(QWidget):
                     missingCountByCol[j] = missingCountByCol.get(j, 0) + 1
                     if highlight_missing:
                         t.item(row_idx, j).setBackground(missing_color)
-
-
 
         t.setVerticalHeaderItem(voxel_mapping_idx, QTableWidgetItem("Transform to Voxel Column Name:"))
         t.setVerticalHeaderItem(max_row_idx, QTableWidgetItem("Max Value:"))
@@ -227,7 +223,7 @@ class DataPreviewWidget(QWidget):
         """by convention we will assume that any column names that start with "PATH_" are intended for voxelization
         """
         for c in range(self.inputTable.columnCount()):
-            item = self.inputTable.item(include_col_idx,c)
+            item = self.inputTable.item(include_col_idx, c)
 
             colname = self.inputTable.horizontalHeaderItem(c).text()
             if colname[0:5] == "PATH_":

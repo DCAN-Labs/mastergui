@@ -16,7 +16,7 @@ from views.view_utilities import *
 
 
 class ColumnChooserDropDown(QComboBox):
-    def __init__(self, input_spreadsheet = None, non_spreadsheet_variables = [], initial_value = ""):
+    def __init__(self, input_spreadsheet=None, non_spreadsheet_variables=[], initial_value=""):
         super(ColumnChooserDropDown, self).__init__()
 
         self.input_spreadsheet = input_spreadsheet
@@ -29,8 +29,8 @@ class ColumnChooserDropDown(QComboBox):
         self.clear()
         columns = [""]
 
-        if len(self.non_spreadsheet_variables)>0:
-            columns+= self.non_spreadsheet_variables
+        if len(self.non_spreadsheet_variables) > 0:
+            columns += self.non_spreadsheet_variables
 
         if self.input_spreadsheet is not None:
             if len(self.non_spreadsheet_variables) > 0:

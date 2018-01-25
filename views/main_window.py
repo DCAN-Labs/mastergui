@@ -12,10 +12,11 @@ from models import config
 from models.analysis import *
 from models.fconnanova_analysis import *
 from models.mplus_analysis import *
-from models.palm_analysis import  *
-#from views import mplus_analysis_window
+from models.palm_analysis import *
+# from views import mplus_analysis_window
 from views import other_analysis
 import traceback
+
 
 def init_logging(config):
     formatter_str = '%(levelname)s:%(asctime)s %(message)s'
@@ -34,7 +35,6 @@ def init_logging(config):
     ch.setFormatter(formatter)
 
 
-
 # https://riverbankcomputing.com/pipermail/pyqt/2009-May/022961.html
 def excepthook(excType, excValue, tracebackobj):
     """
@@ -46,7 +46,6 @@ def excepthook(excType, excValue, tracebackobj):
     """
 
     log_notice = "".join(traceback.format_exception(excType, excValue, tracebackobj))
-
 
     notice = \
         """An unexpected error occurred.\n""" \
@@ -61,11 +60,12 @@ def excepthook(excType, excValue, tracebackobj):
     print("ok")
 
 
-#global exception handler, usually disabled during development but should be enabled in production
+# global exception handler, usually disabled during development but should be enabled in production
 sys.excepthook = excepthook
 
+
 class MasterGuiApp(QMainWindow):
-    def __init__(self, optional_path_to_config_file = ""):
+    def __init__(self, optional_path_to_config_file=""):
         super(MasterGuiApp, self).__init__()
 
         try:
@@ -95,7 +95,7 @@ class MasterGuiApp(QMainWindow):
             util.alert(str(e))
             raise e
 
-    def load_config(self, config_path = ""):
+    def load_config(self, config_path=""):
 
         self.config = config.Config(config_path)
 
@@ -111,7 +111,6 @@ class MasterGuiApp(QMainWindow):
 
         if len(title) > 0:
             sub.setWindowTitle(title)
-
 
         self.mdi.addSubWindow(sub)
 
@@ -142,10 +141,9 @@ class MasterGuiApp(QMainWindow):
         if openfile:
             self.open_file(openfile)
 
-
     def open_file(self, openfile):
 
-        #self.splash.showMinimized()
+        # self.splash.showMinimized()
         analysis = Analysis.load(openfile, self.config)
 
         if analysis is not None:
@@ -165,7 +163,7 @@ class MasterGuiApp(QMainWindow):
         win = self.mdi.activeSubWindow()
         if win is not None:
             for w in win.children():
-                if isinstance(w,AnalysisWindow):
+                if isinstance(w, AnalysisWindow):
                     return w
         else:
             return None
@@ -201,7 +199,7 @@ class MasterGuiApp(QMainWindow):
     def on_click_new_mplus_analysis(self):
         self.new_mplus_analysis()
 
-    def new_mplus_analysis(self, analysis = None):
+    def new_mplus_analysis(self, analysis=None):
 
         analysis_window = MplusAnalysisWindow(self.config, analysis)
 
@@ -213,14 +211,13 @@ class MasterGuiApp(QMainWindow):
 
         self.displayNewAnalysis(analysis)
 
-
     def new_fconnanova_analysis(self):
 
         analysis = FconnanovaAnalysisWindow(self.config)
 
         self.displayNewAnalysis(analysis)
 
-    def displayNewAnalysis(self,analysis):
+    def displayNewAnalysis(self, analysis):
 
         self.add_analysiswindow_as_subwindow(analysis)
 
@@ -233,17 +230,16 @@ class MasterGuiApp(QMainWindow):
 
         self.analysistoolbar = self.addToolBar('analysis_toolbar')
 
-        for k,v in self.config.getOptional("analyzers", {}).items():
-            action = QAction(v.get("title","(missing analyzer title in config"),self)
-            shortcut = v.get("shortcut","")
-            if len(shortcut)>0:
+        for k, v in self.config.getOptional("analyzers", {}).items():
+            action = QAction(v.get("title", "(missing analyzer title in config"), self)
+            shortcut = v.get("shortcut", "")
+            if len(shortcut) > 0:
                 action.setShortcut(shortcut)
             action.triggered.connect(self.newClickHandler(k))
             self.analysistoolbar.addAction(action)
 
-
-    def newClickHandler(self,module_name):
-        return lambda:self.new_analysis(module_name)
+    def newClickHandler(self, module_name):
+        return lambda: self.new_analysis(module_name)
 
     def new_analysis(self, module_name):
         if module_name == "mplus":
@@ -257,6 +253,7 @@ class MasterGuiApp(QMainWindow):
             return
 
         self.displayNewAnalysis(analysis)
+
 
 """
 Modify base on:

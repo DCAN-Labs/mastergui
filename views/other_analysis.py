@@ -20,4 +20,5 @@ class OtherAnalysisWindow(AnalysisWindow):
         super(OtherAnalysisWindow, self).__init__(config)
 
     def onSelectTemplate(self, model_text):
-        self.alert("This Other Analysis is just a concept demonstration that has no actual functionality.  Other Analysis Types could be implemented here.")
+        self.alert(
+            "This Other Analysis is just a concept demonstration that has no actual functionality.  Other Analysis Types could be implemented here.")

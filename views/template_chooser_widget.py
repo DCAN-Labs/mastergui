@@ -38,7 +38,7 @@ class TemplateChooserWidget(QWidget):
                 template = models.mplus_template.MplusTemplate(p)
             except Exception as e:
 
-                util.alert("Error opening template %s\n%s" % (p,str(e)))
+                util.alert("Error opening template %s\n%s" % (p, str(e)))
 
                 continue
 

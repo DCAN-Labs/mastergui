@@ -9,6 +9,7 @@ from views.view_utilities import *
 from views.widgets.column_chooser import *
 from views.widgets.column_chooser_dialog import *
 
+
 class PalmReaderOptions(QWidget):
     def __init__(self, parentAnalysisWindow):
         super(PalmReaderOptions, self).__init__()
@@ -36,15 +37,13 @@ class PalmReaderOptions(QWidget):
         # so.
 
         self.parentAnalysisWindow = parentAnalysisWindow
-        params = [("NumFactors","scalar"),("LevelsPerFactor","vector"),
-         ("NumRepeatedMeasures","scalar"),("Groups","vector"),
-         ("SaveOuput","string"),("RegressorVector","vector")]
-
+        params = [("NumFactors", "scalar"), ("LevelsPerFactor", "vector"),
+                  ("NumRepeatedMeasures", "scalar"), ("Groups", "vector"),
+                  ("SaveOuput", "string"), ("RegressorVector", "vector")]
 
         layout = QVBoxLayout()
 
         analysis_type_group_buttons = self.createRadioButtons()
-
 
         paramWidgets = {}
 
@@ -55,18 +54,18 @@ class PalmReaderOptions(QWidget):
 
         for p in params:
             param_type = p[1]
-            if param_type=="vector":
+            if param_type == "vector":
                 w = QTextEdit()
             elif param_type == "scalar":
-                w= QSpinBox()
+                w = QSpinBox()
             else:
                 w = QLineEdit()
             paramWidgets[p[0]] = w
-            form_layout.addRow(QLabel(p[0]),w)
+            form_layout.addRow(QLabel(p[0]), w)
 
         self.formGroupBox.setLayout(form_layout)
 
-        columnChooser = addButton("Add Categorical Variable",layout,self.test_column_chooser)
+        columnChooser = addButton("Add Categorical Variable", layout, self.test_column_chooser)
         columnChooser2 = addButton("Add Scalar Variable", layout, self.test_column_chooser)
         layout.addWidget(self.formGroupBox)
         self.setLayout(layout)
@@ -76,13 +75,12 @@ class PalmReaderOptions(QWidget):
 
     def test_column_chooser(self):
 
-        if hasattr(self.parentAnalysisWindow,"input"):
+        if hasattr(self.parentAnalysisWindow, "input"):
             x = ColumnChooserDialog(self.parentAnalysisWindow.input)
             x.showModally()
 
-
     def createRadioButtons(self):
-        #comments from PalmReader.m 1/3/18
+        # comments from PalmReader.m 1/3/18
         #                   1) 'one_sample_test' -- use this when comparing a
         #                   single group against zero -- useful for
         #                   analyses on high-level statistics (e.g. paired t-tests).
@@ -107,7 +105,7 @@ class PalmReaderOptions(QWidget):
 
 
 
-        labels = ["one_sample_test","two_sample_test","anova", "rmanova"]
+        labels = ["one_sample_test", "two_sample_test", "anova", "rmanova"]
 
         self.patterns = ["*.csv", "*.inp", "*.out"]
 

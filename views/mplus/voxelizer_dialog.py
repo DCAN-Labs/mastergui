@@ -16,6 +16,7 @@ from views.view_utilities import *
 from views.widgets.column_chooser import *
 from views.widgets.column_chooser_dialog import *
 
+
 class VoxelizerDialog(ColumnChooserDialog):
     def __init__(self, input_spreadsheet):
         super(VoxelizerDialog, self).__init__(input_spreadsheet)
@@ -30,7 +31,7 @@ class VoxelizerDialog(ColumnChooserDialog):
 
         formWidget = QWidget()
         formWidget.setLayout(form)
-        self.layout().insertWidget(1,formWidget)
+        self.layout().insertWidget(1, formWidget)
         self.showModally()
 
     def mapping(self):
@@ -39,12 +40,10 @@ class VoxelizerDialog(ColumnChooserDialog):
 
             to_col = self.new_name_widget.text()
 
-            if len(to_col)>0:
+            if len(to_col) > 0:
                 return (from_col, to_col)
 
         return None
-
-
 
     def showModally(self):
         self.setWindowModality(Qt.WindowModal)

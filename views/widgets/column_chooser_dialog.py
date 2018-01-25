@@ -14,35 +14,39 @@ import traceback
 import time
 from views.view_utilities import *
 from views.widgets.column_chooser import *
+
+
 class ColumnChooserDialog(QDialog):
-    def __init__(self, input_spreadsheet ):
+    def __init__(self, input_spreadsheet):
         super(ColumnChooserDialog, self).__init__()
         self.input_spreadsheet = input_spreadsheet
         self.initUI()
-        #self.loadColumns()
+        # self.loadColumns()
 
     def initUI(self):
 
         layout = QVBoxLayout()
 
         self.chooser = ColumnChooser(self.input_spreadsheet)
-#        layout.addWidget(radio_group)
+        #        layout.addWidget(radio_group)
         layout.addWidget(self.chooser)
 
-        addButton("OK",layout, self.on_click_ok)
+        addButton("OK", layout, self.on_click_ok)
         addButton("Cancel", layout, self.on_click_ok)
 
         self.setLayout(layout)
 
     def on_click_ok(self):
         print("ok")
-        #todo implement
+        # todo implement
         self.close()
+
     def on_click_cancel(self):
         self.close()
+
     def createRadioButtons(self):
         labels = ["All", "Categorical", "Scalar"]
-        #self.patterns = ["*.csv", "*.inp", "*.out"]
+        # self.patterns = ["*.csv", "*.inp", "*.out"]
         group = QButtonGroup()
         groupWidget = QWidget()
         layout = QHBoxLayout()
@@ -63,31 +67,28 @@ class ColumnChooserDialog(QDialog):
 
         return groupWidget
 
-    def on_pattern_btn_clicked(self,a):
+    def on_pattern_btn_clicked(self, a):
         print(a)
-        #todo change set of columns that is displayed
-
+        # todo change set of columns that is displayed
 
     def loadColumns(self):
 
-
         columns = list(self.input_spreadsheet.data().columns)
 
-        self.addColumnNamesToListView(self.columnListWidget,columns)
-
+        self.addColumnNamesToListView(self.columnListWidget, columns)
 
     def addColumnNamesToListView(self, listView, columnNames):
 
-            model = listView.model()
+        model = listView.model()
 
-            model.clear()
+        model.clear()
 
-            for col in columnNames:
-                item = QStandardItem(col)
-                # check = Qt.Checked if 1 == 1 else Qt.Unchecked
-                # item.setCheckState(check)
-                item.setCheckable(True)
-                model.appendRow(item)
+        for col in columnNames:
+            item = QStandardItem(col)
+            # check = Qt.Checked if 1 == 1 else Qt.Unchecked
+            # item.setCheckState(check)
+            item.setCheckable(True)
+            model.appendRow(item)
 
     def showModally(self):
         self.setWindowModality(Qt.WindowModal)

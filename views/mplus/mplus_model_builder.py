@@ -43,34 +43,29 @@ class MplusModelBuilder(QWidget):
 
         self.left_panel = self.createLeftPanel()
 
-
         self.initModelBuilderViewTabs()
 
-        top_level_layout.addWidget(self.left_panel,stretch=6)
-        top_level_layout.addWidget(self.modelBuilderTemplateViewTabs,stretch=4)
+        top_level_layout.addWidget(self.left_panel, stretch=6)
+        top_level_layout.addWidget(self.modelBuilderTemplateViewTabs, stretch=4)
 
         self.loadVariables()
 
         self.setLayout(top_level_layout)
 
-
-
     def createLeftPanel(self):
 
         panelWidget = QWidget()
         layout = QVBoxLayout()
-        #layout.addWidget(QLabel("Select Covariates"))
+        # layout.addWidget(QLabel("Select Covariates"))
 
         w = self.createColumnsWidgets()
         layout.addWidget(w)
 
+        # rulePanel = self.createRulePanel()
 
-
-        #rulePanel = self.createRulePanel()
-
-        #layout.addWidget(rulePanel)
-        #rulePanel.setVisible(False)
-        #layout.addWidget(self.ruleDisplay)
+        # layout.addWidget(rulePanel)
+        # rulePanel.setVisible(False)
+        # layout.addWidget(self.ruleDisplay)
         self.rule_list_widget = self.createRuleListWidget()
         layout.addWidget(self.rule_list_widget)
 
@@ -92,8 +87,6 @@ class MplusModelBuilder(QWidget):
 
         w.setLayout(layout)
         return w
-
-
 
     def on_click_add_voxelized_column(self):
         d = VoxelizerDialog(self.analysis.input)
@@ -136,26 +129,23 @@ class MplusModelBuilder(QWidget):
         self.modelBuilderTemplateViewTabs.addTab(self.generatedModelViewer, "Model")
         self.modelBuilderTemplateViewTabs.addTab(self.modelTemplateViewer, "Template")
 
-
-
     def add_rule(self):
 
         rbd = RuleBuilderDialog(self.analysis.input, self.all_nonspreadsheet_variables_to_display())
         rule = rbd.showModally()
 
         if rule is not None:
-
             # now it passes the user input to the underlying mplus model object
             self.analysis.model.add_rule(*rule)
             self.rule_list.loadValues(self.analysis.model.rules)
-            #self.ruleDisplay.setText(self.analysis.model.rules)
+            # self.ruleDisplay.setText(self.analysis.model.rules)
 
             self.updateGeneratedMPlusInputFile()
 
             self.parentAnalysisWindow.dataPreview.update_selected_checks_from_analysis(self.analysis.model)
 
     def remove_rule(self):
-        #todo implement remove rule
+        # todo implement remove rule
         print("remove rule")
         rule = self.rule_list.selectedRow()
         if rule is not None:
@@ -170,7 +160,7 @@ class MplusModelBuilder(QWidget):
     def updateGeneratedMPlusInputFile(self, save_to_path=""):
         columns = self.analysis.input.columnnames()
 
-        #self.analysis.model.set_voxelized_mappings(self.analysis.voxelized_column_mappings)
+        # self.analysis.model.set_voxelized_mappings(self.analysis.voxelized_column_mappings)
 
         self.analysis.model.set_column_names(columns)
 
@@ -181,9 +171,8 @@ class MplusModelBuilder(QWidget):
     def refresh(self):
         self.addInputColumnNamesToListViews()
 
-
     def loadVariables(self):
-        if not hasattr(self,"analysis"):
+        if not hasattr(self, "analysis"):
             return
         if self.variables_loaded:
             return
@@ -198,15 +187,14 @@ class MplusModelBuilder(QWidget):
                     input = None
                 template_requirements.loadVariables(v, input)
                 template_requirements.setMaximumWidth(600)
-                self.left_panel.layout().insertWidget(0,template_requirements)
+                self.left_panel.layout().insertWidget(0, template_requirements)
                 self.template_requirements = template_requirements
                 self.variables_loaded = True
 
                 button = QPushButton("Apply")
                 button.setMaximumWidth(140)
                 button.clicked.connect(self.on_click_apply_template_variables)
-                self.left_panel.layout().insertWidget(1,button)
-
+                self.left_panel.layout().insertWidget(1, button)
 
     def on_click_apply_template_variables(self):
         options = self.template_requirements.selectedValues()
@@ -215,16 +203,14 @@ class MplusModelBuilder(QWidget):
 
         self.generatedModelViewer.setText(generated_mplus_model_text)
 
-
     def addInputColumnNamesToListViews(self):
 
-        #cols = ["i", "q", "s", "r"] + self.parentAnalysis.dataPreview.possibleColumnNames()
-        #todo restore column refreshing if necessary in the updated ui
+        # cols = ["i", "q", "s", "r"] + self.parentAnalysis.dataPreview.possibleColumnNames()
+        # todo restore column refreshing if necessary in the updated ui
 
-        #util.addColumnNamesToListView(self.columnSelectA, cols)
-        #util.addColumnNamesToListView(self.columnSelectB, cols)
+        # util.addColumnNamesToListView(self.columnSelectA, cols)
+        # util.addColumnNamesToListView(self.columnSelectB, cols)
         print("what else to refresh?")
-
 
     def updateDataColumns(self):
         if hasattr(self, "template_requirements"):
@@ -235,13 +221,13 @@ class MplusModelBuilder(QWidget):
         self.analysis = analysis
         self.loadVariables()
         self.parentAnalysisWindow = parentAnalysisWindow
-        #todo refresh screen elements
+        # todo refresh screen elements
 
     def all_nonspreadsheet_variables_to_display(self):
 
-        if hasattr(self,"analysis"):
+        if hasattr(self, "analysis"):
             cols = [m[1] for m in self.analysis.voxelized_column_mappings]
-            #todo if and only if analysis should show time series related columns (add attribute to template json)
+            # todo if and only if analysis should show time series related columns (add attribute to template json)
             cols += ["i", "q", "s", "r"]
         else:
             cols = ["i", "q", "s", "r"]
@@ -270,7 +256,3 @@ class MplusModelBuilder(QWidget):
                     new_colname = "VOXEL_" + colname[5:]
 
                     self.addVoxelizedColumn(colname, new_colname)
-
-
-
-

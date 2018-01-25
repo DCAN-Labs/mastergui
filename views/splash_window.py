@@ -10,8 +10,6 @@ from views.template_chooser_widget import *
 
 
 class SplashWindow(QWidget):
-
-
     def __init__(self, parent_application_window):
         super(SplashWindow, self).__init__()
         self.parent_application_window = parent_application_window
@@ -21,7 +19,6 @@ class SplashWindow(QWidget):
         font = QFont()
         font.setPointSize(16)
         self.initUIGeneral()
-
 
     def initUIGeneral(self):
         self.setWindowTitle("Launch Screen")
@@ -35,7 +32,6 @@ class SplashWindow(QWidget):
         self.recentList = QListView()
 
         self.recentList.setModel(QStandardItemModel())
-
 
         f = QFont()
         f.setBold(True)
@@ -51,22 +47,18 @@ class SplashWindow(QWidget):
         recentWidget = QWidget()
         recentWidget.setLayout(self.recentLayout)
 
+        util.addButton("Open", self.recentLayout, self.on_click_open)
 
-        util.addButton("Open",self.recentLayout,self.on_click_open)
-
-        grid.addWidget(recentWidget, stretch = 3)
-
+        grid.addWidget(recentWidget, stretch=3)
 
         new_button_layout = QVBoxLayout()
-
 
         l = QLabel("Create Analysis")
         l.setFont(f)
         new_button_layout.addWidget(l)
         new_button_layout.setAlignment(Qt.AlignTop)
-        for k,v in self.config.getOptional("analyzers", {}).items():
-
-            util.addButton("New " + v.get("title",""), new_button_layout, self.newClickHandler(k) )
+        for k, v in self.config.getOptional("analyzers", {}).items():
+            util.addButton("New " + v.get("title", ""), new_button_layout, self.newClickHandler(k))
 
         new_button_widget = QWidget()
         new_button_widget.setLayout(new_button_layout)
@@ -75,22 +67,21 @@ class SplashWindow(QWidget):
 
         grid.addWidget(new_button_widget)
 
-    def newClickHandler(self,module_name):
-        return lambda:self.on_click_new(module_name)
+    def newClickHandler(self, module_name):
+        return lambda: self.on_click_new(module_name)
 
-    def on_double_click(self,a):
+    def on_double_click(self, a):
         try:
             row = a.row()
 
-            if row==0:  #the first row is an artificial entry, offering Browse, rather than coming from the actual list of recent files.
+            if row == 0:  # the first row is an artificial entry, offering Browse, rather than coming from the actual list of recent files.
                 self.parent_application_window.open_action()
             else:
                 path = self.recentList.model().item(a.row()).text().strip()
-                if len(path)>0:
+                if len(path) > 0:
                     self.parent_application_window.open_file(path)
         except Exception as e:
             util.alert(str(e))
-
 
     def load_recent_files(self):
         path = self.config.getOptional("recent_files_path", "mastergui_recents")
@@ -99,7 +90,7 @@ class SplashWindow(QWidget):
                 files = f.readlines()
                 self.addColumnNamesToListView(self.recentList, files)
 
-    def on_click_open(self,a):
+    def on_click_open(self, a):
         try:
             item = self.recentList.selectedIndexes()[0]
 
@@ -111,7 +102,7 @@ class SplashWindow(QWidget):
         except Exception as e:
             util.alert(str(e))
 
-    def on_click_new(self,module):
+    def on_click_new(self, module):
         try:
             self.parent_application_window.new_analysis(module)
         except Exception as e:
@@ -127,7 +118,6 @@ class SplashWindow(QWidget):
         for col in columnNames:
             item = QStandardItem(col)
             model.appendRow(item)
-
 
     def createColumnNameListWidget(self):
         model = QStandardItemModel()

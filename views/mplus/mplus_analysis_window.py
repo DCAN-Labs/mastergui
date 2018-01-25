@@ -15,11 +15,10 @@ from views.mplus.mplus_output_selector import *
 from views.mplus.template_requirements import *
 from views.mplus.mplus_model_builder import *
 
-
 tab_datapreview = 1
 tab_modelbuilder = 2
-tab_output=4
-tab_outputselector=5
+tab_output = 4
+tab_outputselector = 5
 
 
 # threading worker example from https://martinfitzpatrick.name/article/multithreading-pyqt-applications-with-qthreadpool/
@@ -93,7 +92,7 @@ class Worker(QRunnable):
 
 
 class MplusAnalysisWindow(AnalysisWindow):
-    def __init__(self, config, analysis = None):
+    def __init__(self, config, analysis=None):
         self.default_missing_tokens_list = ["-888", "NA", "", "nan"]
         self.title = "Mplus Analysis"
         self.analyzerName = "mplus"
@@ -118,13 +117,9 @@ class MplusAnalysisWindow(AnalysisWindow):
             # https://stackoverflow.com/questions/34377663/how-to-hide-a-tab-in-qtabwidget-and-show-it-when-a-button-is-pressed
         self.tabs.setStyleSheet("QTabBar::tab::disabled {width: 0; height: 0; margin: 0; padding: 0; border: none;} ")
 
-
-
-
-    def handle_open_specifically(self,file_contents):
+    def handle_open_specifically(self, file_contents):
         """for subclass overriding"""
         print("implement in subclass")
-
 
     def openDataFileDialog(self):
         options = QFileDialog.Options()
@@ -137,7 +132,7 @@ class MplusAnalysisWindow(AnalysisWindow):
             self.open_input_file(fileName)
 
     def open_input_file(self, path):
-        super(MplusAnalysisWindow,self).open_input_file(path)
+        super(MplusAnalysisWindow, self).open_input_file(path)
         self.modelBuilder.updateDataColumns()
         self.modelBuilder.autoVoxelize()
 
@@ -152,10 +147,6 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.modelBuilder.modelTemplateViewer.setText(model_text)
         self.analysis.model = self.model
 
-
-
-
-
     def selectedLabelsFromListView(self, list):
 
         m = list.model()
@@ -165,10 +156,6 @@ class MplusAnalysisWindow(AnalysisWindow):
             if item.checkState() == Qt.Checked:
                 labels.append(item.text())
         return labels
-
-
-
-
 
     def initUISpecific(self):
         """
@@ -191,7 +178,6 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.outputViewer = OutputBrowserWidget()
         self.addTab(self.outputViewer, "Output")
 
-
         self.outputSelector = MplusOutputSelector(self)
         self.addTab(self.outputSelector, "Output Value Selector")
         self.tabs.setCurrentIndex(0)
@@ -201,7 +187,7 @@ class MplusAnalysisWindow(AnalysisWindow):
         [self.tabs.setTabEnabled(i, False) for i in range(1, self.tabs.count())]
 
     def onTabChanged(self, p_int):
-        #print("tab select %d " % p_int)
+        # print("tab select %d " % p_int)
         if p_int == tab_modelbuilder:
             self.modelBuilder.refresh()
         elif p_int == tab_modelbuilder:
@@ -223,18 +209,17 @@ class MplusAnalysisWindow(AnalysisWindow):
         :return:
         """
 
-        #self.modelBuilderTab = QWidget()
-        #self.modelBuilderTabLayout = QHBoxLayout()
-        #self.modelBuilderTab.setLayout(self.modelBuilderTabLayout)
+        # self.modelBuilderTab = QWidget()
+        # self.modelBuilderTabLayout = QHBoxLayout()
+        # self.modelBuilderTab.setLayout(self.modelBuilderTabLayout)
 
-        #self.modelBuilderTemplateViewTabs = QTabWidget()
+        # self.modelBuilderTemplateViewTabs = QTabWidget()
 
         self.modelBuilder = MplusModelBuilder()
 
 
-        #self.modelBuilderTabLayout.addWidget(self.modelBuilder)
-        #self.modelBuilderTabLayout.addWidget(self.modelBuilderTemplateViewTabs)
-
+        # self.modelBuilderTabLayout.addWidget(self.modelBuilder)
+        # self.modelBuilderTabLayout.addWidget(self.modelBuilderTemplateViewTabs)
 
     def initModelBuilderPanel(self):
 
@@ -279,7 +264,7 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.chkAutoLaunchWorkbench.setChecked(True)
         command_bar.addWidget(self.chkAutoLaunchWorkbench)
 
-        self.cancelBtn =  self.addButton("Cancel Analysis", command_bar, self.on_click_cancel, width = 130)
+        self.cancelBtn = self.addButton("Cancel Analysis", command_bar, self.on_click_cancel, width=130)
         self.cancelBtn.setEnabled(False)
         self.initTestAnalysisFrame(command_bar)
 
@@ -298,7 +283,6 @@ class MplusAnalysisWindow(AnalysisWindow):
             self.cancelling = True
             self.analysis.cancelAnalysis()
             self.cancelBtn.setEnabled(False)
-
 
     def addCheckBoxAndField(self, container, checkLabel, fieldInitialValue):
         row = QHBoxLayout()
@@ -332,7 +316,6 @@ class MplusAnalysisWindow(AnalysisWindow):
 
     def updateUIAfterInput(self):
         self.modelBuilder.refresh()
-
 
     def launchWorkbench(self, cifti_output_path):
         try:
@@ -371,21 +354,20 @@ class MplusAnalysisWindow(AnalysisWindow):
             if "current_model" in saved_state:
                 self.modelBuilder.generatedModelViewer.setText(saved_state["current_model"])
 
-
     def runAnalysisBackgroundWorker(self, progress_callback, finished_callback, error_callback):
         # for testing, halt after n rows of data processing. Set to 0 to do everything.
         halt_after_n = int(self.config.getOptional('testing_halt_after_n_voxels', 0))
 
         self.mplus_output_contents = ""
 
-        self.analysis.model = self.model #todo this shouldn't be necessary, analysis.model should already be set but confirm
+        self.analysis.model = self.model  # todo this shouldn't be necessary, analysis.model should already be set but confirm
         self.analysis.title = self.title
-        self.mplus_output_contents = self.analysis.go( self.input,
+        self.mplus_output_contents = self.analysis.go(self.input,
                                                       self.dataPreview.missing_tokens,
                                                       progress_callback=progress_callback,
                                                       error_callback=error_callback)
 
-        #finished_callback.emit()  this is called when the worker completes automatically
+        # finished_callback.emit()  this is called when the worker completes automatically
 
         return "Done."
 
@@ -409,7 +391,7 @@ class MplusAnalysisWindow(AnalysisWindow):
 
         selected_outputs = self.outputSelector.selectedOutputRows()
 
-        if len(selected_outputs)==0:
+        if len(selected_outputs) == 0:
             msg = "Analysis complete but no output fields were selected for extraction yet.  Go to the Output Selector tab and select the rows from the MPlus output that you would like aggregated and click Extract."
             self.appendTextToOutputDisplay(msg)
             self.alert(msg)
@@ -420,7 +402,8 @@ class MplusAnalysisWindow(AnalysisWindow):
                 if self.chkAutoLaunchWorkbench.isChecked():
 
                     if hasattr(self, 'analysis'):
-                        self.appendTextToOutputDisplay("Opening output file %s in Connectome Workbench" % cifti_output_path)
+                        self.appendTextToOutputDisplay(
+                            "Opening output file %s in Connectome Workbench" % cifti_output_path)
 
                         self.launchWorkbench(cifti_output_path)
                 else:
@@ -434,7 +417,7 @@ class MplusAnalysisWindow(AnalysisWindow):
 
         self.setExecuteButtonState(True)
 
-        if hasattr(self,"input"):
+        if hasattr(self, "input"):
             self.input.cancelling = False
 
         self.threadpool = QThreadPool()
@@ -446,11 +429,10 @@ class MplusAnalysisWindow(AnalysisWindow):
 
         self.model.title = self.analysis.batchTitle
 
-        self.outputViewer.loadOutputFiles(self.analysis.batchOutputDir,"*.inp.out")
-        self.outputSelector.loadOutputFiles(self.analysis.batchOutputDir,"*.inp.out")
+        self.outputViewer.loadOutputFiles(self.analysis.batchOutputDir, "*.inp.out")
+        self.outputSelector.loadOutputFiles(self.analysis.batchOutputDir, "*.inp.out")
         self.analysis.limit_by_row = limit_by_row
         self.analysis.limit_by_voxel = limit_by_voxel
-
 
         worker = Worker(self.runAnalysisBackgroundWorker)  # Any other args, kwargs are passed to the run function
 
@@ -494,10 +476,11 @@ class MplusAnalysisWindow(AnalysisWindow):
             "QTabBar::tab::disabled {width: 0; height: 0; margin: 0; padding: 0; border: none;} ")
         self.modelBuilder.loadAnalysis(self.analysis, self)
 
-    #def closeEvent(self, event):
+        # def closeEvent(self, event):
         # do stuff
-#        event.ignore()
-        #if can_exit:
-        #    event.accept()  # let the window close
-        #else:
-        #    event.ignore()
+
+    #        event.ignore()
+    # if can_exit:
+    #    event.accept()  # let the window close
+    # else:
+    #    event.ignore()

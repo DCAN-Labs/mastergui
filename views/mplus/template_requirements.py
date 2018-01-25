@@ -11,6 +11,7 @@ from views.widgets.column_chooser import *
 from views.widgets.column_chooser_dropdown import *
 import views.view_utilities as util
 
+
 class TemplateRequirements(QGroupBox):
     def __init__(self):
         super(TemplateRequirements, self).__init__("Template Requirements")
@@ -40,7 +41,7 @@ class TemplateRequirements(QGroupBox):
     #
     #     self.setLayout(layout)
 
-    def loadVariables(self, variables_from_template, input_spreadsheet, non_spreadsheet_variables = []):
+    def loadVariables(self, variables_from_template, input_spreadsheet, non_spreadsheet_variables=[]):
         self.variables_from_template = variables_from_template
         self.non_spreadsheet_variables = non_spreadsheet_variables
         self.input_spreadsheet = input_spreadsheet
@@ -56,30 +57,25 @@ class TemplateRequirements(QGroupBox):
                 if v["type"] == "column":
                     name = v["name"]
 
-
-                    label = util.createBoldLabel(v.get("title", name) )
+                    label = util.createBoldLabel(v.get("title", name))
                     list = ColumnChooserDropDown(input_spreadsheet, self.non_spreadsheet_variables, default)
                     listWidgets[name] = list
-                    layout.addRow(label,list)
+                    layout.addRow(label, list)
 
         self.listWidgets = listWidgets
 
         self.setLayout(layout)
 
-
-
     def selectedValues(self):
         results = {}
-        for k,v in self.listWidgets.items():
+        for k, v in self.listWidgets.items():
             type_of_widget = type(v)
             if type_of_widget == ColumnChooserDropDown:
                 results[k] = v.currentText()
             elif type_of_widget == ColumnChooser:
                 results[k] = util.selectedLabelsFromListView(v.columnListWidget)
 
-
         return results
-
 
     def updateInputSpreadsheet(self, input):
         self.input_spreadsheet = input
@@ -91,5 +87,5 @@ class TemplateRequirements(QGroupBox):
         self.refreshColumns()
 
     def refreshColumns(self):
-        for k,v in self.listWidgets.items():
+        for k, v in self.listWidgets.items():
             v.updateInputSpreadsheet(self.input_spreadsheet, self.non_spreadsheet_variables)
