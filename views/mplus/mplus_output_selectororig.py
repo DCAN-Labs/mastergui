@@ -58,8 +58,8 @@ class MplusOutputSelector2(QWidget):
         self.pattern = ""
 
     def createRadioButtons(self):
-        labels = ["CSVs", "Mplus Input Files", "Mplus Output Files"]
-        self.patterns = ["*.csv", "*.inp", "*.out"]
+        labels = ["CSVs", "Mplus Input Files", "Mplus Output Files", "Ciftis (.nii)"]
+        self.patterns = ["*.csv", "*.inp", "*.out","*.nii"]
         group = QButtonGroup()
         groupWidget = QWidget()
         layout = QHBoxLayout()

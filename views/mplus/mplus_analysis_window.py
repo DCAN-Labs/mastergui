@@ -175,7 +175,7 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.addTab(self.modelBuilder, "Model Builder")
         self.addTab(self.execAnalysisWidget, "Execution Tab")
 
-        self.outputViewer = OutputBrowserWidget()
+        self.outputViewer = OutputBrowserWidget(self)
         self.addTab(self.outputViewer, "Output")
 
         self.outputSelector = MplusOutputSelector(self)

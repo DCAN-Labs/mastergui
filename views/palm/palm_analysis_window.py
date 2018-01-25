@@ -127,7 +127,7 @@ class PalmAnalysisWindow(AnalysisWindow):
         self.addTab(self.palmReaderOptions, "PalmReader Options")
         self.addTab(self.execAnalysisWidget, "Execution Tab")
 
-        self.outputViewer = OutputBrowserWidget()
+        self.outputViewer = OutputBrowserWidget(self)
         self.addTab(self.outputViewer, "Output")
         self.tabs.setCurrentIndex(0)
 

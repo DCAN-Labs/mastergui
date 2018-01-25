@@ -4,11 +4,14 @@ from PyQt5.QtGui import *
 import glob
 import os
 import numpy as np
+import views.view_utilities as util
 
+cifti_radio_button_index = 3
 
 class OutputBrowserWidget(QWidget):
-    def __init__(self):
+    def __init__(self, parentAnalysisWidget):
         super(OutputBrowserWidget, self).__init__()
+        self.parentAnalysisWidget = parentAnalysisWidget
         self.initUI()
 
     def initUI(self):
@@ -35,11 +38,10 @@ class OutputBrowserWidget(QWidget):
         self.fileViewer = QTextEdit()
         self.fileViewer.setReadOnly(True)
 
-        button = QPushButton("Refresh")
 
-        button.clicked.connect(self.on_click_refresh)
-        layout.addWidget(button)
-        button.setFixedWidth(70)
+        button = util.addButton("Refesh", layout, self.on_click_refresh, 70)
+        self.ciftiButtion = util.addButton("Open Cifti", layout, self.on_click_opencifti)
+        self.ciftiButtion.setVisible(False)
         self.listView = QListView()
 
         self.listView.setSelectionMode(QAbstractItemView.SingleSelection)
@@ -57,8 +59,10 @@ class OutputBrowserWidget(QWidget):
         exploreLayout.addWidget(self.fileViewer, stretch=5)
 
     def createRadioButtons(self):
-        labels = ["CSVs", "Mplus Input Files", "Mplus Output Files"]
-        self.patterns = ["*.csv", "*.inp", "*.out"]
+
+        labels = ["CSVs", "Mplus Input Files", "Mplus Output Files", "Ciftis (.nii)"]
+        self.patterns = ["*.csv", "*.inp", "*.out", "*.nii"]
+
         group = QButtonGroup()
         groupWidget = QWidget()
         layout = QHBoxLayout()
@@ -83,13 +87,22 @@ class OutputBrowserWidget(QWidget):
         selected_id = i.group().checkedId()
         pattern = self.patterns[selected_id]
         self.patternWidget.setText(pattern)
+        self.ciftiButtion.setVisible(selected_id==cifti_radio_button_index)
+        self.fileViewer.setVisible(selected_id != cifti_radio_button_index)
         self.on_click_refresh()
 
-    def on_click_refresh(self):
 
+    def on_click_refresh(self):
+        self.last_selected_path  = ""
         self.loadOutputFiles(self.outputDirWidget.text(), self.patternWidget.text())
 
+    def on_click_opencifti(self):
+        if hasattr(self, "last_selected_path"):
+            if len(self.last_selected_path)>0:
+                self.parentAnalysisWidget.launchWorkbench(self.last_selected_path)
+
     def loadOutputFiles(self, output_dir, pattern):
+        self.last_selected_path = ""
         self.output_dir = output_dir
         self.pattern = pattern
 
@@ -118,10 +131,15 @@ class OutputBrowserWidget(QWidget):
     def on_row_changed(self, current, previous):
         path = os.path.join(self.output_dir, current.data())
 
-        with open(path, 'r') as f:
-            contents = f.readlines()
+        self.last_selected_path = path
 
-        self.fileViewer.setText("".join(contents))
+        if not self.ciftiButtion.isVisible():
+            path = os.path.join(self.output_dir, current.data())
+
+            with open(path, 'r') as f:
+                contents = f.readlines()
+
+            self.fileViewer.setText("".join(contents))
 
     def hidePatternSelector(self):
         self.groupWidget.setVisible(False)

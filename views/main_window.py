@@ -61,7 +61,7 @@ def excepthook(excType, excValue, tracebackobj):
 
 
 # global exception handler, usually disabled during development but should be enabled in production
-sys.excepthook = excepthook
+#sys.excepthook = excepthook
 
 
 class MasterGuiApp(QMainWindow):

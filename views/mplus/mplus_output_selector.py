@@ -11,7 +11,7 @@ import sys
 
 class MplusOutputSelector(OutputBrowserWidget):
     def __init__(self, parentAnalysisWidget):
-        super(MplusOutputSelector, self).__init__()
+        super(MplusOutputSelector, self).__init__(parentAnalysisWidget)
         self.hidePatternSelector()
         self.patternWidget.setText("*.out")
         # self.fileViewer.setVisible(False)
@@ -20,7 +20,7 @@ class MplusOutputSelector(OutputBrowserWidget):
         # self.exploreLayout.removeWidget(self.)
         # self.layout().removeWidget(self.groupWidget)
         self.parentAnalysisWidget = parentAnalysisWidget
-        view_utilities.addButton("Extract", self.layout(), self.extract)
+        view_utilities.addButton("Extract", self.layout(), self.on_click_extract)
 
     def initDetailUI(self, exploreLayout):
         self.createOutputSelector()
@@ -101,6 +101,10 @@ class MplusOutputSelector(OutputBrowserWidget):
                 name = line.strip().split(" ")[0]
                 items.append((line_number, line, name))
         return items
+
+    def on_click_extract(self):
+        self.extract()
+        util.alert("Extraction complete. Go to the output tab to open the cifti in Connectome Workbench.")
 
     def extract(self):
         try:
