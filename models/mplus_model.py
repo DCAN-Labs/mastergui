@@ -273,7 +273,10 @@ class MplusModel():
         :param ciftis:
         :return: a pandas data frame with the extracted values from the mplus output files
         """
-
+        if n_elements == 0:
+                #todo this override is not a great compromise but is making it easier to 
+                #rerun value extractions without recomputing the size of all ciftis. 
+                n_elements = 91282 #set to the default value
         all_found_results = np.zeros((n_elements, len(line_matching_info)), dtype=np.float32)
         all_found_results[:] = np.nan
 
@@ -285,10 +288,10 @@ class MplusModel():
                 # todo how to handle NA's if field not found in results?
                 value = results[name]
                 all_found_results[i, j] = value
-
+        
         column_names = [m[2] for m in line_matching_info]
         all_results_df = pd.DataFrame(all_found_results, columns=column_names)
-
+        
         return all_results_df
 
     def parse_mplus_results(self, path, look_for_fields=[]):
