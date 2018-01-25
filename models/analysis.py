@@ -4,7 +4,7 @@ import logging
 import os
 import json
 import models.mplus_analysis
-#import models.palm_analysis
+# import models.palm_analysis
 from models.cifti import *
 from models.cifti_matrix import *
 
@@ -14,9 +14,9 @@ class Analysis():
 
     Standardizes treatment of config file information and structuring of output directories"""
 
-    def __init__(self,config, module_name, filename = ""):
+    def __init__(self, config, module_name, filename=""):
 
-        #this will be used when saving/loading files to indicate which kind of analysis it is
+        # this will be used when saving/loading files to indicate which kind of analysis it is
         self.module_name = module_name
         self.config = config
         self.required_config_keys = []
@@ -33,7 +33,6 @@ class Analysis():
     def base_output_path(self):
         return os.path.join(self.batchOutputDir, self.filename_prefix)
 
-
     @property
     def output_dir(self):
         return self.config._data.get("output_dir", "")
@@ -46,11 +45,11 @@ class Analysis():
         missing = self.missingRequiredConfigKeys()
         missing = [(m, "Missing Key") for m in missing]
         invalid_directories = self.config.resolve_directories(['output_dir'])
-        #problems are returned, and empty return valid is good
+        # problems are returned, and empty return valid is good
         return missing + invalid_directories
+
     def setBatchTitle(self, raw_title):
         self.batchTitle = re.sub('[^0-9a-zA-Z]+', '_', self.dir_name_for_title(raw_title))
-
 
     def progressMessage(self, txt):
 
@@ -60,11 +59,12 @@ class Analysis():
 
     def save(self, filename):
 
-        save_data = {"title":"mytitle", "module":self.module_name, "version":0.1, "execution_history":self.execution_history}
+        save_data = {"title": "mytitle", "module": self.module_name, "version": 0.1,
+                     "execution_history": self.execution_history}
 
-        if hasattr(self,'template'):
+        if hasattr(self, 'template'):
             template = self.template
-            if hasattr(template,'data'):
+            if hasattr(template, 'data'):
                 save_data['template'] = self.template.data
 
         self.module_specific_save_data(save_data)
@@ -74,10 +74,11 @@ class Analysis():
 
     def module_specific_save_data(self, save_data):
         """override in subclasses, add any attributes to save_data dictionary that should be included in the saved json file"""
-        print("override in subclasses, add any attributes to save_data dictionary that should be included in the saved json file")
+        print(
+            "override in subclasses, add any attributes to save_data dictionary that should be included in the saved json file")
 
     def add_execution_history(self, output_dir, limit_by_voxel, limit_by_row):
-        history_record = {"output_dir":output_dir, "limit_by_voxel":limit_by_voxel, "limit_by_row":limit_by_row}
+        history_record = {"output_dir": output_dir, "limit_by_voxel": limit_by_voxel, "limit_by_row": limit_by_row}
         self.execution_history.append(history_record)
 
     def base_cifti_for_output(self):
@@ -96,15 +97,13 @@ class Analysis():
         for c in data.columns:
             cifti = self.base_cifti_for_output()
             cifti.setVector(data[c])
-            cifti_output_path = os.path.join(self.output_path ,c,".dscalar.nii")
+            cifti_output_path = os.path.join(self.output_path, c, ".dscalar.nii")
             cifti.save(cifti_output_path)
-
-
 
     @classmethod
     def load(self, filename, config):
 
-        with open(filename,'r') as f:
+        with open(filename, 'r') as f:
             load_data = json.load(f)
 
         module_name = load_data["module"]
@@ -120,6 +119,6 @@ class Analysis():
 
         if "execution_history" in load_data:
             exec_hist = load_data["execution_history"]
-            if len(exec_hist) == 0:  #if the subclass hadn't already processed the load history add it in its raw form
+            if len(exec_hist) == 0:  # if the subclass hadn't already processed the load history add it in its raw form
                 a.execution_history = exec_hist
         return a

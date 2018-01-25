@@ -4,8 +4,9 @@ import subprocess
 import time
 import pandas as pd
 
+
 class Cifti():
-    def __init__(self, path, use_wbcommand = False):
+    def __init__(self, path, use_wbcommand=False):
 
         # cift2.load returns a Cifti2Image
         # which inherits from a DataobjImage
@@ -17,18 +18,15 @@ class Cifti():
             self._cifti = nibabel.cifti2.cifti2.load(path)
 
     def loadViaWbCommand(self, path):
-        #alternative :  wb_command -cifti-convert -to-text cub-sub-NDARINV02EBX0JJ_FNL_preproc_v2_Atlas_SMOOTHED_1.7.dtseries.nii_10_minutes_of_data_at_FD_0.2.dconn.nii_to_Merged_HCP_best80_dtseries.conc_AVG.dconn.dscalar.nii
+        # alternative :  wb_command -cifti-convert -to-text cub-sub-NDARINV02EBX0JJ_FNL_preproc_v2_Atlas_SMOOTHED_1.7.dtseries.nii_10_minutes_of_data_at_FD_0.2.dconn.nii_to_Merged_HCP_best80_dtseries.conc_AVG.dconn.dscalar.nii
 
-        #or wb_command -nifti-information -print-matrix base_output.dscalar.nii
+        # or wb_command -nifti-information -print-matrix base_output.dscalar.nii
         i = 0
         output_path = path + ".csv"
         start_time = time.time()
 
         result = subprocess.run(["wb_command", "-cifti-convert", "-to-text", path, output_path])
         data = pd.read_csv(output_path)
-
-
-
 
     @property
     def matrix(self):
@@ -40,16 +38,17 @@ class Cifti():
         return self.matrix[0]
 
     def setVector(self, new_values):
-        #check for length mismatch
+        # check for length mismatch
         if len(new_values) == self.size:
             self._cifti.get_fdata()[0, :] = new_values
         else:
-            raise ValueError("Size mismatch when attempting to set Cifti Vector (new vector size: %d, existing size: %d" % (len(new_values),self.size))
+            raise ValueError(
+                "Size mismatch when attempting to set Cifti Vector (new vector size: %d, existing size: %d" % (
+                len(new_values), self.size))
 
     @property
     def size(self):
-        return len(self._cifti.get_fdata()[0,:])
-
+        return len(self._cifti.get_fdata()[0, :])
 
     def setPosition(self, vector_position, value):
         self._cifti.get_fdata()[0, vector_position] = value

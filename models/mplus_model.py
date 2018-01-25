@@ -29,16 +29,16 @@ class MplusModel():
     " The input file does not contain valid commands:" in model files that appear to the eye to be just fine
 
     """
+
     def __init__(self, path=""):
         if len(path) > 0:
             self.load(path)
         self._title = "UntitledMplusModel"
         self.rules = []
 
-
         # track a unique list of variables used in the analysis
         self.using_variables = set([])
-        self.input_column_names_in_order = []  #the order of this list MUST correspond to the order of columns in the input data files
+        self.input_column_names_in_order = []  # the order of this list MUST correspond to the order of columns in the input data files
         self.voxelized_column_names_in_order = []
         self.template_variable_values = {}
 
@@ -48,7 +48,7 @@ class MplusModel():
 
         self.loadFromString(model_text)
 
-    def loadFromString(self,model_text):
+    def loadFromString(self, model_text):
         self._raw = model_text
         self.parseMplus(model_text)
 
@@ -100,7 +100,7 @@ class MplusModel():
 
     @property
     def cluster(self):
-        #todo still need logic for cluster
+        # todo still need logic for cluster
         return ""
 
     @property
@@ -110,44 +110,43 @@ class MplusModel():
         else:
             return "cluster=%s;\n" % self.cluster
 
-    def add_using_variable(self,colname):
+    def add_using_variable(self, colname):
         if not colname in self.using_variables:
             self.using_variables = self.using_variables.union(set([colname]))
 
-    def add_input_column_name(self,colname):
+    def add_input_column_name(self, colname):
         if not colname in self.input_column_names_in_order:
             self.input_column_names_in_order.append(colname)
-
-
 
     def set_column_names(self, names):
         #        self.mplus_data["VARIABLE"] = (
         #        "Names are %s;\nUSEVARIABLES = %s;\n!auxiliary = #todo, \nMISSING=.;\ncluster= #todo" %
         #        ("\n\t".join(names), "\n\t".join(self.using_variables)))
 
-        #assumes will be dropping all names but the column you are using.
+        # assumes will be dropping all names but the column you are using.
 
         self.mplus_data["VARIABLE"] = ("Names are %s;\nUSEVARIABLES = %s;\nMISSING=.;\n%s" %
-                                       ("\n\t".join(self.final_column_list()), "\n\t".join(self.using_variables), self.cluster_clause))
+                                       ("\n\t".join(self.final_column_list()), "\n\t".join(self.using_variables),
+                                        self.cluster_clause))
 
     def final_column_list(self):
         return self.input_column_names_in_order + self.voxelized_column_names_in_order
 
     def refresh_VARIABLE_section(self):
 
-        #note this must include all columns in the GENERATED data, not the original non-imaging data
-        #so it will be a combination of the columns from the original data source being used
-        #and any generated columns of voxel data
+        # note this must include all columns in the GENERATED data, not the original non-imaging data
+        # so it will be a combination of the columns from the original data source being used
+        # and any generated columns of voxel data
 
         column_name_list = self.final_column_list()
 
-        #order of the "using_variables" doesn't seem to be important at all for MPlus
-        #but order of NAMES is CRITICAL (column names are not in the data source itself, their order is the only way that they are defined!)
+        # order of the "using_variables" doesn't seem to be important at all for MPlus
+        # but order of NAMES is CRITICAL (column names are not in the data source itself, their order is the only way that they are defined!)
 
         self.mplus_data["VARIABLE"] = ("Names are %s;\nUSEVARIABLES = %s;\nMISSING=.;\n%s" %
                                        (
-                                       "\n\t".join(column_name_list), "\n\t".join(self.using_variables),
-                                       self.cluster_clause))
+                                           "\n\t".join(column_name_list), "\n\t".join(self.using_variables),
+                                           self.cluster_clause))
 
     def apply_options(self, options_dict, non_original_data_columnlist):
         for k, v in options_dict.items():
@@ -164,7 +163,7 @@ class MplusModel():
 
         generated_mplus_model = self.to_string()
 
-        #for k, v in options_dict.items():
+        # for k, v in options_dict.items():
         #    generated_mplus_model = generated_mplus_model.replace("{{%s}}" % k, str(v[0]))
 
         return generated_mplus_model
@@ -177,25 +176,26 @@ class MplusModel():
 
         output_str = ""
         for key in self.key_order:
-            if len(output_str)>0:
+            if len(output_str) > 0:
                 output_str += "\n"
             output_str += key + ":\n"
 
             section_data = self.mplus_data[key]
 
-            for k,v in self.template_variable_values.items():
-                section_data = section_data.replace(self.template_text_for_variable(k),v)
+            for k, v in self.template_variable_values.items():
+                section_data = section_data.replace(self.template_text_for_variable(k), v)
 
             output_str += section_data
 
-        if ord(output_str[0])>255:
-            #for some reason a byte order mark character started showing up in the beginning of the generated
-            #model file and mplus would choke on it
+        if ord(output_str[0]) > 255:
+            # for some reason a byte order mark character started showing up in the beginning of the generated
+            # model file and mplus would choke on it
             output_str = output_str[1:]
         return output_str
 
     def template_text_for_variable(self, varname):
         return "{{%s}}" % varname
+
     def requires(self, include_already_set=False):
         """
         Returns a list of model parameters for which user input is required and how to attain them
@@ -204,9 +204,8 @@ class MplusModel():
         """
         return ["Analysis", "Fields"]
 
-
     def getMappedName(self, from_col):
-        return self.voxelizedMappings.get(from_col,from_col)
+        return self.voxelizedMappings.get(from_col, from_col)
 
     def add_rule(self, fields_from, operator, fields_to):
         new_rule_text = "%s %s %s;" % (",".join(fields_from), operator, fields_to[0])
@@ -222,12 +221,13 @@ class MplusModel():
         if rule_as_string in self.rules:
             self.rules.remove(rule_as_string)
             self.mplus_data["MODEL"] = self.rules_to_s()
-            #todo there may be less using variables now, check carefully and remove the necessary ones
+            # todo there may be less using variables now, check carefully and remove the necessary ones
 
     def rules_to_s(self):
         return "\n".join(self.rules)
 
-    def aggregate_results(self, n_elements, path_template, look_for_fields, ciftis, naCiftiValue=-888, testing_only_limit_to_n_rows = 0):
+    def aggregate_results(self, n_elements, path_template, look_for_fields, ciftis, naCiftiValue=-888,
+                          testing_only_limit_to_n_rows=0):
         """
         parse results out of the per-voxel output files and aggregate them into cifti files. it accepts a list
         of fields to extract from the outputs and there must be one Cifti instance provided per field as
@@ -239,10 +239,8 @@ class MplusModel():
         :return: a pandas data frame with the extracted values from the mplus output files
         """
 
-
         if len(look_for_fields) != len(ciftis):
             raise ValueError("Number of fields does not match number of ciftis")
-
 
         all_found_results = np.zeros((n_elements, len(look_for_fields)), dtype=np.float32)
         all_found_results[:] = np.nan
@@ -254,13 +252,13 @@ class MplusModel():
                 # todo how to handle NA's if field not found in results?
                 fld = look_for_fields[j]
                 value = results.get(fld, naCiftiValue)
-                all_found_results[i,j] = value
+                all_found_results[i, j] = value
                 ciftis[j].setPosition(i, value)
-            if testing_only_limit_to_n_rows >0 and i >= testing_only_limit_to_n_rows - 1:
+            if testing_only_limit_to_n_rows > 0 and i >= testing_only_limit_to_n_rows - 1:
                 print("stopping result aggregation early, testing mode")
                 break
 
-        all_results_df = pd.DataFrame(all_found_results, columns = look_for_fields)
+        all_results_df = pd.DataFrame(all_found_results, columns=look_for_fields)
 
         return all_results_df
 
@@ -286,10 +284,10 @@ class MplusModel():
                 name = line_matching_info[j][2]
                 # todo how to handle NA's if field not found in results?
                 value = results[name]
-                all_found_results[i,j] = value
+                all_found_results[i, j] = value
 
         column_names = [m[2] for m in line_matching_info]
-        all_results_df = pd.DataFrame(all_found_results, columns = column_names)
+        all_results_df = pd.DataFrame(all_found_results, columns=column_names)
 
         return all_results_df
 
@@ -315,7 +313,6 @@ class MplusModel():
                     break
 
         return values
-
 
     def extract_mplus_output_by_line_number(self, path, line_matching_info):
         """
@@ -347,22 +344,24 @@ class MplusModel():
                         value = float(last_value_in_line)
                     except:
                         value = -999
-                        err_msg = "Error extracting number for line %d of %s. Expected: \n%s, found: \n%s" % (line_number, path, sample_line, line)
+                        err_msg = "Error extracting number for line %d of %s. Expected: \n%s, found: \n%s" % (
+                        line_number, path, sample_line, line)
                         logging.error(err_msg)
 
-                        #raise ValueError(err_msg)
+                        # raise ValueError(err_msg)
 
-                    values[output_name] =  value
+                    values[output_name] = value
                     found = True
                     break
                 else:
                     line_number += 1
-                    tries+=1
+                    tries += 1
             if not found:
-                err_msg = "Mplus Output File Line %d in file %s in unexpected shape. Expected: \n%s, found: \n%s" % (line_number, path, sample_line, line)
+                err_msg = "Mplus Output File Line %d in file %s in unexpected shape. Expected: \n%s, found: \n%s" % (
+                line_number, path, sample_line, line)
                 logging.error(err_msg)
                 values[output_name] = -888
-                #raise ValueError(err_msg)
+                # raise ValueError(err_msg)
 
         return values
 
@@ -371,4 +370,3 @@ class MplusModel():
         with open(mplus_input_file_path, "w", encoding='ascii') as f:
             output_string = self.to_string()
             f.write(output_string)
-

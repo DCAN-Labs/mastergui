@@ -50,10 +50,9 @@ class InputSpreadsheet():
         self._data = output
         return output
 
-
     def save(self, path, filter_by_columns=[]):
 
-        if len(filter_by_columns)>0:
+        if len(filter_by_columns) > 0:
             d = self._data[filter_by_columns]
         else:
             d = self._data
@@ -88,7 +87,7 @@ class InputSpreadsheet():
 
             paths = list(self._data[source_col_name])
 
-            #in testing mode we can limit how many actual ciftis are loaded for time savings
+            # in testing mode we can limit how many actual ciftis are loaded for time savings
 
             if self.limit_by_row > 0:
                 paths = paths[0:self.limit_by_row]
@@ -103,18 +102,16 @@ class InputSpreadsheet():
             with threading.Lock():
                 self.loadCiftiErrors.append(e)
 
-
     def cancelAnalysis(self):
         """attempt to cancel the running analyis"""
         self.cancelling = True
 
-        for k,v in self.ciftiSets.items():
+        for k, v in self.ciftiSets.items():
             with threading.Lock():
                 v.cancelling = True
 
-
     def prepare_with_cifti(self, path_to_voxel_mappings, output_path_prefix, testing_only_limit_to_n_voxels=0,
-                           standard_missing_char=".", only_save_columns=[], limit_by_row = -1):
+                           standard_missing_char=".", only_save_columns=[], limit_by_row=-1):
         """generate a separate file for each voxel in a cift
         :param path_to_voxel_mappings: an array of tuples (sourcecolumnname, columnnameforvoxel)
         :param output_path_prefix:
@@ -134,7 +131,7 @@ class InputSpreadsheet():
         else:
             upper_bound = self.cifti_vector_size
 
-        num_threads = 1   #todo parameterize this number
+        num_threads = 1  # todo parameterize this number
 
         threads = []
 
@@ -156,7 +153,7 @@ class InputSpreadsheet():
         end_time = time.time()
 
         print("Elapsed time for the generation of the voxelized files (excluding reading ciftis) %s" % (
-        end_time - begin_time))
+            end_time - begin_time))
 
         # release the memory, we don't need them anymore!
         self.ciftiSets.clear()
@@ -179,7 +176,7 @@ class InputSpreadsheet():
 
                 base_df[new_voxel_col_name] = voxel_data
 
-            base_df.fillna(standard_missing_char, inplace = True)
+            base_df.fillna(standard_missing_char, inplace=True)
             self.save_dataframe(base_df, output_path_prefix + "." + str(voxel_idx) + ".csv")
 
             if self.cancelling:
@@ -187,8 +184,8 @@ class InputSpreadsheet():
 
     def getBaseDataFrame(self, only_save_columns, path_to_voxel_mappings):
 
-        #the presence of only_save_columns list means not all columns of the original source data
-        #will be saved in the voxelized files daa
+        # the presence of only_save_columns list means not all columns of the original source data
+        # will be saved in the voxelized files daa
 
         list_of_original_source_columns_only = []
         if len(only_save_columns) > 0:
@@ -198,18 +195,19 @@ class InputSpreadsheet():
                     only_save_columns.remove(target_new_column_name)
 
         generated_column_names = [mapping[1] for mapping in path_to_voxel_mappings]
-        list_of_original_source_columns_only = [colname for colname in only_save_columns if colname not in generated_column_names]
+        list_of_original_source_columns_only = [colname for colname in only_save_columns if
+                                                colname not in generated_column_names]
 
-        #it is very important that when the generated columns are added that they match the expected order
-        #mplus does not have column names in the input data files
-        #so order must be preserved.
+        # it is very important that when the generated columns are added that they match the expected order
+        # mplus does not have column names in the input data files
+        # so order must be preserved.
 
         base_df = self._data.copy(deep=True)
 
         base_df = base_df[list_of_original_source_columns_only]
 
-        if self.limit_by_row >0:
-            base_df = base_df.iloc[0:self.limit_by_row,:]
+        if self.limit_by_row > 0:
+            base_df = base_df.iloc[0:self.limit_by_row, :]
 
         return base_df
 
@@ -229,8 +227,7 @@ class InputSpreadsheet():
         for t in threads:
             t.join()
 
-        if len(self.loadCiftiErrors)>0:
-
+        if len(self.loadCiftiErrors) > 0:
             errors_text = str([str(e) for e in self.loadCiftiErrors])
             raise ValueError("Error Loading Ciftis: %s" % errors_text)
 
@@ -240,6 +237,6 @@ class InputSpreadsheet():
         if len(set(sizes)) > 1:
             raise ValueError(
                 "The length of the Cifti vector did not match for all %d columns.  Vectors lengts where %s " % (
-                len(path_to_voxel_mappings, str(sizes))))
+                    len(path_to_voxel_mappings, str(sizes))))
 
         self.cifti_vector_size = sizes[0]

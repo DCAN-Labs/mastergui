@@ -3,11 +3,12 @@ import os
 import sys
 import datetime
 
-
 log_path_key = "log_path"
+
+
 class Config():
     def __init__(self, path=""):
-        if len(path)==0:
+        if len(path) == 0:
             if hasattr(sys.modules['__main__'], "__file__"):
                 rootdir = os.path.dirname(sys.modules['__main__'].__file__)
                 path = os.path.join(rootdir, "config.json")
@@ -39,8 +40,7 @@ class Config():
 
         self.data[key] = value
 
-
-    def getOptional(self,key, default = ""):
+    def getOptional(self, key, default=""):
         """returns key value from config data if it exists,
         otherwise the provided default value
         """
@@ -64,18 +64,18 @@ class Config():
     def setupLogPath(self):
         path = self.getOptional(log_path_key)
 
-        #the preferred usage is the config.json for the mastergui instance has a "log_path" key that
-        #specifies a directory. If so we create a subdirectory under the system standard with their
-        #username and create a timestamped log file underneath.
-        #if the original config had not provided a directory it is assumed they provided a specific path
-        #for the log and we will simply use that without any further manipulation (no user specific subfolder,
+        # the preferred usage is the config.json for the mastergui instance has a "log_path" key that
+        # specifies a directory. If so we create a subdirectory under the system standard with their
+        # username and create a timestamped log file underneath.
+        # if the original config had not provided a directory it is assumed they provided a specific path
+        # for the log and we will simply use that without any further manipulation (no user specific subfolder,
         # no timestamp in the log filename)
 
-        if os.path.isdir(path) or len(path)==0:
+        if os.path.isdir(path) or len(path) == 0:
             default_filename = "mastergui%s.log" % \
-                        str(datetime.datetime.now()).replace(" ", "_").replace(":","_").replace(
-                ".", "_")
-            #then we will append their username to it
+                               str(datetime.datetime.now()).replace(" ", "_").replace(":", "_").replace(
+                                   ".", "_")
+            # then we will append their username to it
             username = os.getlogin()
 
             user_dir_path = os.path.join(path, username)
@@ -86,7 +86,7 @@ class Config():
 
             path = os.path.abspath(path)
 
-            self.data[log_path_key]= path
+            self.data[log_path_key] = path
 
     def addToRecentFileList(self, path):
         recents_path = self.getOptional("recent_files_path", "mastergui_recents")
@@ -94,24 +94,23 @@ class Config():
         if os.path.exists(recents_path):
             with open(recents_path, 'r') as f:
                 files = f.readlines()
-                files.insert(0,path)
+                files.insert(0, path)
 
                 unique_tracker = {}
                 unique_files = []
                 for p in files:
                     p = p.strip()
-                    if len(p)>0:
+                    if len(p) > 0:
                         if not p in unique_tracker:
                             unique_files.append(p)
                             unique_tracker[p] = True
         else:
             unique_files = [path]
 
-
         with open(recents_path, 'w') as f:
             f.writelines("\n".join(unique_files))
 
-    def missing_keys(self,list_of_keys):
+    def missing_keys(self, list_of_keys):
 
         return [k for k in list_of_keys if not k in self.data]
 
@@ -121,13 +120,13 @@ class Config():
             if key in self.data:
                 path = self.data[key]
                 expanded = os.path.expanduser(path)
-                if path!=expanded:
+                if path != expanded:
                     self.data[key] = expanded
 
                 if not os.path.isdir(expanded):
-                   errors.append((key + ": " + expanded,"Directory Does Not Exist"))
+                    errors.append((key + ": " + expanded, "Directory Does Not Exist"))
             else:
-                errors.append((key,"Config Key Does Not Exist"))
+                errors.append((key, "Config Key Does Not Exist"))
         return errors
 
     def fixPath(self, values, key):
@@ -137,12 +136,11 @@ class Config():
             if orig != expanded_path:
                 values[key] = expanded_path
 
-
     def expand_all_known_paths(self):
         d = self.data
-        analyzers = d.get("analyzers",{})
-        for k,v in analyzers.items():
-            self.fixPath(v,'templates')
+        analyzers = d.get("analyzers", {})
+        for k, v in analyzers.items():
+            self.fixPath(v, 'templates')
 
         path_keys = ["output_dir",
                      "Base_cifti_for_output",
@@ -151,4 +149,4 @@ class Config():
                      "log_path"]
 
         for path in path_keys:
-            self.fixPath(d,path)
+            self.fixPath(d, path)

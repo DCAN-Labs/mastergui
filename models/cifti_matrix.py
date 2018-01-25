@@ -5,6 +5,7 @@ import time
 import pandas as pd
 import os
 
+
 class CiftiMatrix():
     def __init__(self, path, wb_command_path_prefix):
         # probably not necessary on normal environments but helpful for setting when running from pycharm during development
@@ -21,18 +22,17 @@ class CiftiMatrix():
         print(wb_command_text)
         result = subprocess.run([wb_command_text, "-cifti-convert", "-to-text", path, output_path])
 
-        #VERY important to not let pandas infer a header row here,
-        #could cause on off-by-one error.
-        #there is no header row in the output of the cifti-convert command!
-        data_file = pd.read_csv(output_path, header = None)
-        
+        # VERY important to not let pandas infer a header row here,
+        # could cause on off-by-one error.
+        # there is no header row in the output of the cifti-convert command!
+        data_file = pd.read_csv(output_path, header=None)
+
         os.remove(output_path)
 
         self.data = data_file[data_file.columns[0]]
 
     @property
     def matrix(self):
-
         return self.data
 
     @property

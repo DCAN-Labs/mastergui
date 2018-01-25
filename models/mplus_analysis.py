@@ -10,9 +10,10 @@ import threading
 import queue
 from models.analysis import *
 
+
 class MplusAnalysis(Analysis):
-    def __init__(self, config, filename="", saved_data = None):
-        super(MplusAnalysis, self).__init__(config,"mplus",filename)
+    def __init__(self, config, filename="", saved_data=None):
+        super(MplusAnalysis, self).__init__(config, "mplus", filename)
         self.required_config_keys = ['default_maps', 'Base_cifti_for_output', 'MPlus_command', 'output_dir']
         self.limit_by_voxel = -1
         self.limit_by_row = -1
@@ -42,13 +43,13 @@ class MplusAnalysis(Analysis):
     def dir_name_for_title(self, raw_title):
         return raw_title + str(datetime.datetime.now()).replace(" ", ".").replace(":", ".")
 
-    def go(self, input, missing_tokens_list, progress_callback = None, error_callback = None):
-
+    def go(self, input, missing_tokens_list, progress_callback=None, error_callback=None):
 
         self.progress_callback = progress_callback
         self.error_callback = error_callback
 
-        self.progressMessage("Beginning analysis job %s, output will be generated in %s" % (self.title,self.batchOutputDir))
+        self.progressMessage(
+            "Beginning analysis job %s, output will be generated in %s" % (self.title, self.batchOutputDir))
 
         # create a directory composed of the analysis title and a timestamp into which all the writing will happen
 
@@ -60,7 +61,6 @@ class MplusAnalysis(Analysis):
 
         self.input.cleanMissingValues(missing_tokens_list)
         self.input.save(self.output_path)
-
 
         self.needCiftiProcessing = len(self.voxelized_column_mappings) > 0
 
@@ -77,8 +77,6 @@ class MplusAnalysis(Analysis):
 
         return model_input_file_path
 
-
-
     def runAnalysisWithCiftiProcessing(self, path_to_voxel_mappings):
         """
 
@@ -88,11 +86,14 @@ class MplusAnalysis(Analysis):
         """
         start_time = time.time()
 
-        self.input.prepare_with_cifti(path_to_voxel_mappings, self.output_path, testing_only_limit_to_n_voxels = self.limit_by_voxel, only_save_columns=self.model.input_column_names_in_order, limit_by_row = self.limit_by_row)
+        self.input.prepare_with_cifti(path_to_voxel_mappings, self.output_path,
+                                      testing_only_limit_to_n_voxels=self.limit_by_voxel,
+                                      only_save_columns=self.model.input_column_names_in_order,
+                                      limit_by_row=self.limit_by_row)
 
         time2 = time.time()
-        self.progressMessage("Time to read cifti data and prepare csvs with cifti data: %f seconds" % (time2 - start_time))
-
+        self.progressMessage(
+            "Time to read cifti data and prepare csvs with cifti data: %f seconds" % (time2 - start_time))
 
         if self.cancelling:
             return
@@ -126,7 +127,8 @@ class MplusAnalysis(Analysis):
 
         # note this code is a little confusing, there are updates happening to the cifti objects
         # while it is return a data frame that contains all the aggregated values
-        aggregated_results = self.model.aggregate_results(self.input.cifti_vector_size, path_template_for_data_including_voxel,
+        aggregated_results = self.model.aggregate_results(self.input.cifti_vector_size,
+                                                          path_template_for_data_including_voxel,
                                                           ["Akaike (AIC)"],
                                                           [output_cifti],
                                                           testing_only_limit_to_n_rows=self.limit_by_row)
@@ -149,7 +151,7 @@ class MplusAnalysis(Analysis):
         self._cifti_output_path = cifti_output_path
 
         self.progressMessage("TOTAL TIME %f seconds" % (time.time() - start_time))
-        return "Ran vectorized model. %i of %s failed" % ( self.mplus_exec_errors, self.mplus_exec_count)
+        return "Ran vectorized model. %i of %s failed" % (self.mplus_exec_errors, self.mplus_exec_count)
 
     def generateInputModelsWithVoxel(self):
         for i in range(self.input.cifti_vector_size):
@@ -209,8 +211,9 @@ class MplusAnalysis(Analysis):
                     n = self.input.cifti_vector_size
                     remaining = (n - count) * rate / 60
 
-                    self.progressMessage("Mplus Models executed: %i in %f seconds (%f sec/model). Estimated remaining time: %f minutes. Mplus errors so far: %s" % (
-                    self.mplus_exec_count, seconds, rate, remaining, errors_so_far))
+                    self.progressMessage(
+                        "Mplus Models executed: %i in %f seconds (%f sec/model). Estimated remaining time: %f minutes. Mplus errors so far: %s" % (
+                            self.mplus_exec_count, seconds, rate, remaining, errors_so_far))
                 self.mplus_exec_counterQueue.task_done()
         except:
             self.progressMessage("queue monitor complete (empty queue)")
@@ -226,14 +229,14 @@ class MplusAnalysis(Analysis):
             result = self.runMplus(model_input_file_path)
 
             self.mplus_exec_counterQueue.put(i)
-            if result.returncode==1:
-
-                logging.error("Mplus model run for voxel %i failed\n\tSee file %s.out for details" % (i, model_input_file_path))
+            if result.returncode == 1:
+                logging.error(
+                    "Mplus model run for voxel %i failed\n\tSee file %s.out for details" % (i, model_input_file_path))
 
                 with threading.Lock():
-                    self.mplus_exec_errors+=1
+                    self.mplus_exec_errors += 1
 
-                #todo write to an error queue
+                    # todo write to an error queue
             """ sample bad output
             CompletedProcess(args=['/Applications/MplusDemo/mpdemo',
                                    '/Users/David/Documents/projects/mastergui/output/DefaultTitle2017_12_07_11_38_09_024508/input.voxel75.inp',
@@ -293,12 +296,11 @@ class MplusAnalysis(Analysis):
 
         return result
 
-
     def module_specific_save_data(self, save_data):
         save_data["voxelized_column_mappings"] = self.voxelized_column_mappings
         save_data["current_model"] = self.model.to_string()
         save_data["template_raw_model"] = self.model._raw
-        if hasattr(self,"input"):
+        if hasattr(self, "input"):
             save_data["input_data_path"] = self.input.path
 
     def module_specific_load_data(self, load_data):
@@ -309,17 +311,17 @@ class MplusAnalysis(Analysis):
         if "voxelized_column_mappings" in load_data:
             self.voxelized_column_mappings = load_data["voxelized_column_mappings"]
 
-            if type(self.voxelized_column_mappings)==list:
+            if type(self.voxelized_column_mappings) == list:
                 for i in range(len(self.voxelized_column_mappings)):
-                    #by convention we are treating the mappings as tuples (from_col_name, to_col_name)
-                    #but json reads them in as lists to we are just converting each mapping from a list to a tuple here
-                    self.voxelized_column_mappings[i]= tuple(self.voxelized_column_mappings[i])
+                    # by convention we are treating the mappings as tuples (from_col_name, to_col_name)
+                    # but json reads them in as lists to we are just converting each mapping from a list to a tuple here
+                    self.voxelized_column_mappings[i] = tuple(self.voxelized_column_mappings[i])
 
 
 
 
-            #if hasattr(self,"model"):
-            #    self.model.voxelizedMappings = load_data["voxelizedMappings"]
+                    # if hasattr(self,"model"):
+                    #    self.model.voxelizedMappings = load_data["voxelizedMappings"]
 
     def addVoxelizedColumn(self, from_column_of_paths, to_new_column_name):
         t = (from_column_of_paths, to_new_column_name)
@@ -342,5 +344,3 @@ class MplusAnalysis(Analysis):
     def updateModel(self, options, non_original_data_columnlist):
         self.model.voxelized_column_names_in_order = self.voxelizedColumnNames()
         return self.model.apply_options(options, non_original_data_columnlist)
-
-

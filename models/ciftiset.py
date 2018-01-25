@@ -7,12 +7,11 @@ import time
 
 
 class CiftiSet():
-    def __init__(self, path_list, wb_command_prefix = ""):
+    def __init__(self, path_list, wb_command_prefix=""):
         self._path_list = path_list
         self.ciftis = {}
         self.cancelling = False
         self.wb_command_prefix = wb_command_prefix
-
 
     def verify_paths(self):
         not_found = []
@@ -22,9 +21,9 @@ class CiftiSet():
         return not_found
 
     def setupMatrix(self):
-        #we need all ciftis to be the same size in a given set.
-        #so somewhat arbitrarily we will assume that the first one in the list of
-        #cifti paths has the correct size and compare all subsequent ones to taht
+        # we need all ciftis to be the same size in a given set.
+        # so somewhat arbitrarily we will assume that the first one in the list of
+        # cifti paths has the correct size and compare all subsequent ones to taht
 
         first_path = self._path_list[0]
         c = CiftiMatrix(first_path, self.wb_command_prefix)
@@ -33,12 +32,10 @@ class CiftiSet():
         allCiftiMatrix = np.zeros((len(self._path_list), m.size))
         allCiftiMatrix[:] = np.nan
         self._voxel_count = size
-        print("Setting ciftisize")
+
         self.cifti_size = size
 
         self.matrix = allCiftiMatrix
-
-
 
     def load_all(self):
         # todo monitor memory usage
@@ -48,16 +45,15 @@ class CiftiSet():
 
         last_shape = None
 
-        #todo this would benefit from multiple threads as there is a lot of disk i/o time
+        # todo this would benefit from multiple threads as there is a lot of disk i/o time
 
-        num_threads = 2 #todo parameterize this number of threads
+        num_threads = 2  # todo parameterize this number of threads
 
         threads = []
 
-        indexed_paths = [(i,path) for i, path in enumerate(self._path_list)]
+        indexed_paths = [(i, path) for i, path in enumerate(self._path_list)]
 
         sets_of_paths = np.array_split(indexed_paths, num_threads)
-
 
         begin_time = time.time()
 
@@ -75,9 +71,9 @@ class CiftiSet():
         print("Elapsed time for the loading of ciftiset %s" % (
             end_time - begin_time))
 
-    def readListOfCiftis(self,indexed_path_list):
+    def readListOfCiftis(self, indexed_path_list):
 
-        #each entry in the indexed_path_list is a tuple (final_array_row_index, path_to_cifti)
+        # each entry in the indexed_path_list is a tuple (final_array_row_index, path_to_cifti)
 
         for t in indexed_path_list:
 
@@ -106,7 +102,7 @@ class CiftiSet():
                                          path, str(c.size), str(self.cifti_size)))
 
                 start_time = time.time()
-                voxels_from_cifti = c.data #matrix[0, :]
+                voxels_from_cifti = c.data  # matrix[0, :]
 
                 with threading.Lock():
                     self.matrix[row_index, :] = voxels_from_cifti
@@ -114,7 +110,6 @@ class CiftiSet():
                 print("time to add cifti vector to matrix : %s sec " % (end_time - start_time))
             else:
                 raise ValueError('Cifti missing', "%s not found" % path)
-
 
     def getVectorPosition(self, i):
 
