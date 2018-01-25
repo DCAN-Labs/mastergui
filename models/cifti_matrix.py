@@ -21,8 +21,11 @@ class CiftiMatrix():
         print(wb_command_text)
         result = subprocess.run([wb_command_text, "-cifti-convert", "-to-text", path, output_path])
 
-        data_file = pd.read_csv(output_path)
-
+        #VERY important to not let pandas infer a header row here,
+        #could cause on off-by-one error.
+        #there is no header row in the output of the cifti-convert command!
+        data_file = pd.read_csv(output_path, header = None)
+        
         os.remove(output_path)
 
         self.data = data_file[data_file.columns[0]]
