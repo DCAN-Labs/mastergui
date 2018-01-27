@@ -12,6 +12,7 @@ class OutputBrowserWidget(QWidget):
     def __init__(self, parentAnalysisWidget):
         super(OutputBrowserWidget, self).__init__()
         self.parentAnalysisWidget = parentAnalysisWidget
+        self.last_selected_pattern_id = 0
         self.initUI()
 
     def initUI(self):
@@ -48,6 +49,7 @@ class OutputBrowserWidget(QWidget):
 
         exploreLayout.addWidget(self.listView, stretch=1)
         self.initDetailUI(exploreLayout)
+        self.initDetailUISpecific(exploreLayout)
         layout.addLayout(exploreLayout)
 
         self.setLayout(layout)
@@ -58,6 +60,9 @@ class OutputBrowserWidget(QWidget):
     def initDetailUI(self, exploreLayout):
         exploreLayout.addWidget(self.fileViewer, stretch=5)
 
+    def initDetailUISpecific(self, exploreLayout):
+        #for subclasses to override if necessary
+        return
     def createRadioButtons(self):
 
         labels = ["CSVs", "Mplus Input Files", "Mplus Output Files", "Ciftis (.nii)"]
@@ -84,11 +89,22 @@ class OutputBrowserWidget(QWidget):
         return groupWidget
 
     def on_pattern_btn_clicked(self, i):
+
         selected_id = i.group().checkedId()
+        self.last_selected_pattern_id = selected_id
         pattern = self.patterns[selected_id]
         self.patternWidget.setText(pattern)
+
         self.ciftiButtion.setVisible(selected_id==cifti_radio_button_index)
-        self.fileViewer.setVisible(selected_id != cifti_radio_button_index)
+
+        if selected_id == cifti_radio_button_index:
+            if self.fileViewer.isVisible():
+                self.fileViewer.setVisible(False)
+        elif not self.fileViewer.isVisible():
+            self.fileViewer.setVisible(True)
+
+        #self.fileViewer.setVisible(selected_id != cifti_radio_button_index)
+
         self.on_click_refresh()
 
 

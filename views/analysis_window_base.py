@@ -5,6 +5,7 @@ import glob
 import os
 from models import input_spreadsheet
 from views.template_chooser_widget import *
+import views.view_utilities as util
 
 
 class AnalysisWindow(QWidget):
@@ -128,15 +129,7 @@ class AnalysisWindow(QWidget):
         errorbox.exec_()
 
     def addButton(self, caption, container, on_click, width=-1):
-        button = QPushButton(caption)
-        if width >= 0:
-            button.setFixedWidth(width)
-
-        button.setObjectName(caption)
-        button.clicked.connect(on_click)
-        container.addWidget(button)
-
-        return button
+        return util.addButton(caption, container, on_click, width)
 
     def save(self):
         if hasattr(self, 'savedFilePath') and len(self.savedFilePath) > 0:

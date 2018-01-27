@@ -35,6 +35,10 @@ def init_logging(config):
     ch.setFormatter(formatter)
 
 
+#extra "ugly" error messages with diagnostics info that ultimately we won't want to subject
+#end users to but are useful during development
+
+debug_mode = True
 # https://riverbankcomputing.com/pipermail/pyqt/2009-May/022961.html
 def excepthook(excType, excValue, tracebackobj):
     """
@@ -47,21 +51,22 @@ def excepthook(excType, excValue, tracebackobj):
 
     log_notice = "".join(traceback.format_exception(excType, excValue, tracebackobj))
 
-    notice = \
-        """An unexpected error occurred.\n""" \
-        """Error information:\n%s:%s""" % \
-        (excType, excValue)
+    if debug_mode:
+        user_facing_notice = log_notice
+    else:
+        user_facing_notice = \
+            """An unexpected error occurred.\n""" \
+            """Error information:\n%s:%s""" % \
+            (excType, excValue)
 
     logging.error("Globally unhandled error occurred:" + log_notice)
 
     errorbox = QMessageBox()
-    errorbox.setText(notice)
+    errorbox.setText(user_facing_notice)
     errorbox.exec_()
-    print("ok")
-
 
 # global exception handler, usually disabled during development but should be enabled in production
-#sys.excepthook = excepthook
+sys.excepthook = excepthook
 
 
 class MasterGuiApp(QMainWindow):

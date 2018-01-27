@@ -123,7 +123,7 @@ class FconnanovaAnalysisWindow(AnalysisWindow):
         self.initExecAnalysisWidget()
 
         self.addTab(self.dataPreview, "Input Data Review")
-        self.addTab(self.execAnalysisWidget, "Execution Tab")
+        self.addTab(self.execAnalysisWidget, "Execution")
 
         self.outputViewer = OutputBrowserWidget(self)
         self.addTab(self.outputViewer, "Output")

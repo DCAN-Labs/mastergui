@@ -8,11 +8,12 @@ from views.output_browser import *
 from views import view_utilities
 import sys
 
+output_radio_button_index = 2
 
 class MplusOutputSelector(OutputBrowserWidget):
     def __init__(self, parentAnalysisWidget):
         super(MplusOutputSelector, self).__init__(parentAnalysisWidget)
-        self.hidePatternSelector()
+        #self.hidePatternSelector()
         self.patternWidget.setText("*.out")
         # self.fileViewer.setVisible(False)
         # self.exploreLayout.addWidget(self.listView,stretch = 5)
@@ -22,8 +23,9 @@ class MplusOutputSelector(OutputBrowserWidget):
         self.parentAnalysisWidget = parentAnalysisWidget
         view_utilities.addButton("Extract", self.layout(), self.on_click_extract)
 
-    def initDetailUI(self, exploreLayout):
+    def initDetailUISpecific(self, exploreLayout):
         self.createOutputSelector()
+        self.selectableOutput.setVisible(False)
         exploreLayout.addWidget(self.selectableOutput, stretch=5)
 
     def createOutputSelector(self):
@@ -36,13 +38,16 @@ class MplusOutputSelector(OutputBrowserWidget):
 
     def on_row_changed(self, current, previous):
 
-        path = os.path.join(self.output_dir, current.data())
+        if self.last_selected_pattern_id == output_radio_button_index:
+            path = os.path.join(self.output_dir, current.data())
 
-        with open(path, 'r') as f:
-            contents = f.readlines()
+            with open(path, 'r') as f:
+                contents = f.readlines()
 
-        self.addValuesToList(self.selectableOutput, contents)
-        # self.fileViewer.setText("".join(contents))
+            self.addValuesToList(self.selectableOutput, contents)
+            # self.fileViewer.setText("".join(contents))
+        else:
+            super(MplusOutputSelector,self).on_row_changed(current, previous)
 
     def is_number(self, word):
         try:
@@ -95,12 +100,40 @@ class MplusOutputSelector(OutputBrowserWidget):
         for i in range(m.rowCount()):
             item = m.item(i)
             if item.checkState() == Qt.Checked:
-                print("m here")
                 line_number = self.item_to_line_numbers[i]
                 line = item.text()
                 name = line.strip().split(" ")[0]
                 items.append((line_number, line, name))
         return items
+
+    def on_pattern_btn_clicked(self, i):
+
+        selected_id = i.group().checkedId()
+        self.last_selected_pattern_id = selected_id
+        pattern = self.patterns[selected_id]
+        self.patternWidget.setText(pattern)
+
+        self.ciftiButtion.setVisible(selected_id==cifti_radio_button_index)
+
+        if selected_id == cifti_radio_button_index:
+            if self.fileViewer.isVisible():
+                self.fileViewer.setVisible(False)
+            if self.selectableOutput.isVisible():
+                self.selectableOutput.setVisible(False)
+        elif selected_id == output_radio_button_index:
+            self.fileViewer.setVisible(False)
+            self.selectableOutput.setVisible(True)
+        else:
+            if self.selectableOutput.isVisible():
+                self.selectableOutput.setVisible(False)
+
+            if not self.fileViewer.isVisible():
+                self.fileViewer.setVisible(True)
+
+        #self.fileViewer.setVisible(selected_id != cifti_radio_button_index)
+
+        self.on_click_refresh()
+
 
     def on_click_extract(self):
         self.extract()
@@ -112,6 +145,8 @@ class MplusOutputSelector(OutputBrowserWidget):
             self.output_dir = self.outputDirWidget.text()
 
             selected = self.selectedOutputRows()
+
+            self.parentAnalysisWidget.updateExtractedColumns(selected)
 
             path_template_for_data_including_voxel = os.path.join(self.output_dir, "input.voxel%s.inp.out")
 

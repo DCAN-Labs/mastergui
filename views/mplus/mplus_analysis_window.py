@@ -17,8 +17,11 @@ from views.mplus.mplus_model_builder import *
 
 tab_datapreview = 1
 tab_modelbuilder = 2
-tab_output = 4
-tab_outputselector = 5
+tab_execute = 3
+tab_test = 3
+tab_run = 4
+tab_output = 5
+tab_outputselector = 6
 
 
 # threading worker example from https://martinfitzpatrick.name/article/multithreading-pyqt-applications-with-qthreadpool/
@@ -169,33 +172,41 @@ class MplusAnalysisWindow(AnalysisWindow):
 
         self.dataPreview = DataPreviewWidget(self)
 
-        self.initExecAnalysisWidget()
+        self.initExecuteTab()
 
         self.addTab(self.dataPreview, "Input Data Review")
         self.addTab(self.modelBuilder, "Model Builder")
-        self.addTab(self.execAnalysisWidget, "Execution Tab")
+        self.addTab(self.execAnalysisWidget, "Execute")
 
-        self.outputViewer = OutputBrowserWidget(self)
-        self.addTab(self.outputViewer, "Output")
-
-        self.outputSelector = MplusOutputSelector(self)
-        self.addTab(self.outputSelector, "Output Value Selector")
         self.tabs.setCurrentIndex(0)
 
         self.progress = QProgressBar()
 
         [self.tabs.setTabEnabled(i, False) for i in range(1, self.tabs.count())]
 
+
     def onTabChanged(self, p_int):
         # print("tab select %d " % p_int)
         if p_int == tab_modelbuilder:
             self.modelBuilder.refresh()
-        elif p_int == tab_modelbuilder:
-            self.dataPreview.update_selected_checks_from_analysis(self.model)
-        elif p_int == tab_output:
+        #elif p_int == tab_modelbuilder:
+        #    self.dataPreview.update_selected_checks_from_analysis(self.model)
+        elif p_int == tab_execute:
             self.outputViewer.on_click_refresh()
-        elif p_int == tab_outputselector:
-            self.outputSelector.on_click_refresh()
+        #elif p_int == tab_outputselector:
+        #    self.outputSelector.on_click_refresh()
+
+    def initOutputTabs(self):
+
+        self.outputTabs = QTabWidget()
+
+        self.outputTabs.addTab(self.modelOutput,"Status")
+        self.outputViewer = MplusOutputSelector(self)
+        self.outputTabs.addTab(self.outputViewer, "Output")
+
+        #self.outputSelector = MplusOutputSelector(self)
+        #self.outputTabs.addTab(self.outputSelector, "Output Value Selector")
+
 
     def initModelBuilder(self):
         """
@@ -250,7 +261,7 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.modelBuilderTemplateViewTabs.addTab(self.generatedModelViewer, "Model")
         self.modelBuilderTemplateViewTabs.addTab(self.modelTemplateViewer, "Template")
 
-    def initExecAnalysisWidget(self):
+    def initExecuteTab(self):
         self.execAnalysisWidget = QWidget()
         self.modelOutput = QTextEdit()
 
@@ -258,20 +269,70 @@ class MplusAnalysisWindow(AnalysisWindow):
 
         command_bar = QHBoxLayout()
 
-        self.runBtn = self.addButton("Run Analysis", command_bar, self.runAnalysis, 130)
+        self.initTestAnalysisFrame(command_bar)
+
+
+        command_box = QVBoxLayout()
 
         self.chkAutoLaunchWorkbench = QCheckBox("Launch Workbench When Complete")
         self.chkAutoLaunchWorkbench.setChecked(True)
-        command_bar.addWidget(self.chkAutoLaunchWorkbench)
 
-        self.cancelBtn = self.addButton("Cancel Analysis", command_bar, self.on_click_cancel, width=130)
+        command_box.addWidget(self.chkAutoLaunchWorkbench)
+
+        self.runBtn = self.addButton("Run Analysis", command_box, self.runAnalysis, 130)
+
+        self.cancelBtn = self.addButton("Cancel Analysis", command_box, self.on_click_cancel, width=130)
         self.cancelBtn.setEnabled(False)
-        self.initTestAnalysisFrame(command_bar)
+
+        self.initOutputParameterChoices()
+
+        command_bar.addWidget(self.outputParameterChoices)
+
+        self.outputParameterChoices.show()
+
+        command_bar.addLayout(command_box)
 
         l.addLayout(command_bar)
-        l.addWidget(self.modelOutput)
+
+        self.initOutputTabs()
+
+        l.addWidget(self.outputTabs)
 
         self.execAnalysisWidget.setLayout(l)
+
+    def initOutputParameterChoices(self):
+        tbl = QTableWidget()
+        headers = ["MPlus Name", "Custom Column Name", "Cifti File Name"]
+        for i in range(len(headers)):
+            tbl.setHorizontalHeaderItem(i, QTableWidgetItem(headers[i]))
+
+        tbl.setFixedHeight(200)
+        self.outputParameterChoices = tbl
+
+        self.loadOutputParameterChoices()
+
+    def updateExtractedColumns(self,selected):
+        self.loadOutputParameterChoices(selected)
+
+    def loadOutputParameterChoices(self, choices = []):
+        fake = [
+                ["mplusname", "myname", "mycifti.nii"],
+                ["mplusname2", "myname2", "mycifti2.nii"],
+                ["mplusname3", "myname3", "mycifti3.nii"]
+            ]
+
+        #todo
+        #hack
+        if len(choices) == 0:
+            choices = fake
+        #choices = fake #todo get from self.analysis
+
+        self.outputParameterChoices.setRowCount(len(choices))
+        self.outputParameterChoices.setColumnCount(3)
+        for row_idx in range(len(choices)):
+            row = choices[row_idx]
+            for col_idx in range(len(row)):
+                self.outputParameterChoices.setItem(row_idx, col_idx, QTableWidgetItem(row[col_idx]))
 
     def on_click_cancel(self):
         close_msg = "Are you sure you want to cancel the execution of this analysis in progress?"
@@ -389,14 +450,14 @@ class MplusAnalysisWindow(AnalysisWindow):
         else:
             cifti_output_path = ""
 
-        selected_outputs = self.outputSelector.selectedOutputRows()
+        selected_outputs = self.outputViewer.selectedOutputRows()
 
         if len(selected_outputs) == 0:
             msg = "Analysis complete but no output fields were selected for extraction yet.  Go to the Output Selector tab and select the rows from the MPlus output that you would like aggregated and click Extract."
             self.appendTextToOutputDisplay(msg)
             self.alert(msg)
         else:
-            self.outputSelector.extract()
+            self.outputViewer.extract()
 
             if len(cifti_output_path) > 0 and not self.cancelling:
                 if self.chkAutoLaunchWorkbench.isChecked():
@@ -430,7 +491,7 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.model.title = self.analysis.batchTitle
 
         self.outputViewer.loadOutputFiles(self.analysis.batchOutputDir, "*.inp.out")
-        self.outputSelector.loadOutputFiles(self.analysis.batchOutputDir, "*.inp.out")
+        #self.outputSelector.loadOutputFiles(self.analysis.batchOutputDir, "*.inp.out")
         self.analysis.limit_by_row = limit_by_row
         self.analysis.limit_by_voxel = limit_by_voxel
 
