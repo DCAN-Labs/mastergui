@@ -322,6 +322,7 @@ class MplusAnalysisWindow(AnalysisWindow):
             ]
 
         #todo
+
         #hack
         if len(choices) == 0:
             choices = fake

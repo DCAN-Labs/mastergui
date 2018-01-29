@@ -15,6 +15,8 @@ import views.view_utilities as util
 class TemplateRequirements(QGroupBox):
     def __init__(self):
         super(TemplateRequirements, self).__init__("Template Requirements")
+        self.setFont(util.boldQFont())
+        self.setFlat(True)
 
     # def loadVariablesAsLists(self, variables_from_template, input_spreadsheet, non_spreadsheet_variables = []):
     #     self.variables_from_template = variables_from_template

@@ -62,11 +62,15 @@ def selectedLabelsFromListView(list):
 
     return labels
 
-def createBoldLabel(text):
+def boldQFont():
     f = QFont()
     f.setBold(True)
+    return f
 
+def createBoldLabel(text):
+
+    f = boldQFont()
     l = QLabel(text)
     l.setFont(f)
-
+    #l.setAutoFillBackground(True)
     return l

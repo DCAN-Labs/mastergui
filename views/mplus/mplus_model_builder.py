@@ -50,6 +50,8 @@ class MplusModelBuilder(QWidget):
 
         self.loadVariables()
 
+        util.addButton("Apply", self.left_panel.layout(), self.on_click_apply_template_variables, 140 )
+
         self.setLayout(top_level_layout)
 
     def createLeftPanel(self):
@@ -75,14 +77,21 @@ class MplusModelBuilder(QWidget):
 
     def createColumnsWidgets(self):
         w = QGroupBox("Created Variables")
-        layout = QHBoxLayout()
+        #w.setAutoFillBackground(True)
+        w.setFlat(True)
+        w.setFont(util.boldQFont())
 
+        layout = QHBoxLayout()
+        layout.setContentsMargins(2,2,2,2)
         self.voxelized_list = ColumnList("Voxelized Columns")
+        self.voxelized_list.setFixedHeight(150)
         self.voxelized_list.setAddClickHandler(self.on_click_add_voxelized_column)
         self.voxelized_list.setRemoveClickHandler(self.on_click_remove_voxelized_column)
         layout.addWidget(self.voxelized_list)
 
         self.other_variables_list = ColumnList("Latent Variables")
+        self.other_variables_list.setFixedHeight(150)
+
         layout.addWidget(self.other_variables_list)
 
         w.setLayout(layout)
@@ -113,9 +122,13 @@ class MplusModelBuilder(QWidget):
 
     def createRuleListWidget(self):
         w = QGroupBox("Additional Model Rules")
+        w.setFlat(True)
+        w.setFont(util.boldQFont())
         layout = QHBoxLayout()
+        layout.setContentsMargins(2, 2, 2, 2)
         rule_list = ColumnList("")
         rule_list.setAddClickHandler(self.add_rule)
+        rule_list.setFixedHeight(150)
         rule_list.setRemoveClickHandler(self.remove_rule)
         self.rule_list = rule_list
         layout.addWidget(rule_list)
@@ -187,14 +200,10 @@ class MplusModelBuilder(QWidget):
                     input = None
                 template_requirements.loadVariables(v, input)
                 template_requirements.setMaximumWidth(600)
-                self.left_panel.layout().insertWidget(0, template_requirements)
+                self.left_panel.layout().insertWidget(1, template_requirements, stretch=5)
                 self.template_requirements = template_requirements
                 self.variables_loaded = True
 
-                button = QPushButton("Apply")
-                button.setMaximumWidth(140)
-                button.clicked.connect(self.on_click_apply_template_variables)
-                self.left_panel.layout().insertWidget(1, button)
 
     def on_click_apply_template_variables(self):
         options = self.template_requirements.selectedValues()

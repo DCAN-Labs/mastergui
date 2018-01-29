@@ -39,14 +39,21 @@ class ColumnList(QWidget):
 
 
         buttonLayout = QHBoxLayout()
-        self.btnAdd = addButton("+", buttonLayout, self.on_click_add)
 
-        self.btnRemove = addButton("-", buttonLayout, self.on_click_remove)
+        button_side_length = 25
+        self.btnAdd = addButton("+", buttonLayout, self.on_click_add, button_side_length)
+
+        self.btnRemove = addButton("-", buttonLayout, self.on_click_remove, button_side_length )
+
+        self.btnAdd.setFixedHeight(button_side_length)
+        self.btnRemove.setFixedHeight(button_side_length)
 
         buttonLayout.addWidget(self.btnAdd)
         buttonLayout.addWidget(self.btnRemove)
         gb = QGroupBox()
+        buttonLayout.setContentsMargins(0,0,0,0)
         gb.setLayout(buttonLayout)
+        gb.setAutoFillBackground(True)
         layout.addWidget(gb)
 
     def setAddClickHandler(self, handler):
