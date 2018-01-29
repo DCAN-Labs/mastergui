@@ -26,6 +26,7 @@ class ColumnChooserDropDown(QComboBox):
         self.setMinimumWidth(200)
 
     def loadColumns(self):
+        old_value = self.currentText()
         self.clear()
         columns = [""]
 
@@ -40,6 +41,11 @@ class ColumnChooserDropDown(QComboBox):
 
         for col in columns:
             self.addItem(col)
+
+        if len(old_value)>0:
+            idx = self.findText(old_value)
+            if idx >= 0:
+                self.setCurrentIndex(idx)
 
     def setValueToColumn(self, column_name):
         index = self.findText(column_name, Qt.MatchFixedString)

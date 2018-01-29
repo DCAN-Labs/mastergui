@@ -408,13 +408,26 @@ class MplusAnalysisWindow(AnalysisWindow):
         """for overriding in subclasses"""
         if hasattr(self.analysis, "loaded_from_data"):
             saved_state = self.analysis.loaded_from_data
-            if "template" in saved_state:
-                t = models.mplus_template.MplusTemplate(saved_state['template'])
 
-                self.onSelectTemplate(t)
+            self.model = self.analysis.model
+
+            if hasattr(self.analysis,"model"):
+
+
+               # self.open_mplus_model_raw(raw_mplus_model_text)
+                #self.onSelectTemplate(self.analysis.template)
+                self.hideTemplateChoiceDisplay()
+
+                self.modelBuilder.loadAnalysis(self.analysis, self)
+            else:
+                if "template" in saved_state:
+                    t = models.mplus_template.MplusTemplate(saved_state['template'])
+
+                    self.onSelectTemplate(t)
 
             if "current_model" in saved_state:
                 self.modelBuilder.generatedModelViewer.setText(saved_state["current_model"])
+
 
     def runAnalysisBackgroundWorker(self, progress_callback, finished_callback, error_callback):
         # for testing, halt after n rows of data processing. Set to 0 to do everything.
@@ -527,15 +540,15 @@ class MplusAnalysisWindow(AnalysisWindow):
     def onSelectTemplate(self, template):
 
         self.template = template
+
         self.analysis.template = template
 
         raw_mplus_model_text = template.return_if_exists("rawmodel")
 
         self.open_mplus_model_raw(raw_mplus_model_text)
-        [self.tabs.setTabEnabled(i, True) for i in range(1, self.tabs.count())]
-        self.tabs.setTabEnabled(0, False)
-        self.tabs.setStyleSheet(
-            "QTabBar::tab::disabled {width: 0; height: 0; margin: 0; padding: 0; border: none;} ")
+
+        self.hideTemplateChoiceDisplay()
+
         self.modelBuilder.loadAnalysis(self.analysis, self)
 
         # def closeEvent(self, event):
@@ -546,3 +559,9 @@ class MplusAnalysisWindow(AnalysisWindow):
     #    event.accept()  # let the window close
     # else:
     #    event.ignore()
+
+    def hideTemplateChoiceDisplay(self):
+        [self.tabs.setTabEnabled(i, True) for i in range(1, self.tabs.count())]
+        self.tabs.setTabEnabled(0, False)
+        self.tabs.setStyleSheet(
+            "QTabBar::tab::disabled {width: 0; height: 0; margin: 0; padding: 0; border: none;} ")

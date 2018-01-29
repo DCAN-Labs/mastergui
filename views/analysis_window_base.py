@@ -156,6 +156,7 @@ class AnalysisWindow(QWidget):
         if hasattr(analysis, "input_data_path"):
             self.open_input_file(analysis.input_data_path)
         self.loadAnalysisModuleSpecific()
+
         # todo load all attributes from saved file format
 
     def loadAnalysisModuleSpecific(self):

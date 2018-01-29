@@ -230,7 +230,8 @@ class MplusModelBuilder(QWidget):
         self.analysis = analysis
         self.loadVariables()
         self.parentAnalysisWindow = parentAnalysisWindow
-        # todo refresh screen elements
+        self.rule_list.loadValues(self.analysis.model.rules)
+        self.displayVoxelizedColumns()
 
     def all_nonspreadsheet_variables_to_display(self):
 

@@ -60,6 +60,7 @@ class MplusAnalysis(Analysis):
         self.input = input
 
         self.input.cleanMissingValues(missing_tokens_list)
+
         self.input.save(self.output_path)
 
         self.needCiftiProcessing = len(self.voxelized_column_mappings) > 0
@@ -299,7 +300,8 @@ class MplusAnalysis(Analysis):
     def module_specific_save_data(self, save_data):
         save_data["voxelized_column_mappings"] = self.voxelized_column_mappings
         save_data["current_model"] = self.model.to_string()
-        save_data["template_raw_model"] = self.model._raw
+
+        save_data["additional_rules"] = self.model.additional_rule_save_data
         if hasattr(self, "input"):
             save_data["input_data_path"] = self.input.path
 
@@ -319,9 +321,20 @@ class MplusAnalysis(Analysis):
 
 
 
+        if "template" in load_data:
 
-                    # if hasattr(self,"model"):
+            self.template = models.mplus_template.MplusTemplate(load_data['template'])
+
+            self.model = models.mplus_model.MplusModel()
+            self.model.loadFromString(self.template.rawModel)
+
+            # if hasattr(self,"model"):
                     #    self.model.voxelizedMappings = load_data["voxelizedMappings"]
+            if "additional_rules" in load_data:
+                rules = load_data["additional_rules"]
+                for key, rule_data in rules.items():
+                    self.model.add_rule(rule_data[0],rule_data[1],rule_data[2])
+
 
     def addVoxelizedColumn(self, from_column_of_paths, to_new_column_name):
         t = (from_column_of_paths, to_new_column_name)

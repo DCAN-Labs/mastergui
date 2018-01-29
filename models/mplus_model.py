@@ -41,6 +41,7 @@ class MplusModel():
         self.input_column_names_in_order = []  # the order of this list MUST correspond to the order of columns in the input data files
         self.voxelized_column_names_in_order = []
         self.template_variable_values = {}
+        self.additional_rule_save_data = {}
 
     def load(self, path):
         with open(path, 'r') as f:
@@ -74,6 +75,7 @@ class MplusModel():
             key_order.append(key)
         self.key_order = key_order
         self.mplus_data = mplus_data
+        self.template_MODEL_section = mplus_data.get("MODEL","")
 
     @property
     def title(self):
@@ -210,18 +212,23 @@ class MplusModel():
     def add_rule(self, fields_from, operator, fields_to):
         new_rule_text = "%s %s %s;" % (",".join(fields_from), operator, fields_to[0])
         self.rules.append(new_rule_text)
-        self.mplus_data["MODEL"] = self.rules_to_s()
+        self.mplus_data["MODEL"] = self.template_MODEL_section + "\n" + self.rules_to_s() + "\n"
         # self.mplus_data["MODEL:"] = self.rules_to_s()
         self.using_variables = self.using_variables.union(set(fields_from + fields_to))
 
         for colname in (fields_from + fields_to):
             self.add_input_column_name(colname)
 
+        #save the actual parameters for reuse after reloading from saved file
+        self.additional_rule_save_data[new_rule_text] = [fields_from, operator, fields_to]
+
     def remove_rule_by_string(self, rule_as_string):
         if rule_as_string in self.rules:
             self.rules.remove(rule_as_string)
             self.mplus_data["MODEL"] = self.rules_to_s()
             # todo there may be less using variables now, check carefully and remove the necessary ones
+        if rule_as_string in self.additional_rule_save_data:
+            del self.additional_rule_save_data[rule_as_string]
 
     def rules_to_s(self):
         return "\n".join(self.rules)
