@@ -23,26 +23,32 @@ class TestInputSpreadsheet(unittest.TestCase):
         limit_to_voxel_count = 200
         begin_time = time.time()
 
-        s.prepare_with_cifti(mappings,output_prefix, testing_only_limit_to_n_voxels=limit_to_voxel_count)
+        columns_to_use = ["COVA_AGE","COVA_SEX"]
+        s.prepare_with_cifti(mappings,output_prefix,
+                             testing_only_limit_to_n_voxels=limit_to_voxel_count,
+                             only_save_columns=columns_to_use)
 
         end_time = time.time()
         print("Elapsed time for the generation of the voxelized files %s" % (end_time - begin_time))
         source_data = s._data
 
         for voxel_idx in range(limit_to_voxel_count):
-
-            result = pd.read_csv("%s.%d.csv" % (output_prefix, voxel_idx), header=None)
+            file_name = "%s.%d.csv" % (output_prefix, voxel_idx)
+            print("Checking file %s" % file_name)
+            result = pd.read_csv(file_name, header=None)
 
             for row_idx in range(source_data.shape[0]):
 
-                for mapping in mappings:
+                for mapping_i in range(len(mappings)):
+                    mapping = mappings[mapping_i]
 
-                    idx_of_mapped_column = source_data.columns.get_loc(mapping[0])
+                    idx_of_mapped_column = len(columns_to_use) + mapping_i
 
                     src_value = source_data.iloc[row_idx, idx_of_mapped_column]
 
                     self.assertTrue(os.path.exists(src_value), "Check that cifti path is valid")
 
+                    print("about to check %d %d" % (row_idx, idx_of_mapped_column))
                     voxelized_value = result.iloc[row_idx,idx_of_mapped_column]
 
                     actual_number_count = 0

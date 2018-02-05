@@ -5,13 +5,13 @@ from models import *
 
 class TestConfig(unittest.TestCase):
     def test_loadsfile(self):
-        # d = os.path.dirname(__file__)
-        # p = os.path.join(d,"config_file_for_testing.yml")
-        p = "tests/config_file_for_testing.yml"
+
+        p = "tests/data/config.test.json"
         c = config.Config(p)
-        print(c._data)
-        self.assertEqual(len(c._data), 1)
-        self.assertEqual(len(c._data['animals']), 2)
+
+        #not important what value we test for, just verifying that
+        # some (any) key value lookup is succeeding in this test
+        self.assertEqual(c['testvalue'], "justfortest")
 
     def test_handlemissingfile(self):
         with self.assertRaises(FileNotFoundError):

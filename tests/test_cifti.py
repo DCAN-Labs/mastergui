@@ -20,7 +20,7 @@ class TestCifti(unittest.TestCase):
         m[0, 1] = 2
         m[0, 3] = 3
 
-        c.save("tests/mynewcifti.nii")
+        c.save("tests/output/mynewcifti.nii")
 
     def test_ciftivalues(self):
         # todo
