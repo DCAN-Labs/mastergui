@@ -13,6 +13,7 @@ class TestMplusModelOutput(unittest.TestCase):
 
         o = MplusOutput(p)
 
+
         o.print_report()
 
         print(o.warnings)
@@ -24,7 +25,7 @@ class TestMplusModelOutput(unittest.TestCase):
         stats = output_set.load_all()
 
         print(stats)
-        print("why not preint stats")
+        print("why not print stats")
 
 
 if __name__ == '__main__':
