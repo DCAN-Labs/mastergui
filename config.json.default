@@ -3,6 +3,14 @@
     {
       "mplus": {
         "templates": "./templates/mplus"
+      },
+      "palm": {
+        "title":"Palm",
+        "templates": "./templates/palm"
+      },
+      "fconnanova":{
+        "title":"FCONNANOVA",
+        "templates": "./templates/fconnanova"
       }
     },
   "open_path_on_launch": "/Users/David/Documents/projects/mastergui/tests/input_csv_file_test_case_Evan_simple.xlsx",
@@ -11,5 +19,7 @@
   "Base_cifti_for_output": "data/base_output.dscalar.nii",
   "default_maps": "data/default_maps/",
   "wb_view_path_prefix": "/Applications/connectomeworkbench/bin_macosx64/",
+  "wb_command_path_prefix":"/Applications/connectomeworkbench/bin_macosx64/",
   "ztesting_halt_after_n_voxels": 10
 }
+
