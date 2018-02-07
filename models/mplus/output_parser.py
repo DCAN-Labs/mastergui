@@ -2,7 +2,9 @@ import glob
 import os
 from collections import defaultdict
 import re
-
+import numpy as np
+import pandas as pd
+import threading
 
 Model_Fit_Information_Label = "MODEL FIT INFORMATION"
 Model_Results_Label = "MODEL RESULTS"
@@ -10,12 +12,19 @@ Standarized_Model_Results_Label = "STANDARDIZED MODEL RESULTS"
 key_delimiter = "|"
 
 class MplusOutput():
-    def __init__(self,path):
+    def __init__(self,path, limit_to_keys = []):
         #debug with tests/sample.mplus.modelwarning.out
+        self.limited_parse = len(limit_to_keys) > 0
+        if self.limited_parse:
+            self.limit_to_keys = limit_to_keys
+            self.limit_to_sections = [key.split("|")[0] for key in limit_to_keys]
+        else:
+            self.limit_to_keys = []
+            self.limit_to_sections = []
+
         self.path = path
         self.warnings = []
         self.load()
-        self.print_report()
 
     def load(self):
 
@@ -30,39 +39,49 @@ class MplusOutput():
         in_warning = False
         in_section = False
         last_section_is_warning = False
-        all_lines = []
+
+        #all_lines = []
+
+
         with open(self.path, "r") as f:
-            for line in f:
+            all_lines = f.readlines()
 
-                new_section_detected = False
+        for line in all_lines:
 
-                if heading_detector.match(line) or warning_detector.match(line):
-                    new_section_detected = True
-                    self.process_section_contents(last_section, last_section_lines)
-                    last_section = line.strip()
-                    last_section_lines = []
-                else:
-                    if len(last_section)>0:
-                        last_section_lines.append(line)
-                all_lines.append(line)
+            new_section_detected = False
+
+            if heading_detector.match(line) or warning_detector.match(line):
+                new_section_detected = True
+                self.process_section_contents(last_section, last_section_lines)
+                last_section = line.strip()
+                last_section_lines = []
+            else:
+                if len(last_section)>0:
+                    last_section_lines.append(line)
+            #all_lines.append(line)
 
 
 
-            self.lines = all_lines
+        self.lines = all_lines
 
 
     def process_section_contents(self,  last_section, last_section_lines):
         if last_section:
             if last_section[:10]=="***WARNING":
                 self.warnings.append(" ".join([last_section] + last_section_lines))
-            elif last_section == Model_Fit_Information_Label:
-                self.process_model_fit(last_section_lines)
-            elif last_section == Model_Results_Label:
-                self.process_results_table(Model_Results_Label, last_section_lines)
-            elif last_section == Standarized_Model_Results_Label:
-                self.process_results_table(Standarized_Model_Results_Label, last_section_lines)
             else:
-                self.sections[last_section] = last_section_lines
+                if self.limited_parse and not last_section in self.limit_to_sections:
+                    #print("%s not in %s" % (last_section, str(self.limit_to_sections)))
+                    return
+
+                if last_section == Model_Fit_Information_Label:
+                    self.process_model_fit(last_section_lines)
+                elif last_section == Model_Results_Label:
+                    self.process_results_table(Model_Results_Label, last_section_lines)
+                elif last_section == Standarized_Model_Results_Label:
+                    self.process_results_table(Standarized_Model_Results_Label, last_section_lines)
+                else:
+                    self.sections[last_section] = last_section_lines
 
     def process_model_fit(self, section_lines):
 
@@ -96,6 +115,7 @@ class MplusOutput():
         # rrr = re.compile('([+-]?[0-9]*[.]?[0-9]+)')
 
         number_matcher = re.compile('([+-]?[0-9]*[.]?[0-9]+)')
+
         for line in section_lines:
             #line = line.strip()
             if line.strip(): #ignore empty lines
@@ -110,7 +130,7 @@ class MplusOutput():
                     #try:
                     n = float(ends_in_number.groups()[0])
                     keyname = " ".join(parts[:-1])
-                    print(context_stack)
+
 
                     keyname = key_delimiter.join(context_stack + [keyname])
 
@@ -121,7 +141,7 @@ class MplusOutput():
                 else:
                     if not is_indented:
                         context_stack = [line.strip()]
-                        print("I was not indented " + line)
+
 
                         #
                 #     stripped_line = line.strip()
@@ -157,7 +177,7 @@ class MplusOutput():
                 PGS                0.023      0.009      2.449      0.014
 
         """
-        print("Begin parse table "  + title)
+        #print("Begin parse table "  + title)
         first_char_finder  = re.compile('([A-Z])')
         column_names = []
         section_data = {}
@@ -166,15 +186,15 @@ class MplusOutput():
             m = re.search(first_char_finder,line)
             if m:
                 idx = m.start()
-                print("Start index %d" % idx)
-                print(line)
+                #print("Start index %d" % idx)
+                #print(line)
                 if idx == 20:
                     column_names = re.split(ws,line.strip())
                 elif idx == 1:
                     stat_type = line.strip()
                 elif idx == 4:
-                    print("it was idx4")
-                    print(line)
+                    #print("it was idx4")
+                    #print(line)
                     parts = re.split(ws, line.strip())
                     if len(parts) == 5:
                         stat_name = parts[0]
@@ -216,25 +236,135 @@ class MplusOutput():
 
 
 class MplusOutputSet():
-    def __init__(self, path):
-        self.path = path
+    def __init__(self, path_template):
+        self.path_template = path_template
         self.count=0
-    def load_all(self):
-        search_path = os.path.join(self.path, "*.out")
-        files = glob.glob(search_path)
-        stats = defaultdict(int)
+    # def load_all(self):
+    #     search_path = os.path.join(self.path, "*.out")
+    #     files = glob.glob(search_path)
+    #     stats = defaultdict(int)
+    #
+    #     for path in files:
+    #         print("reading file")
+    #         f = MplusOutput(path)
+    #         self.count += 1
+    #         if f.terminated_normally():
+    #             stats["terminated_normally"] += 1
+    #             warnings = f.warnings
+    #             for w in warnings:
+    #                 stats[w] += 1
+    #
+    #     self.stats = stats
+    #
+    #     return stats
 
-        for path in files:
-            print("reading file")
-            f = MplusOutput(path)
-            self.count += 1
-            if f.terminated_normally():
-                stats["terminated_normally"] += 1
-                warnings = f.warnings
-                for w in warnings:
-                    stats[w] += 1
+    def extract(self, keys_to_extract, n_voxels_expected = 91282):
+        """
+        parse results out of the per-voxel output files and aggregate them into cifti files. it accepts a list
+        of fields to extract from the outputs and there must be one Cifti instance provided per field as
+        we only write one given output field to one cifti at present
+        :param inputspreadsheet:
+        :param path_template:
+        :param look_for_fields:
+        :param ciftis:
+        :return: a pandas data frame with the extracted values from the mplus output files
+        """
+        if n_voxels_expected == 0:
+            # todo this override is not a great compromise but is making it easier to
+            # rerun value extractions without recomputing the size of all ciftis.
+            n_voxels_expected = 91282  # set to the default value
 
-        self.stats = stats
+        all_found_results = np.zeros((n_voxels_expected, len(keys_to_extract)), dtype=np.float32)
 
-        return stats
+        all_found_results[:] = np.nan
+        not_found_counts = {}
+        warnings = {}
+
+
+
+        num_threads = 4
+
+        sets_of_voxel_indexes = np.array_split(list(range(n_voxels_expected)), num_threads)
+
+        #places for the threads to park their error findings without fighting to access the
+        #same data structures too much
+        self.warnings_sets = []
+        self.notfound_sets = []
+
+        threads = []
+
+        for i in range(len(sets_of_voxel_indexes)):
+            t = threading.Thread(target=self.loadForSetOfVoxels, args=[sets_of_voxel_indexes[i], keys_to_extract, all_found_results])
+            t.start()
+            threads.append(t)
+
+        for t in threads:
+            t.join()
+
+        if False:
+            for i in range(n_voxels_expected):
+                path = self.path_template % i  # + ".voxel" + str(i) + ".inp.out"
+
+                o = MplusOutput(path, keys_to_extract)
+
+                for w in o.warnings:
+                    warnings[w] = warnings.get(w,[]) + [i]
+
+                #for k in o.data.keys():
+                #    print(k)
+                for key_i in range(len(keys_to_extract)):
+                    key = keys_to_extract[key_i]
+                    if key in o.data:
+                        all_found_results[i, key_i] = o.data[key]
+                    else:
+                        not_found_counts[key] = not_found_counts.get(key,0)+1
+                        #print("Value not found for key %s in file %s" % (key, path)) #todo decide how to handle
+
+        #now reduce the warnings and notfounds found by each thread
+        for warningset in self.warnings_sets:
+            for k,v in warningset.items():
+                warnings[k] = warnings.get(k,[]) + v
+
+        for notfoundset in self.notfound_sets:
+            for k,v in notfoundset.items():
+                not_found_counts[k] = not_found_counts.get(k,0)  + v
+
+        warnings_counts = {k:len(v) for k,v in warnings.items()}
+
+        self.warnings = warnings
+        self.warning_counts = warnings_counts
+
+        self.not_found_counts = not_found_counts
+        column_names = keys_to_extract
+        all_results_df = pd.DataFrame(all_found_results, columns=column_names)
+
+        return all_results_df
+
+    def loadForSetOfVoxels(self, voxel_indexes, keys_to_extract, all_found_results):
+
+        not_found_counts = {}
+        warnings = {}
+
+        for i in voxel_indexes:
+            path = self.path_template % i  # + ".voxel" + str(i) + ".inp.out"
+
+            o = MplusOutput(path, keys_to_extract)
+
+            for w in o.warnings:
+                warnings[w] = warnings.get(w,[]) + [i]
+
+            #for k in o.data.keys():
+            #    print(k)
+            for key_i in range(len(keys_to_extract)):
+                key = keys_to_extract[key_i]
+                if key in o.data:
+                    with threading.Lock():
+                        all_found_results[i, key_i] = o.data[key]
+                else:
+                    not_found_counts[key] = not_found_counts.get(key,0)+1
+                    #print("Value not found for key %s in file %s" % (key, path)) #todo decide how to handle
+
+        with threading.Lock():
+            self.notfound_sets.append(not_found_counts)
+            self.warnings_sets.append(warnings)
 
