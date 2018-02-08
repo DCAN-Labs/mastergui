@@ -205,7 +205,8 @@ class MasterGuiApp(QMainWindow):
         self.new_mplus_analysis()
 
     def new_mplus_analysis(self, analysis=None):
-
+        #optional variable analysis.  if an existing analysis model instance is not provided,
+        #a new one will be created for you withing the MplusAnalysisWindow
         analysis_window = MplusAnalysisWindow(self.config, analysis)
 
         self.displayNewAnalysis(analysis_window)

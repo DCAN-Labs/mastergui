@@ -8,6 +8,7 @@ log_path_key = "log_path"
 
 class Config():
     def __init__(self, path=""):
+        #if not path was provided it will default to config.json in the current working directory
         if len(path) == 0:
             if hasattr(sys.modules['__main__'], "__file__"):
                 rootdir = os.path.dirname(sys.modules['__main__'].__file__)

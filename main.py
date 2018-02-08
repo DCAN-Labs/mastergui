@@ -1,4 +1,4 @@
-from views.main_window import *
+from views.mastergui_app import *
 import sys
 
 if __name__ == '__main__':
