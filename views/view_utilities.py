@@ -1,10 +1,10 @@
+from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from models import *
 import glob
 import os
 from models import input_spreadsheet
-from views.template_chooser_widget import *
 
 
 

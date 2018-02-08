@@ -4,7 +4,7 @@ from models import *
 import glob
 import os
 from models import input_spreadsheet
-from views.template_chooser_widget import *
+from views.widgets.template_chooser_widget import *
 import views.view_utilities as util
 
 

@@ -1,3 +1,4 @@
+from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from models import *
@@ -5,8 +6,6 @@ import glob
 import os
 from models import input_spreadsheet
 import views.view_utilities as util
-
-from views.template_chooser_widget import *
 
 
 class SplashWindow(QWidget):
