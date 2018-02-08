@@ -9,7 +9,7 @@ import threading
 import traceback
 import time
 from views.analysis_window_base import *
-from views.data_preview_widget import *
+from views.widgets.data_preview_widget import *
 from views.output_browser import *
 from views.mplus.mplus_output_selector import *
 from views.mplus.template_requirements import *
