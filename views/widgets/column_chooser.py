@@ -1,6 +1,6 @@
 from PyQt5.QtCore import *
-from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
 from views.analysis_window_base import *
 from views.widgets.data_preview_widget import *
 from views.output_browser import *

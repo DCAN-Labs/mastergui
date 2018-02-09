@@ -1,22 +1,14 @@
-from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
-from views.analysis_window_base import *
-from views.widgets.data_preview_widget import *
-from views.output_browser import *
-from views.mplus.mplus_output_selector import *
-import views.workbench_launcher
-import models
-import datetime
-import sys
-import threading
-import traceback
-import time
-from views.view_utilities import *
-
+from views.widgets.addremove_buttonbar import *
 
 class ColumnList(QWidget):
+    """displays a list with a title above and a add/remove buttons at the bottom of it,
+    generally used for displaying columns of non-imaging data"""
+
     def __init__(self, caption):
+        """
+        :param caption: displays as a bold title heading over the list
+        """
         super(ColumnList, self).__init__()
         self.caption = caption
         self.initUI()
@@ -37,30 +29,15 @@ class ColumnList(QWidget):
 
         self.setLayout(layout)
 
+        self.buttonBar = AddRemoveButtonBar(self.on_click_add, self.on_click_remove)
 
-        buttonLayout = QHBoxLayout()
-
-        button_side_length = 25
-        self.btnAdd = addButton("+", buttonLayout, self.on_click_add, button_side_length)
-
-        self.btnRemove = addButton("-", buttonLayout, self.on_click_remove, button_side_length )
-
-        self.btnAdd.setFixedHeight(button_side_length)
-        self.btnRemove.setFixedHeight(button_side_length)
-
-        buttonLayout.addWidget(self.btnAdd)
-        buttonLayout.addWidget(self.btnRemove)
-        gb = QGroupBox()
-        buttonLayout.setContentsMargins(0,0,0,0)
-        gb.setLayout(buttonLayout)
-        gb.setAutoFillBackground(True)
-        layout.addWidget(gb)
+        layout.addWidget(self.buttonBar)
 
     def setAddClickHandler(self, handler):
-        self.btnAdd.clicked.connect(handler)
+        self.buttonBar.setAddClickHandler(handler)
 
     def setRemoveClickHandler(self, handler):
-        self.btnRemove.clicked.connect(handler)
+        self.buttonBar.setRemoveClickHandler(handler)
 
     def on_click_add(self):
         print("add")

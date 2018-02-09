@@ -22,6 +22,7 @@ class MplusOutputSelector(OutputBrowserWidget):
         # self.layout().removeWidget(self.groupWidget)
         self.parentAnalysisWidget = parentAnalysisWidget
         view_utilities.addButton("Extract", self.layout(), self.on_click_extract)
+        view_utilities.addButton("Choose Parameters", self.layout(), self.on_click_chooseparameters)
 
     def initDetailUISpecific(self, exploreLayout):
         self.createOutputSelector()
@@ -139,6 +140,8 @@ class MplusOutputSelector(OutputBrowserWidget):
         self.extract()
         util.alert("Extraction complete. Go to the output tab to open the cifti in Connectome Workbench.")
 
+    def on_click_chooseparameters(self):
+        print("choose parameters")
     def extract(self):
         try:
 

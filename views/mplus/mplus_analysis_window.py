@@ -15,6 +15,7 @@ from views.mplus.mplus_output_selector import *
 from views.mplus.template_requirements import *
 from views.mplus.mplus_model_builder import *
 from views.workers import *
+from views.widgets import *
 
 tab_datapreview = 1
 tab_modelbuilder = 2
@@ -217,7 +218,7 @@ class MplusAnalysisWindow(AnalysisWindow):
 
         self.initOutputParameterChoices()
 
-        command_bar.addWidget(self.outputParameterChoices)
+        command_bar.addWidget(self.outputParameterChoiceContainer)
 
         self.outputParameterChoices.show()
 
@@ -232,15 +233,34 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.execAnalysisWidget.setLayout(l)
 
     def initOutputParameterChoices(self):
+        container = QWidget()
+        layout = QVBoxLayout()
+
+        addBoldLabel("Output Parameter Chocies", layout)
+
         tbl = QTableWidget()
         headers = ["MPlus Name", "Custom Column Name", "Cifti File Name"]
         for i in range(len(headers)):
             tbl.setHorizontalHeaderItem(i, QTableWidgetItem(headers[i]))
 
         tbl.setFixedHeight(200)
+        layout.addWidget(tbl)
+        outputChoiceButtonBar = AddRemoveButtonBar(self.on_click_add_output_parameter, self.on_click_remove_output_parameter)
+
+        layout.addWidget(outputChoiceButtonBar)
+
         self.outputParameterChoices = tbl
 
+        container.setLayout(layout)
+        self.outputParameterChoiceContainer = container
+
         self.loadOutputParameterChoices()
+
+    def on_click_add_output_parameter(self):
+        print("add param")
+
+    def on_click_remove_output_parameter(self):
+        print("remove")
 
     def updateExtractedColumns(self,selected):
         self.loadOutputParameterChoices(selected)

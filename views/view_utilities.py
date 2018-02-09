@@ -8,13 +8,32 @@ from models import input_spreadsheet
 
 
 
-def addButton(caption, container, on_click, width=-1):
+def addButton(caption, container, on_click = None, width=-1, height = -1):
+    """simple helper method to add a PyQt button
+    with the most common settings
+
+    caption: the text to appear in the button
+    container: the QWidget or QLayout to which the new button should be added at the end
+    on_click: (optional) a callback method to be called upon click
+    width: if provided sets a fixed width, otherwise (default -1) lets PyQT
+    determine the optimal width
+    height: if provided sets a fixed height, otherwise (default -1) lets PyQT
+    determine the optimal height
+
+    """
     button = QPushButton(caption)
+
+    button.setObjectName(caption)
+
+    if on_click:
+        button.clicked.connect(on_click)
+
     if width >= 0:
         button.setFixedWidth(width)
 
-    button.setObjectName(caption)
-    button.clicked.connect(on_click)
+    if height >= 0:
+        button.setFixedHeight(height)
+
     container.addWidget(button)
 
     return button
@@ -74,3 +93,7 @@ def createBoldLabel(text):
     l.setFont(f)
     #l.setAutoFillBackground(True)
     return l
+
+def addBoldLabel(text, container):
+    l = createBoldLabel(text)
+    container.addWidget(l)
