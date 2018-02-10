@@ -5,11 +5,15 @@ import re
 import numpy as np
 import pandas as pd
 import threading
+import re
 
 Model_Fit_Information_Label = "MODEL FIT INFORMATION"
 Model_Results_Label = "MODEL RESULTS"
 Standarized_Model_Results_Label = "STANDARDIZED MODEL RESULTS"
-key_delimiter = "|"
+key_delimiter = "-"
+
+#for stripping keys of values that we don't want in filenames
+filename_unfriendly_character_detector = re.compile('[^0-9a-zA-Z\-]+')
 
 class MplusOutput():
     def __init__(self,path, limit_to_keys = []):
@@ -17,11 +21,11 @@ class MplusOutput():
         self.limited_parse = len(limit_to_keys) > 0
         if self.limited_parse:
             self.limit_to_keys = limit_to_keys
-            self.limit_to_sections = [key.split("|")[0] for key in limit_to_keys]
+            self.limit_to_sections = [key.split(key_delimiter)[0] for key in limit_to_keys]
         else:
             self.limit_to_keys = []
             self.limit_to_sections = []
-
+        self.parsing_error_count = 0
         self.path = path
         self.warnings = []
         self.load()
@@ -127,17 +131,19 @@ class MplusOutput():
                 ends_in_number = number_matcher.match(parts[-1])
                 if ends_in_number:
 
-                    #try:
-                    n = float(ends_in_number.groups()[0])
-                    keyname = " ".join(parts[:-1])
+                    try:
+                        n = float(ends_in_number.groups()[0])
+                        keyname = " ".join(parts[:-1])
 
 
-                    keyname = key_delimiter.join(context_stack + [keyname])
+                        keyname = key_delimiter.join(context_stack + [keyname])
 
-                    self.data[Model_Fit_Information_Label + key_delimiter + keyname] = n
-                    section_data[keyname] = n
-                    #except Exception as e:
-                        #print("converting to number didn't work")
+                        self.setDataValue(Model_Fit_Information_Label + key_delimiter + keyname, n)
+
+                        section_data[keyname] = n
+                    except Exception as e:
+                        self.parsing_error_count += 1
+                        print("converting to number didn't work")
                 else:
                     if not is_indented:
                         context_stack = [line.strip()]
@@ -196,19 +202,32 @@ class MplusOutput():
                     #print("it was idx4")
                     #print(line)
                     parts = re.split(ws, line.strip())
-                    if len(parts) == 5:
-                        stat_name = parts[0]
-                        keyprefix = key_delimiter.join([title, stat_type,stat_name])
-                        for i in range(1,len(parts)):
-                            keyname = keyprefix + key_delimiter + column_names[i-1]
-                            try:
-                                value = float(parts[i])
-                                self.data[keyname] = value
-                                section_data[keyname] = value
-                            except:
-                                print("Error converting value for key %s in file %s. Line was:\n %s" % (keyname, self.path, line))
+                    #if len(parts) == 5:
+                    stat_name = parts[0]
+                    keyprefix = key_delimiter.join([title, stat_type,stat_name])
+                    for i in range(1,len(parts)):
+                        keyname = keyprefix + key_delimiter + column_names[i-1]
+                        try:
+                            value = float(parts[i])
+                            self.setDataValue(keyname,value)
+                            section_data[keyname] = value
+                        except:
+                            self.parsing_error_count += 1
+                            print("Error converting value for key %s in file %s. Line was:\n %s" % (keyname, self.path, line))
 
         self.sections[title] = section_data
+
+    def setDataValue(self, key, value):
+        """the point of this method is to throw an error if the key already exists.
+        the parsing scheme assumes that our key mechanism uniquely identifies each value in mplus
+        but as we don't control the mplus output and can't be sure this serves as a safety check"""
+
+        key = re.sub(filename_unfriendly_character_detector, '_', key)
+
+        if key in self.data:
+            raise ValueError("Key *s already exists" % key)
+        else:
+            self.data[key] = value
 
     def terminated_normally(self):
         idx = -1

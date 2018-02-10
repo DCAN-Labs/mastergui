@@ -9,7 +9,7 @@ import numpy as np
 import threading
 import queue
 from models.analysis import *
-
+from models.mplus.output_parser import *
 
 class MplusAnalysis(Analysis):
     def __init__(self, config, filename="", saved_data=None):
@@ -18,6 +18,7 @@ class MplusAnalysis(Analysis):
         self.limit_by_voxel = -1
         self.limit_by_row = -1
         self.voxelized_column_mappings = []
+        self.output_parameters = []
         if saved_data is not None:
             self.module_specific_load_data(saved_data)
             # then we are loading from a saved file.
@@ -299,11 +300,20 @@ class MplusAnalysis(Analysis):
 
     def module_specific_save_data(self, save_data):
         save_data["voxelized_column_mappings"] = self.voxelized_column_mappings
+
         save_data["current_model"] = self.model.to_string()
 
         save_data["additional_rules"] = self.model.additional_rule_save_data
+
+        save_data["output_parameters"] = self.output_parameters
+
         if hasattr(self, "input"):
             save_data["input_data_path"] = self.input.path
+
+
+
+
+#        save_data["batchOutputDir"] = self.batchOutputDir
 
     def module_specific_load_data(self, load_data):
         # todo load all the attributes from the save file
@@ -335,6 +345,13 @@ class MplusAnalysis(Analysis):
                 for key, rule_data in rules.items():
                     self.model.add_rule(rule_data[0],rule_data[1],rule_data[2])
 
+        if "batchTitle" in load_data:
+            self.batchTitle = load_data["batchTitle"]
+
+        if "output_parameters" in load_data:
+            self.output_parameters = load_data["output_parameters"]
+            if not type(self.output_parameters)==list:
+                self.output_parameters = []
 
     def addVoxelizedColumn(self, from_column_of_paths, to_new_column_name):
         t = (from_column_of_paths, to_new_column_name)
@@ -357,3 +374,32 @@ class MplusAnalysis(Analysis):
     def updateModel(self, options, non_original_data_columnlist):
         self.model.voxelized_column_names_in_order = self.voxelizedColumnNames()
         return self.model.apply_options(options, non_original_data_columnlist)
+
+
+    def aggregate_results(self,path_template, n_elements = 0):
+        """
+        parse results out of the per-voxel output files and aggregate them into cifti files. it accepts a list
+        of fields to extract from the outputs and there must be one Cifti instance provided per field as
+        we only write one given output field to one cifti at present
+        :param inputspreadsheet:
+        :param path_template:
+        :param look_for_fields:
+        :param ciftis:
+        :return: a pandas data frame with the extracted values from the mplus output files
+        """
+
+        if len(self.output_parameters) == 0:
+            raise ValueError("No output parameters are selected.")
+
+        if n_elements == 0:
+            # todo this override is not a great compromise but is making it easier to
+            # rerun value extractions without recomputing the size of all ciftis.
+            n_elements = 91282  # set to the default value
+
+        #path_template = self.filename_prefix + ".voxel%s.inp.out"
+
+        outputs = MplusOutputSet(path_template)
+
+        results = outputs.extract(self.output_parameters, n_elements)
+
+        return results

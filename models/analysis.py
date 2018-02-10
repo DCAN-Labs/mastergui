@@ -23,6 +23,7 @@ class Analysis():
         self.filename = filename
         self.execution_history = []
         self.cancelling = False
+        self.batchTitle = ""
 
     @property
     def filename_prefix(self):
@@ -35,6 +36,7 @@ class Analysis():
 
     @property
     def output_dir(self):
+        #todo we should probably just get default from config, still let user override
         return self.config._data.get("output_dir", "")
 
     def missingRequiredConfigKeys(self):
@@ -61,6 +63,9 @@ class Analysis():
 
         save_data = {"title": "mytitle", "module": self.module_name, "version": 0.1,
                      "execution_history": self.execution_history}
+
+        save_data["batchTitle"] = self.batchTitle
+        save_data["output_dir"] = self.output_dir
 
         if hasattr(self, 'template'):
             template = self.template

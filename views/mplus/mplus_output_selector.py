@@ -6,6 +6,7 @@ import os
 import numpy as np
 from views.output_browser import *
 from views import view_utilities
+from views.mplus.output_chooser_dialog import *
 import sys
 
 output_radio_button_index = 2
@@ -44,6 +45,7 @@ class MplusOutputSelector(OutputBrowserWidget):
 
             with open(path, 'r') as f:
                 contents = f.readlines()
+            self.last_selected_output_file_path = path
 
             self.addValuesToList(self.selectableOutput, contents)
             # self.fileViewer.setText("".join(contents))
@@ -141,6 +143,14 @@ class MplusOutputSelector(OutputBrowserWidget):
         util.alert("Extraction complete. Go to the output tab to open the cifti in Connectome Workbench.")
 
     def on_click_chooseparameters(self):
+
+        if hasattr(self,'last_selected_output_file_path'):
+
+            c = OutputChooserDialog(self.last_selected_output_file_path)
+
+            if c.selection:
+                self.parentAnalysisWidget.addOutputParameter(c.selection)
+
         print("choose parameters")
     def extract(self):
         try:
@@ -149,7 +159,7 @@ class MplusOutputSelector(OutputBrowserWidget):
 
             selected = self.selectedOutputRows()
 
-            self.parentAnalysisWidget.updateExtractedColumns(selected)
+            #self.parentAnalysisWidget.updateExtractedColumns(selected)
 
             path_template_for_data_including_voxel = os.path.join(self.output_dir, "input.voxel%s.inp.out")
 
@@ -166,9 +176,11 @@ class MplusOutputSelector(OutputBrowserWidget):
                 else:
                     cifti_vector_size = 0
 
-            results = self.parentAnalysisWidget.model.aggregate_results_by_line_number(cifti_vector_size,
-                                                                                       path_template_for_data_including_voxel,
-                                                                                       selected)
+            results = analysis.aggregate_results(path_template_for_data_including_voxel, cifti_vector_size)
+
+#            results = self.parentAnalysisWidget.model.aggregate_results_by_line_number(cifti_vector_size,
+ #                                                                                      path_template_for_data_including_voxel,
+ #                                                                                      selected)
             results.to_csv(os.path.join(self.output_dir, "extracted.csv"), index=False)
 
             self.parentAnalysisWidget.analysis.generate_ciftis_from_dataframe(results)

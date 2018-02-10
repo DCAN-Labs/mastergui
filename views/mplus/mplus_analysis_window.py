@@ -8,6 +8,7 @@ import sys
 import threading
 import traceback
 import time
+from views.mplus import *
 from views.analysis_window_base import *
 from views.widgets.data_preview_widget import *
 from views.output_browser import *
@@ -16,6 +17,10 @@ from views.mplus.template_requirements import *
 from views.mplus.mplus_model_builder import *
 from views.workers import *
 from views.widgets import *
+from views.mplus import *
+#from views.mplus.mplus_output_selector import *
+
+import views.mplus.output_chooser_dialog
 
 tab_datapreview = 1
 tab_modelbuilder = 2
@@ -216,11 +221,18 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.cancelBtn = self.addButton("Cancel Analysis", command_box, self.on_click_cancel, width=130)
         self.cancelBtn.setEnabled(False)
 
-        self.initOutputParameterChoices()
+        #self.initOutputParameterChoices()
 
-        command_bar.addWidget(self.outputParameterChoiceContainer)
+        self.outputParameterChoiceList = ColumnList("Output Parameters",
+                                                    self.on_click_add_output_parameter,
+                                                    self.on_click_remove_output_parameter,
+                                                    checkable = False)
+        self.outputParameterChoiceList.setFixedHeight(150)
 
-        self.outputParameterChoices.show()
+        command_bar.addWidget(self.outputParameterChoiceList)
+        #command_bar.addWidget(self.outputParameterChoiceContainer)
+
+#        self.outputParameterChoices.show()
 
         command_bar.addLayout(command_box)
 
@@ -236,14 +248,16 @@ class MplusAnalysisWindow(AnalysisWindow):
         container = QWidget()
         layout = QVBoxLayout()
 
-        addBoldLabel("Output Parameter Chocies", layout)
+
+
+        addBoldLabel("Output Parameter Choices", layout)
 
         tbl = QTableWidget()
         headers = ["MPlus Name", "Custom Column Name", "Cifti File Name"]
         for i in range(len(headers)):
             tbl.setHorizontalHeaderItem(i, QTableWidgetItem(headers[i]))
 
-        tbl.setFixedHeight(200)
+        tbl.setFixedHeight(100)
         layout.addWidget(tbl)
         outputChoiceButtonBar = AddRemoveButtonBar(self.on_click_add_output_parameter, self.on_click_remove_output_parameter)
 
@@ -257,34 +271,22 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.loadOutputParameterChoices()
 
     def on_click_add_output_parameter(self):
-        print("add param")
+
+        path = self.analysis.modelPathByVoxel(0)  + ".out"
+        x = OutputChooserDialog(path)
+        x.showModally()
 
     def on_click_remove_output_parameter(self):
+        value = self.outputParameterChoiceList.selectedRow()
+        if value:
+            if value in self.analysis.output_parameters:
+                self.analysis.output_parameters.remove(value)
+        self.loadOutputParameterChoices()
         print("remove")
 
-    def updateExtractedColumns(self,selected):
-        self.loadOutputParameterChoices(selected)
+    def loadOutputParameterChoices(self):
 
-    def loadOutputParameterChoices(self, choices = []):
-        fake = [
-                ["mplusname", "myname", "mycifti.nii"],
-                ["mplusname2", "myname2", "mycifti2.nii"],
-                ["mplusname3", "myname3", "mycifti3.nii"]
-            ]
-
-        #todo
-
-        #hack
-        if len(choices) == 0:
-            choices = fake
-        #choices = fake #todo get from self.analysis
-
-        self.outputParameterChoices.setRowCount(len(choices))
-        self.outputParameterChoices.setColumnCount(3)
-        for row_idx in range(len(choices)):
-            row = choices[row_idx]
-            for col_idx in range(len(row)):
-                self.outputParameterChoices.setItem(row_idx, col_idx, QTableWidgetItem(row[col_idx]))
+        self.outputParameterChoiceList.loadValues(self.analysis.output_parameters)
 
     def on_click_cancel(self):
         close_msg = "Are you sure you want to cancel the execution of this analysis in progress?"
@@ -379,6 +381,11 @@ class MplusAnalysisWindow(AnalysisWindow):
             if "current_model" in saved_state:
                 self.modelBuilder.generatedModelViewer.setText(saved_state["current_model"])
 
+            self.outputViewer.loadOutputFiles(self.analysis.batchOutputDir, "*.out")
+
+            self.modelBuilder.on_click_apply_template_variables()
+
+            self.loadOutputParameterChoices()
 
     def runAnalysisBackgroundWorker(self, progress_callback, finished_callback, error_callback):
         # for testing, halt after n rows of data processing. Set to 0 to do everything.
@@ -415,7 +422,7 @@ class MplusAnalysisWindow(AnalysisWindow):
         else:
             cifti_output_path = ""
 
-        selected_outputs = self.outputViewer.selectedOutputRows()
+        selected_outputs = self.analysis.output_parameters
 
         if len(selected_outputs) == 0:
             msg = "Analysis complete but no output fields were selected for extraction yet.  Go to the Output Selector tab and select the rows from the MPlus output that you would like aggregated and click Extract."
@@ -516,3 +523,7 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.tabs.setTabEnabled(0, False)
         self.tabs.setStyleSheet(
             "QTabBar::tab::disabled {width: 0; height: 0; margin: 0; padding: 0; border: none;} ")
+
+    def addOutputParameter(self, key):
+        self.analysis.output_parameters.append(key)
+        self.loadOutputParameterChoices()
