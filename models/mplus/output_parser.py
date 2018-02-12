@@ -7,9 +7,9 @@ import pandas as pd
 import threading
 import re
 
-Model_Fit_Information_Label = "MODEL FIT INFORMATION"
-Model_Results_Label = "MODEL RESULTS"
-Standarized_Model_Results_Label = "STANDARDIZED MODEL RESULTS"
+Model_Fit_Information_Label = "MODEL_FIT_INFORMATION"
+Model_Results_Label = "MODEL_RESULTS"
+Standarized_Model_Results_Label = "STANDARDIZED_MODEL_RESULTS"
 key_delimiter = "-"
 
 #for stripping keys of values that we don't want in filenames
@@ -57,7 +57,7 @@ class MplusOutput():
             if heading_detector.match(line) or warning_detector.match(line):
                 new_section_detected = True
                 self.process_section_contents(last_section, last_section_lines)
-                last_section = line.strip()
+                last_section = self.cleanKey(line.strip())
                 last_section_lines = []
             else:
                 if len(last_section)>0:
@@ -71,7 +71,7 @@ class MplusOutput():
 
     def process_section_contents(self,  last_section, last_section_lines):
         if last_section:
-            if last_section[:10]=="***WARNING":
+            if last_section[:10]=="___WARNING":  #in the original MPlus this would have been ***WARNING but we have replaced non alphanumerics with _ at this point
                 self.warnings.append(" ".join([last_section] + last_section_lines))
             else:
                 if self.limited_parse and not last_section in self.limit_to_sections:
@@ -217,12 +217,16 @@ class MplusOutput():
 
         self.sections[title] = section_data
 
+    def cleanKey(self, key):
+        """replace filename unfriendly characters with _ """
+        return re.sub(filename_unfriendly_character_detector, '_', key)
+
     def setDataValue(self, key, value):
         """the point of this method is to throw an error if the key already exists.
         the parsing scheme assumes that our key mechanism uniquely identifies each value in mplus
         but as we don't control the mplus output and can't be sure this serves as a safety check"""
 
-        key = re.sub(filename_unfriendly_character_detector, '_', key)
+        key = self.cleanKey(key)
 
         if key in self.data:
             raise ValueError("Key *s already exists" % key)
@@ -300,25 +304,31 @@ class MplusOutputSet():
         warnings = {}
 
 
+        use_threads = True
 
-        num_threads = 4
+        #this code to disable the multithreading in this step is just to facilliate debugging.
+        #in production, use_threads should be true for best performance
+        if use_threads:
+            num_threads = 1 #todo set back to 4
 
-        sets_of_voxel_indexes = np.array_split(list(range(n_voxels_expected)), num_threads)
+            sets_of_voxel_indexes = np.array_split(list(range(n_voxels_expected)), num_threads)
 
-        #places for the threads to park their error findings without fighting to access the
-        #same data structures too much
-        self.warnings_sets = []
-        self.notfound_sets = []
+            #places for the threads to park their error findings without fighting to access the
+            #same data structures too much
+            self.warnings_sets = []
+            self.notfound_sets = []
 
-        threads = []
+            threads = []
 
-        for i in range(len(sets_of_voxel_indexes)):
-            t = threading.Thread(target=self.loadForSetOfVoxels, args=[sets_of_voxel_indexes[i], keys_to_extract, all_found_results])
-            t.start()
-            threads.append(t)
+            for i in range(len(sets_of_voxel_indexes)):
+                t = threading.Thread(target=self.loadForSetOfVoxels, args=[sets_of_voxel_indexes[i], keys_to_extract, all_found_results])
+                t.start()
+                threads.append(t)
 
-        for t in threads:
-            t.join()
+            for t in threads:
+                t.join()
+        else:
+            self.loadForSetOfVoxels(list(range(n_voxels_expected)), keys_to_extract, all_found_results)
 
         if False:
             for i in range(n_voxels_expected):
