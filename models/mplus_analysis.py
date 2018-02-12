@@ -401,6 +401,8 @@ class MplusAnalysis(Analysis):
 
         outputs = MplusOutputSet(path_template)
 
+        self.outputset = outputs
+
         results = outputs.extract(self.output_parameters, n_elements)
 
         return results

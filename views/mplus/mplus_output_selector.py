@@ -181,6 +181,8 @@ class MplusOutputSelector(OutputBrowserWidget):
 
             results = analysis.aggregate_results(path_template_for_data_including_voxel, cifti_vector_size)
 
+            self.showextractionwarnings(analysis.outputset)
+
 #            results = self.parentAnalysisWidget.model.aggregate_results_by_line_number(cifti_vector_size,
  #                                                                                      path_template_for_data_including_voxel,
  #                                                                                      selected)
@@ -191,3 +193,18 @@ class MplusOutputSelector(OutputBrowserWidget):
         except:
             self.parentAnalysisWidget.alert(sys.exc_info()[1])
             return
+
+    def showextractionwarnings(self,outputset):
+        msg = "Warnings:\n"
+        warning_counts = outputset.warning_counts
+
+
+        for k,v in warning_counts.items():
+            msg += "%d instances of %s\n" % (v,k)
+
+        msg+="Counts of Missing Keys:\n"
+
+        for k, v in outputset.not_found_counts.items():
+            msg += "%d instances of %s\n not found" % (v, k)
+
+        self.parentAnalysisWidget.appendTextToOutputDisplay(msg)
