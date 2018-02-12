@@ -212,10 +212,10 @@ class MplusAnalysis(Analysis):
 
                     n = self.input.cifti_vector_size
                     remaining = (n - count) * rate / 60
-
+                    models_per_sec = count/sec
                     self.progressMessage(
                         "Mplus Models executed: %i in %f seconds (%f sec/model). Estimated remaining time: %f minutes. Mplus errors so far: %s" % (
-                            self.mplus_exec_count, seconds, rate, remaining, errors_so_far))
+                            self.mplus_exec_count, seconds, models_per_sec, remaining, errors_so_far))
                 self.mplus_exec_counterQueue.task_done()
         except:
             self.progressMessage("queue monitor complete (empty queue)")
