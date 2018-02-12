@@ -166,9 +166,10 @@ class MplusOutputSelector(OutputBrowserWidget):
             input = self.parentAnalysisWidget.input
             analysis = self.parentAnalysisWidget.analysis
 
-            analysis.output_dir = self.output_dir
+            path_split = os.path.split(self.output_dir)
+            analysis.output_dir = path_split[0] #self.output_dir
 
-            analysis.batchTitle = os.path.basename(self.output_dir)
+            analysis.batchTitle = path_split[1] #os.path.basename(self.output_dir)
 
             if analysis.limit_by_voxel > 0:
                 cifti_vector_size = analysis.limit_by_voxel
