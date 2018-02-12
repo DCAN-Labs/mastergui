@@ -20,7 +20,7 @@ class MplusAnalysis(Analysis):
         self.voxelized_column_mappings = []
         self.output_parameters = []
         if saved_data is not None:
-            self.module_specific_load_data(saved_data)
+            self.process_load_data(saved_data)
             # then we are loading from a saved file.
 
 
@@ -315,7 +315,8 @@ class MplusAnalysis(Analysis):
 
 #        save_data["batchOutputDir"] = self.batchOutputDir
 
-    def module_specific_load_data(self, load_data):
+    def process_load_data(self, load_data):
+        super(MplusAnalysis,self).process_load_data(load_data)
         # todo load all the attributes from the save file
         if "input_data_path" in load_data:
             self.input_data_path = load_data["input_data_path"]

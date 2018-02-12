@@ -19,6 +19,7 @@ class Analysis():
         # this will be used when saving/loading files to indicate which kind of analysis it is
         self.module_name = module_name
         self.config = config
+        self.outout_dir = self.config._data.get("output_dir", "")
         self.required_config_keys = []
         self.filename = filename
         self.execution_history = []
@@ -34,10 +35,6 @@ class Analysis():
     def base_output_path(self):
         return os.path.join(self.batchOutputDir, self.filename_prefix)
 
-    @property
-    def output_dir(self):
-        #todo we should probably just get default from config, still let user override
-        return self.config._data.get("output_dir", "")
 
     def missingRequiredConfigKeys(self):
 
@@ -104,6 +101,13 @@ class Analysis():
             cifti.setVector(data[c])
             cifti_output_path =  "%s.%s.%s" % (self.output_path, c, "dscalar.nii")
             cifti.save(cifti_output_path)
+
+    def process_load_data(self, load_data):
+
+        keys_to_copy = ["output_dir"]
+        for key in keys_to_copy:
+            if key in load_data:
+                setattr(self, key, load_data[key])
 
     @classmethod
     def load(self, filename, config):

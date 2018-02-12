@@ -166,6 +166,8 @@ class MplusOutputSelector(OutputBrowserWidget):
             input = self.parentAnalysisWidget.input
             analysis = self.parentAnalysisWidget.analysis
 
+            analysis.output_dir = self.output_dir
+
             analysis.batchTitle = os.path.basename(self.output_dir)
 
             if analysis.limit_by_voxel > 0:
