@@ -205,6 +205,6 @@ class MplusOutputSelector(OutputBrowserWidget):
         msg+="Counts of Missing Keys:\n"
 
         for k, v in outputset.not_found_counts.items():
-            msg += "%d instances of %s\n not found" % (v, k)
+            msg += "%d instances of %s\n not found\n" % (v, k)
 
         self.parentAnalysisWidget.appendTextToOutputDisplay(msg)
