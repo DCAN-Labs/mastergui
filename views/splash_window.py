@@ -81,6 +81,7 @@ class SplashWindow(QWidget):
                     self.parent_application_window.open_file(path)
         except Exception as e:
             util.alert(str(e))
+            raise e
 
     def load_recent_files(self):
         path = self.config.getOptional("recent_files_path", "mastergui_recents")
