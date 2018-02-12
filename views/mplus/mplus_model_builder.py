@@ -83,13 +83,13 @@ class MplusModelBuilder(QWidget):
 
         layout = QHBoxLayout()
         layout.setContentsMargins(2,2,2,2)
-        self.voxelized_list = ColumnList("Voxelized Columns")
+        self.voxelized_list = ColumnList("Voxelized Columns", checkable = False)
         self.voxelized_list.setFixedHeight(150)
         self.voxelized_list.setAddClickHandler(self.on_click_add_voxelized_column)
         self.voxelized_list.setRemoveClickHandler(self.on_click_remove_voxelized_column)
         layout.addWidget(self.voxelized_list)
 
-        self.other_variables_list = ColumnList("Latent Variables")
+        self.other_variables_list = ColumnList("Latent Variables", checkable = False)
         self.other_variables_list.setFixedHeight(150)
 
         layout.addWidget(self.other_variables_list)

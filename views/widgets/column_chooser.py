@@ -16,8 +16,9 @@ from views.view_utilities import *
 
 
 class ColumnChooser(QWidget):
-    def __init__(self, input_spreadsheet, default_value=None):
+    def __init__(self, input_spreadsheet, default_value=None, checkable = True):
         super(ColumnChooser, self).__init__()
+        self.checkable = checkable
         self.default_value = default_value
         self.input_spreadsheet = input_spreadsheet
         self.initUI()
@@ -102,7 +103,8 @@ class ColumnChooser(QWidget):
             item = QStandardItem(col)
             # check = Qt.Checked if 1 == 1 else Qt.Unchecked
             # item.setCheckState(check)
-            item.setCheckable(True)
+            if self.checkable:
+                item.setCheckable(True)
             model.appendRow(item)
 
     def selectedRow(self):

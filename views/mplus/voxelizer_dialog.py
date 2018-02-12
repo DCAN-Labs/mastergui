@@ -19,7 +19,7 @@ from views.widgets.column_chooser_dialog import *
 
 class VoxelizerDialog(ColumnChooserDialog):
     def __init__(self, input_spreadsheet):
-        super(VoxelizerDialog, self).__init__(input_spreadsheet)
+        super(VoxelizerDialog, self).__init__(input_spreadsheet, checkable = False)
         self.initMoreUI()
 
     def initMoreUI(self):

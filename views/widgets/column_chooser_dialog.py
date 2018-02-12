@@ -17,8 +17,9 @@ from views.widgets.column_chooser import *
 
 
 class ColumnChooserDialog(QDialog):
-    def __init__(self, input_spreadsheet):
+    def __init__(self, input_spreadsheet, checkable = True):
         super(ColumnChooserDialog, self).__init__()
+        self.checkable = checkable
         self.input_spreadsheet = input_spreadsheet
         self.initUI()
         # self.loadColumns()
@@ -27,7 +28,7 @@ class ColumnChooserDialog(QDialog):
 
         layout = QVBoxLayout()
 
-        self.chooser = ColumnChooser(self.input_spreadsheet)
+        self.chooser = ColumnChooser(self.input_spreadsheet, checkable = self.checkable)
         #        layout.addWidget(radio_group)
         layout.addWidget(self.chooser)
 
@@ -87,7 +88,8 @@ class ColumnChooserDialog(QDialog):
             item = QStandardItem(col)
             # check = Qt.Checked if 1 == 1 else Qt.Unchecked
             # item.setCheckState(check)
-            item.setCheckable(True)
+            if self.checkable:
+                item.setCheckable(True)
             model.appendRow(item)
 
     def showModally(self):
