@@ -19,7 +19,7 @@ class Analysis():
         # this will be used when saving/loading files to indicate which kind of analysis it is
         self.module_name = module_name
         self.config = config
-        self.outout_dir = self.config._data.get("output_dir", "")
+        self.output_dir = self.config._data.get("output_dir", "")
         self.required_config_keys = []
         self.filename = filename
         self.execution_history = []
