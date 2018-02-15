@@ -26,7 +26,8 @@ class TestMplusModelOutput(unittest.TestCase):
         output_set = MplusOutputSet(pattern)
 
         #stats = output_set.extract(["STANDARDIZED MODEL RESULTS|Means|PC6|Estimate"],2)
-        stats = output_set.extract(["MODEL FIT INFORMATION|Information Criteria|Bayesian (BIC)"])
+        stats = output_set.extract(["MODEL_FIT_INFORMATION-Information_Criteria-Bayesian_BIC_"],2)
+
         print(stats)
         print("WARNINGS:")
         print(output_set.warning_counts)

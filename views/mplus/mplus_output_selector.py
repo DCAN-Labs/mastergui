@@ -207,4 +207,21 @@ class MplusOutputSelector(OutputBrowserWidget):
         for k, v in outputset.not_found_counts.items():
             msg += "%d instances of %s\n not found\n" % (v, k)
 
+
+        ntv = outputset.not_terminated_voxels
+        if len(ntv)==0:
+            msg+="\nAll models 'terminated normally'\n"
+        else:
+            msg+="\n%d models did not terminate normally\n" % len(ntv)
+            msg+="\tExamples: %s\n" % str(ntv[:10])
+
+
+        tw = outputset.termination_warnings
+        if len(tw)==0:
+            msg+="\nNo termination warnings among the models that 'terminated normally'\n"
+        else:
+            msg+="\nModel termination warnings amonst those that 'terminated normally':\n"
+            for warn, ids in tw.items():
+                msg+="\t%d examples of:\n\t%s\n" % (len(ids),warn)
+                msg += "\tExamples: %s" % str(ids[:10])
         self.parentAnalysisWidget.appendTextToOutputDisplay(msg)
