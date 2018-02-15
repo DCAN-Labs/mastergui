@@ -81,7 +81,7 @@ class MplusOutput():
         in_section = False
         self.terminated_normally = False
         self.had_model_warnings = False
-
+        self.model_warning_content = ""
         last_section_is_warning = False
 
         #all_lines = []
