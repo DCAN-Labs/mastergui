@@ -179,6 +179,7 @@ class MplusOutputSelector(OutputBrowserWidget):
                 else:
                     cifti_vector_size = 0
 
+
             results = analysis.aggregate_results(path_template_for_data_including_voxel, cifti_vector_size)
 
             self.showextractionwarnings(analysis.outputset)
@@ -220,8 +221,8 @@ class MplusOutputSelector(OutputBrowserWidget):
         if len(tw)==0:
             msg+="\nNo termination warnings among the models that 'terminated normally'\n"
         else:
-            msg+="\nModel termination warnings amonst those that 'terminated normally':\n"
+            msg+="\nModel termination warnings among those that 'terminated normally':\n"
             for warn, ids in tw.items():
-                msg+="\t%d examples of:\n\t%s\n" % (len(ids),warn)
-                msg += "\tExamples: %s" % str(ids[:10])
+                msg+="\n\t%d examples of:\n\t%s\n" % (len(ids),warn)
+                msg += "\n\tExamples: %s\n" % str(ids[:10])
         self.parentAnalysisWidget.appendTextToOutputDisplay(msg)

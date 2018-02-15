@@ -17,6 +17,10 @@ Model_Termination_Section_Label="THE_MODEL_ESTIMATION_TERMINATED_NORMALLY"
 filename_unfriendly_character_detector = re.compile('[^0-9a-zA-Z\-]+')
 
 
+#many mplus model termination warnings are identical except for a condition number that we rarely need, use this to remove them.
+Condition_Number_Mask = re.compile("(.*HE CONDITION NUMBER IS )\s*([0-9\.D\-]*)\.")
+
+
 """Termination Warning example:   sometimes Mplus modes do terminate successfully but have warning messages under the heading
 THE MODEL ESTIMATION TERMINATED NORMALLY
 
@@ -98,7 +102,7 @@ class MplusOutput():
                 new_section_detected = True
                 self.process_section_contents(last_section, last_section_lines)
                 last_section = self.cleanKey(line.strip())
-                print(last_section)
+
                 last_section_lines = []
             else:
                 if len(last_section)>0:
@@ -299,11 +303,36 @@ class MplusOutput():
     def process_model_termination_section(self, lines):
 
         self.terminated_normally = True
+        warnings = []
+        warning = ""
+        for line in lines:
+            line = line.strip()
+            if len(line)>0:
+                if len(warning)>0:
+                    warning+=" "
+                warning += line
+            else:
+                if len(warning)>0:
+                    warnings.append(warning)
+                    warning = ""
+        if len(warning)>0:
+            warnings.append(warning)
 
-        condensed = " ".join(lines).strip()
+        r3 = re.compile("(.*HE CONDITION NUMBER IS )([0-9\.D\-]*)\.")
+        r3 = re.compile("(.*HE CONDITION NUMBER IS )\s*[0-9\.D\-]*\.")
+
+        #remove the condition # that is unnececessarily for our purposes making warnings unique.
+        for i in range(len(warnings)):
+            warnings[i] = re.sub(Condition_Number_Mask, r'\1 xxxx', warnings[i])
+
+
+        condensed = "\n".join(warnings)
+
         if len(condensed)>0:
             self.had_model_warnings = True
             self.model_warning_content = condensed
+        self.model_convergence_warnings = warnings
+
 
     def print_report(self):
         print("Analysis of Mplus Output " + self.path)
