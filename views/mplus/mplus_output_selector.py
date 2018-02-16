@@ -59,14 +59,6 @@ class MplusOutputSelector(OutputBrowserWidget):
         except:
             return False
 
-    def isCheckable(self, line):
-        if len(line) > len(line.lstrip()):
-            words = line.strip().split(" ")
-            # if the last value on the line is a number let it be checkable
-            return self.is_number(words[-1])
-        else:
-            return False
-
     def addValuesToList(self, listView, lines):
 
         model = listView.model()
@@ -82,10 +74,7 @@ class MplusOutputSelector(OutputBrowserWidget):
         for line in lines:
             if len(line.strip()) > 0:
                 item = QStandardItem(line)
-                # check = Qt.Checked if 1 == 1 else Qt.Unchecked
-                # item.setCheckState(check)
-                if self.isCheckable(line):
-                    item.setCheckable(True)
+
                 item.setSizeHint(QSize(300, 15))
                 model.appendRow(item)
                 item_to_line_numbers[item_number] = original_line_number
@@ -94,20 +83,6 @@ class MplusOutputSelector(OutputBrowserWidget):
             original_line_number += 1
 
         self.item_to_line_numbers = item_to_line_numbers
-
-    def selectedOutputRows(self):
-
-        m = self.selectableOutput.model()
-
-        items = []
-        for i in range(m.rowCount()):
-            item = m.item(i)
-            if item.checkState() == Qt.Checked:
-                line_number = self.item_to_line_numbers[i]
-                line = item.text()
-                name = line.strip().split(" ")[0]
-                items.append((line_number, line, name))
-        return items
 
     def on_pattern_btn_clicked(self, i):
 
@@ -156,10 +131,6 @@ class MplusOutputSelector(OutputBrowserWidget):
         try:
 
             self.output_dir = self.outputDirWidget.text()
-
-            selected = self.selectedOutputRows()
-
-            #self.parentAnalysisWidget.updateExtractedColumns(selected)
 
             path_template_for_data_including_voxel = os.path.join(self.output_dir, "input.voxel%s.inp.out")
 
