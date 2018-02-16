@@ -10,6 +10,9 @@ import threading
 import queue
 from models.analysis import *
 from models.mplus.output_parser import *
+import numpy as np
+import pandas as pd
+
 
 class MplusAnalysis(Analysis):
     def __init__(self, config, filename="", saved_data=None):
@@ -405,4 +408,13 @@ class MplusAnalysis(Analysis):
 
         results = outputs.extract(self.output_parameters, n_elements)
 
+        self.generate_mask_ciftis(n_elements)
         return results
+
+    def generate_mask_ciftis(self, n_elements):
+        no_problem_vector = np.zeros(n_elements) + 1
+        no_problem_vector[self.outputset.any_errors] = 0
+
+        no_problem_df = pd.DataFrame(no_problem_vector, columns = ["No_Problems"])
+
+        self.generate_ciftis_from_dataframe(no_problem_df)

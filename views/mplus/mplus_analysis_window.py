@@ -273,8 +273,12 @@ class MplusAnalysisWindow(AnalysisWindow):
     def on_click_add_output_parameter(self):
 
         path = self.analysis.modelPathByVoxel(0)  + ".out"
-        x = OutputChooserDialog(path)
-        x.showModally()
+        if os.path.exists(path):
+            c = OutputChooserDialog(path)
+            if c.selection:
+                self.addOutputParameter(c.selection)
+        else:
+            util.alert("Sample output not found. Run Test Analysis first so that you have some sample Mplus output from which you can choose columns.")
 
     def on_click_remove_output_parameter(self):
         value = self.outputParameterChoiceList.selectedRow()
@@ -282,7 +286,7 @@ class MplusAnalysisWindow(AnalysisWindow):
             if value in self.analysis.output_parameters:
                 self.analysis.output_parameters.remove(value)
         self.loadOutputParameterChoices()
-        print("remove")
+
 
     def loadOutputParameterChoices(self):
 

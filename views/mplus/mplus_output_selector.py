@@ -151,7 +151,7 @@ class MplusOutputSelector(OutputBrowserWidget):
             if c.selection:
                 self.parentAnalysisWidget.addOutputParameter(c.selection)
 
-        print("choose parameters")
+
     def extract(self):
         try:
 
@@ -189,14 +189,21 @@ class MplusOutputSelector(OutputBrowserWidget):
  #                                                                                      selected)
             results.to_csv(os.path.join(self.output_dir, "extracted.csv"), index=False)
 
-            self.parentAnalysisWidget.analysis.generate_ciftis_from_dataframe(results)
+            analysis.generate_ciftis_from_dataframe(results)
 
         except:
             self.parentAnalysisWidget.alert(sys.exc_info()[1])
             return
 
     def showextractionwarnings(self,outputset):
-        msg = "Warnings:\n"
+
+        msg = "\nExtraction Errors And Warnings\n\n"
+
+        msg += "Mplus Outputs with Any Error: %d\n" % len(outputset.any_errors)
+        if len(outputset.any_errors)>0:
+            msg += "\tExamples: %s\n" % str(outputset.any_errors[:10])
+
+        msg += "\nWarnings:\n"
         warning_counts = outputset.warning_counts
 
 

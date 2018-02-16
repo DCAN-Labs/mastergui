@@ -86,13 +86,21 @@ class MplusOutput():
         self.terminated_normally = False
         self.had_model_warnings = False
         self.model_warning_content = ""
+        self.any_error = False
+        self.file_read_error = False
+
         last_section_is_warning = False
 
         #all_lines = []
 
-
-        with open(self.path, "r") as f:
-            all_lines = f.readlines()
+        try:
+            with open(self.path, "r") as f:
+                all_lines = f.readlines()
+        except Exception as e:
+            self.any_error = True
+            self.file_read_error = True
+            self.lines = []
+            return
 
         for line in all_lines:
 
@@ -102,16 +110,18 @@ class MplusOutput():
                 new_section_detected = True
                 self.process_section_contents(last_section, last_section_lines)
                 last_section = self.cleanKey(line.strip())
-
                 last_section_lines = []
             else:
                 if len(last_section)>0:
                     last_section_lines.append(line)
-            #all_lines.append(line)
-
-
 
         self.lines = all_lines
+
+        if self.terminated_normally:
+            if len(self.model_convergence_warnings)>0:
+                self.any_error = True
+        else:
+            self.any_error = True
 
 
     def process_section_contents(self,  last_section, last_section_lines):
@@ -409,7 +419,7 @@ class MplusOutputSet():
             self.notfound_sets = []
             self.not_terminated_voxels = []
             self.termination_warning_sets = []
-
+            self.any_errors = []
             threads = []
 
             for i in range(len(sets_of_voxel_indexes)):
@@ -458,6 +468,7 @@ class MplusOutputSet():
         warnings = {}
         not_terminated_normally = []
         termination_warnings = {}
+        any_errors = []
         for i in voxel_indexes:
             path = self.path_template % i  # + ".voxel" + str(i) + ".inp.out"
 
@@ -483,10 +494,13 @@ class MplusOutputSet():
                     termination_warnings[o.model_warning_content].append(i)
                 else:
                     termination_warnings[o.model_warning_content]=[i]
+            if o.any_error:
+                any_errors.append(i)
 
         with threading.Lock():
             self.notfound_sets.append(not_found_counts)
             self.warnings_sets.append(warnings)
             self.not_terminated_voxels+=not_terminated_normally
             self.termination_warning_sets.append(termination_warnings)
+            self.any_errors += any_errors
 
