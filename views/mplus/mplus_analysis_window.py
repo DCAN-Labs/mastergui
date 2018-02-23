@@ -385,7 +385,7 @@ class MplusAnalysisWindow(AnalysisWindow):
             if "current_model" in saved_state:
                 self.modelBuilder.generatedModelViewer.setText(saved_state["current_model"])
 
-            self.outputViewer.loadOutputFiles(self.analysis.batchOutputDir, "*.out")
+            self.outputViewer.refreshBatches()
 
             self.modelBuilder.on_click_apply_template_variables()
 
@@ -415,6 +415,8 @@ class MplusAnalysisWindow(AnalysisWindow):
 
     def onAnalysisFinish(self):
 
+        self.outputViewer.refreshBatches()
+
         self.setExecuteButtonState(False)
 
         self.appendTextToOutputDisplay("Analysis Complete")
@@ -433,6 +435,8 @@ class MplusAnalysisWindow(AnalysisWindow):
             self.appendTextToOutputDisplay(msg)
             self.alert(msg)
         else:
+
+            #todo this might be redundant, probably already extracted
             self.outputViewer.extract()
 
             if len(cifti_output_path) > 0 and not self.cancelling:
@@ -466,8 +470,7 @@ class MplusAnalysisWindow(AnalysisWindow):
 
         self.model.title = self.analysis.batchTitle
 
-        self.outputViewer.loadOutputFiles(self.analysis.batchOutputDir, "*.inp.out")
-        #self.outputSelector.loadOutputFiles(self.analysis.batchOutputDir, "*.inp.out")
+
         self.analysis.limit_by_row = limit_by_row
         self.analysis.limit_by_voxel = limit_by_voxel
 

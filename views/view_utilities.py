@@ -38,7 +38,7 @@ def addButton(caption, container, on_click = None, width=-1, height = -1):
 
     return button
 
-def addColumnNamesToListView(listView, columnNames):
+def addColumnNamesToListView(listView, columnNames, checkable = True):
 
     model = listView.model()
 
@@ -48,7 +48,8 @@ def addColumnNamesToListView(listView, columnNames):
         item = QStandardItem(col)
         # check = Qt.Checked if 1 == 1 else Qt.Unchecked
         # item.setCheckState(check)
-        item.setCheckable(True)
+        if checkable:
+            item.setCheckable(True)
         model.appendRow(item)
 
 def createColumnNameListWidget(single_selection=False):

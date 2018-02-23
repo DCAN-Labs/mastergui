@@ -403,6 +403,13 @@ class MplusOutputSet():
         not_found_counts = {}
         warnings = {}
 
+        self.warnings_sets = []
+        self.notfound_sets = []
+        self.not_terminated_voxels = []
+        self.termination_warning_sets = []
+        self.any_errors = []
+        self.untrustworthies = []
+
 
         use_threads = True
 
@@ -415,11 +422,7 @@ class MplusOutputSet():
 
             #places for the threads to park their error findings without fighting to access the
             #same data structures too much
-            self.warnings_sets = []
-            self.notfound_sets = []
-            self.not_terminated_voxels = []
-            self.termination_warning_sets = []
-            self.any_errors = []
+
             threads = []
 
             for i in range(len(sets_of_voxel_indexes)):
@@ -469,6 +472,7 @@ class MplusOutputSet():
         not_terminated_normally = []
         termination_warnings = {}
         any_errors = []
+        untrustworthies = []
         for i in voxel_indexes:
             path = self.path_template % i  # + ".voxel" + str(i) + ".inp.out"
 
@@ -490,10 +494,12 @@ class MplusOutputSet():
             if not o.terminated_normally:
                 not_terminated_normally.append(i)
             else:
+                untrustworthies.append(i)
                 if o.model_warning_content in termination_warnings:
                     termination_warnings[o.model_warning_content].append(i)
                 else:
                     termination_warnings[o.model_warning_content]=[i]
+
             if o.any_error:
                 any_errors.append(i)
 
@@ -503,4 +509,5 @@ class MplusOutputSet():
             self.not_terminated_voxels+=not_terminated_normally
             self.termination_warning_sets.append(termination_warnings)
             self.any_errors += any_errors
+            self.untrustworthies += untrustworthies
 

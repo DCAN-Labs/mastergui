@@ -5,6 +5,8 @@ import glob
 import os
 import numpy as np
 import views.view_utilities as util
+from models import paths
+from views.widgets.combobox import *
 
 cifti_radio_button_index = 3
 
@@ -18,10 +20,19 @@ class OutputBrowserWidget(QWidget):
     def initUI(self):
         layout = QVBoxLayout()
 
-        layout.addWidget(QLabel("Output Directory:"))
+        layout.addWidget(QLabel("Analysis Output Directory:"))
         self.outputDirWidget = QLineEdit()
         self.outputDirWidget.returnPressed.connect(self.on_click_refresh)
         layout.addWidget(self.outputDirWidget)
+
+        layout.addWidget(QLabel("Specific Batch Output Sub-Directory:"))
+        self.batchDirWidget = QLineEdit()
+        self.batchDirWidget.setReadOnly(True)
+        layout.addWidget(self.batchDirWidget)
+
+        self.batchDropDown = ComboBox(on_change = self.on_batch_row_changed)
+
+        layout.addWidget(self.batchDropDown)
 
         self.patternLabel = QLabel("File Pattern:")
 
@@ -32,22 +43,19 @@ class OutputBrowserWidget(QWidget):
         self.exploreLayout = exploreLayout
 
         layout.addWidget(self.createRadioButtons())
-        self.patternWidget = QLineEdit()
-        self.patternWidget.returnPressed.connect(self.on_click_refresh)
-        layout.addWidget(self.patternWidget)
 
         self.fileViewer = QTextEdit()
         self.fileViewer.setReadOnly(True)
 
 
-        button = util.addButton("Refesh", layout, self.on_click_refresh, 70)
+
         self.ciftiButtion = util.addButton("Open Cifti", layout, self.on_click_opencifti)
         self.ciftiButtion.setVisible(False)
-        self.listView = QListView()
 
-        self.listView.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.fileListView = QListView()
+        self.fileListView.setSelectionMode(QAbstractItemView.SingleSelection)
 
-        exploreLayout.addWidget(self.listView, stretch=1)
+        exploreLayout.addWidget(self.fileListView, stretch=1)
         self.initDetailUI(exploreLayout)
         self.initDetailUISpecific(exploreLayout)
         layout.addLayout(exploreLayout)
@@ -65,8 +73,11 @@ class OutputBrowserWidget(QWidget):
         return
     def createRadioButtons(self):
 
-        labels = ["CSVs", "Mplus Input Files", "Mplus Output Files", "Ciftis (.nii)"]
-        self.patterns = ["*.csv", "*.inp", "*.out", "*.nii"]
+        labels = ["Inputs", "Outputs", "Ciftis"]
+        sep = os.path.sep
+        suffix = sep + "*.*"
+
+        self.patterns = [paths.INPUTS_DIRNAME + suffix,paths.OUTPUTS_DIRNAME + suffix, paths.CIFITS_DIRNAME + sep + "*.nii"]
 
         group = QButtonGroup()
         groupWidget = QWidget()
@@ -81,9 +92,15 @@ class OutputBrowserWidget(QWidget):
             idx += 1
 
         groupWidget.setLayout(layout)
-        groupWidget.setFixedWidth(400)
+        #groupWidget.setFixedWidth(400)
         group.buttonClicked.connect(self.on_pattern_btn_clicked)
         self.patternButtonGroup = group
+
+        self.patternWidget = QLineEdit()
+        self.patternWidget.returnPressed.connect(self.on_click_refresh)
+        layout.addWidget(self.patternWidget)
+        button = util.addButton("Refesh", layout, self.on_click_refresh, 70)
+
         self.groupWidget = groupWidget
 
         return groupWidget
@@ -110,23 +127,37 @@ class OutputBrowserWidget(QWidget):
 
     def on_click_refresh(self):
         self.last_selected_path  = ""
-        self.loadOutputFiles(self.outputDirWidget.text(), self.patternWidget.text())
+        self.refreshFiles()
+        self.refreshBatches()
+
+    def refreshFiles(self):
+
+        path = os.path.join(self.parentAnalysisWidget.analysis.paths.current_batch_path, self.patternWidget.text())
+
+        self.batch_context_path = path
+
+        self.loadOutputFiles(path)
+
+    def refreshBatches(self):
+        if hasattr(self.parentAnalysisWidget,"analysis"):
+            batches = self.parentAnalysisWidget.analysis.batches()
+            self.batchDropDown.update(batches)
 
     def on_click_opencifti(self):
         if hasattr(self, "last_selected_path"):
             if len(self.last_selected_path)>0:
                 self.parentAnalysisWidget.launchWorkbench(self.last_selected_path)
 
-    def loadOutputFiles(self, output_dir, pattern):
+    def loadOutputFiles(self, path_pattern):
         self.last_selected_path = ""
-        self.output_dir = output_dir
-        self.pattern = pattern
+        #self.output_dir = output_dir
+        #self.pattern = pattern
 
-        self.outputDirWidget.setText(output_dir)
-        self.patternWidget.setText(pattern)
+        #self.outputDirWidget.setText(output_dir)
+        #self.patternWidget.setText(pattern)
         # len(glob.glob(os.path.join(analysis.batchOutputDir, "*.inp.out")))
 
-        paths = glob.glob(os.path.join(output_dir, pattern))
+        paths = glob.glob(path_pattern)
 
         model = QStandardItemModel()
 
@@ -140,22 +171,37 @@ class OutputBrowserWidget(QWidget):
             item = QStandardItem(name)
             model.appendRow(item)
 
-        self.listView.setModel(model)
+        self.fileListView.setModel(model)
 
-        self.listView.selectionModel().currentChanged.connect(self.on_row_changed)
+        self.fileListView.selectionModel().currentChanged.connect(self.on_file_row_changed)
 
-    def on_row_changed(self, current, previous):
-        path = os.path.join(self.output_dir, current.data())
+    def on_file_row_changed(self, current, previous):
+        context = os.path.dirname(self.batch_context_path)
+        path = os.path.join(context, current.data())
 
         self.last_selected_path = path
 
         if not self.ciftiButtion.isVisible():
-            path = os.path.join(self.output_dir, current.data())
 
             with open(path, 'r') as f:
                 contents = f.readlines()
 
             self.fileViewer.setText("".join(contents))
 
+    def on_batch_row_changed(self, text):
+
+        self.parentAnalysisWidget.analysis.paths.current_batch_name = text
+
+        self.refreshFiles()
+
+        #self.last_selected_path = path
+
+        #if not self.ciftiButtion.isVisible():
+        #    path = os.path.join(self.output_dir, current.data())
+
+#            with open(path, 'r') as f:
+#                contents = f.readlines()
+
+#            self.fileViewer.setText("".join(contents))
     def hidePatternSelector(self):
         self.groupWidget.setVisible(False)

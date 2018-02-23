@@ -13,6 +13,8 @@ from models.analysis import *
 from models.fconnanova_analysis import *
 from models.mplus_analysis import *
 from models.palm_analysis import *
+import models.analysis_loader
+
 # from views import mplus_analysis_window
 from views import other_analysis
 import traceback
@@ -66,7 +68,7 @@ def excepthook(excType, excValue, tracebackobj):
     errorbox.exec_()
 
 # global exception handler, usually disabled during development but should be enabled in production
-sys.excepthook = excepthook
+#sys.excepthook = excepthook
 
 
 class MasterGuiApp(QMainWindow):
@@ -149,7 +151,7 @@ class MasterGuiApp(QMainWindow):
     def open_file(self, openfile):
 
         # self.splash.showMinimized()
-        analysis = Analysis.load(openfile, self.config)
+        analysis = models.analysis_loader.load(openfile, self.config)
 
         if analysis is not None:
             if type(analysis) is MplusAnalysis:

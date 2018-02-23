@@ -199,8 +199,6 @@ class PalmAnalysisWindow(AnalysisWindow):
 
             self.model.title = self.analysis.batchTitle
 
-            self.outputViewer.loadOutputFiles(self.analysis.batchOutputDir, "*.inp.out")
-
             worker = Worker(self.runAnalysisBackgroundWorker)  # Any other args, kwargs are passed to the run function
 
             worker.signals.progress.connect(self.onAnalysisProgressMessage)

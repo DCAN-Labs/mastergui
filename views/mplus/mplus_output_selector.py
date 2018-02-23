@@ -22,8 +22,8 @@ class MplusOutputSelector(OutputBrowserWidget):
         # self.exploreLayout.removeWidget(self.)
         # self.layout().removeWidget(self.groupWidget)
         self.parentAnalysisWidget = parentAnalysisWidget
-        view_utilities.addButton("Extract", self.layout(), self.on_click_extract)
-        view_utilities.addButton("Choose Parameters", self.layout(), self.on_click_chooseparameters)
+        view_utilities.addButton("Extract", self.groupWidget.layout(), self.on_click_extract)
+        view_utilities.addButton("Choose Parameters", self.groupWidget.layout(), self.on_click_chooseparameters)
 
     def initDetailUISpecific(self, exploreLayout):
         self.createOutputSelector()
@@ -38,7 +38,7 @@ class MplusOutputSelector(OutputBrowserWidget):
 
         self.selectableOutput.setModel(model)
 
-    def on_row_changed(self, current, previous):
+    def on_file_row_changed(self, current, previous):
 
         if self.last_selected_pattern_id == output_radio_button_index:
             path = os.path.join(self.output_dir, current.data())
@@ -50,7 +50,7 @@ class MplusOutputSelector(OutputBrowserWidget):
             self.addValuesToList(self.selectableOutput, contents)
             # self.fileViewer.setText("".join(contents))
         else:
-            super(MplusOutputSelector,self).on_row_changed(current, previous)
+            super(MplusOutputSelector,self).on_file_row_changed(current, previous)
 
     def is_number(self, word):
         try:
@@ -158,9 +158,9 @@ class MplusOutputSelector(OutputBrowserWidget):
 #            results = self.parentAnalysisWidget.model.aggregate_results_by_line_number(cifti_vector_size,
  #                                                                                      path_template_for_data_including_voxel,
  #                                                                                      selected)
-            results.to_csv(os.path.join(self.output_dir, "extracted.csv"), index=False)
+            #results.to_csv(os.path.join(self.output_dir, "extracted.csv"), index=False)
 
-            analysis.generate_ciftis_from_dataframe(results)
+#            analysis.generate_ciftis_from_dataframe(results)
 
         except:
             self.parentAnalysisWidget.alert(sys.exc_info()[1])

@@ -10,9 +10,22 @@ import threading
 import queue
 from models.analysis import *
 from models.mplus.output_parser import *
+import models.mplus_template
 import numpy as np
 import pandas as pd
 
+
+"""
+Note about paths:
+System wide default output directory, defined in the config file.
+
+Analysis Output Directory. Each analysis has an output directory, which usually would be a subdirectory of the System Wide Default.
+
+Batch Directory.  When an analysis is executed, a unique directory is created for that execution attempt in:
+    {Analysis Output Directory}/batches/{Batch Directory}
+
+
+"""
 
 class MplusAnalysis(Analysis):
     def __init__(self, config, filename="", saved_data=None):
@@ -29,20 +42,18 @@ class MplusAnalysis(Analysis):
 
             self.loaded_from_data = saved_data
 
-    @property
-    def data_filename(self):
-        return "input.csv"
 
     @property
     def output_path(self):
-        return os.path.join(self.batchOutputDir, self.data_filename)
+        return self.scrubbed_data_path()
 
     @property
     def batchOutputDir(self):
-        return os.path.join(self.output_dir, self.batchTitle)
+        return self.paths.batch_outputs_path()
 
-    def input_file_name_for_voxel(self, voxel_index):
-        return "%s.voxel%s.inp" % (self.filename_prefix, str(voxel_index))
+    def mplus_model_filename_for_voxel(self, voxel_index):
+
+        return "input.voxel%s.inp" % str(voxel_index)
 
     def dir_name_for_title(self, raw_title):
         return raw_title + str(datetime.datetime.now()).replace(" ", ".").replace(":", ".")
@@ -53,11 +64,13 @@ class MplusAnalysis(Analysis):
         self.error_callback = error_callback
 
         self.progressMessage(
-            "Beginning analysis job %s, output will be generated in %s" % (self.title, self.batchOutputDir))
+            "Beginning analysis job, output will be generated in %s" % self.paths.current_batch_path)
 
         # create a directory composed of the analysis title and a timestamp into which all the writing will happen
 
-        os.mkdir(self.batchOutputDir)
+        self.paths.create_new_batch()
+
+        #os.mkdir(self.batchOutputDir)
 
         self.model.title = self.title
 
@@ -65,7 +78,7 @@ class MplusAnalysis(Analysis):
 
         self.input.cleanMissingValues(missing_tokens_list)
 
-        self.input.save(self.output_path)
+        self.input.save(self.scrubbed_data_path())
 
         self.needCiftiProcessing = len(self.voxelized_column_mappings) > 0
 
@@ -76,9 +89,9 @@ class MplusAnalysis(Analysis):
 
     def modelPathByVoxel(self, voxel_idx):
 
-        model_filename = self.input_file_name_for_voxel(voxel_idx)
+        model_filename = self.mplus_model_filename_for_voxel(voxel_idx)
 
-        model_input_file_path = os.path.join(self.batchOutputDir, model_filename)
+        model_input_file_path = self.paths.batch_inputs_path(model_filename)
 
         return model_input_file_path
 
@@ -91,7 +104,7 @@ class MplusAnalysis(Analysis):
         """
         start_time = time.time()
 
-        self.input.prepare_with_cifti(path_to_voxel_mappings, self.output_path,
+        self.input.prepare_with_cifti(path_to_voxel_mappings, self.scrubbed_data_path(),
                                       testing_only_limit_to_n_voxels=self.limit_by_voxel,
                                       only_save_columns=self.model.input_column_names_in_order,
                                       limit_by_row=self.limit_by_row)
@@ -125,7 +138,7 @@ class MplusAnalysis(Analysis):
         # load a standard baseline cifti that we will overwrite with our computed data
         output_cifti = self.base_cifti_for_output()
 
-        path_template_for_data_including_voxel = self.base_output_path + ".voxel%s.inp.out"
+        path_template =   self.paths.batch_outputs_path(self.mplus_model_filename_for_voxel("%s") + ".out")
 
         if self.cancelling:
             return
@@ -133,7 +146,7 @@ class MplusAnalysis(Analysis):
         # note this code is a little confusing, there are updates happening to the cifti objects
         # while it is return a data frame that contains all the aggregated values
         aggregated_results = self.model.aggregate_results(self.input.cifti_vector_size,
-                                                          path_template_for_data_including_voxel,
+                                                          path_template,
                                                           ["Akaike (AIC)"],
                                                           [output_cifti],
                                                           testing_only_limit_to_n_rows=self.limit_by_row)
@@ -144,16 +157,15 @@ class MplusAnalysis(Analysis):
         if self.cancelling:
             return
 
-        cifti_output_path = self.output_path + ".out.dscalar.nii"
-        output_cifti.save(cifti_output_path)
-        time6 = time.time()
-        self.progressMessage("Time to run generate new cifti %f seconds" % (time6 - time5))
+        #cifti_output_path = self.scrubbed_data_path() + ".out.dscalar.nii"
+        #output_cifti.save(cifti_output_path)
+        #time6 = time.time()
 
-        if self.cancelling:
-            return
+        #if self.cancelling:
+        #    return
 
-        aggregated_results.to_csv(cifti_output_path + ".raw.csv", header=True, index=False)
-        self._cifti_output_path = cifti_output_path
+        #aggregated_results.to_csv(cifti_output_path + ".raw.csv", header=True, index=False)
+        #self._cifti_output_path = cifti_output_path
 
         self.progressMessage("TOTAL TIME %f seconds" % (time.time() - start_time))
         return "Ran vectorized model. %i of %s failed" % (self.mplus_exec_errors, self.mplus_exec_count)
@@ -231,7 +243,8 @@ class MplusAnalysis(Analysis):
 
             model_input_file_path = self.modelPathByVoxel(i)
 
-            result = self.runMplus(model_input_file_path)
+            model_output_file_path = self.paths.batch_outputs_path(self.mplus_model_filename_for_voxel(i) + ".out")
+            result = self.runMplus(model_input_file_path, model_output_file_path)
 
             self.mplus_exec_counterQueue.put(i)
             if result.returncode == 1:
@@ -266,7 +279,7 @@ class MplusAnalysis(Analysis):
         model_input_file_path = os.path.join(self.batchOutputDir, model_filename)
         model_output_file_path = model_input_file_path + ".out"
 
-        nonimaging_data_path = self.output_path
+        nonimaging_data_path = self.scrubbed_data_path()
 
         self.input.save(nonimaging_data_path, self.model.input_column_names_in_order)
 
@@ -288,16 +301,18 @@ class MplusAnalysis(Analysis):
         else:
             return ""
 
-    def runMplus(self, model_input_file_path):
+    def runMplus(self, model_input_file_path, model_output_file_path=""):
         # launch mplus
 
         # todo safety check this in case of rogue yml input!
 
+        if len(model_output_file_path)==0:
+            model_output_file_path = model_input_file_path + ".out"
         cmd = self.config._data["MPlus_command"] + " " + model_input_file_path
 
         result = subprocess.run([self.config._data["MPlus_command"],
                                  model_input_file_path,
-                                 model_input_file_path + ".out"], stdout=subprocess.PIPE)
+                                 model_output_file_path], stdout=subprocess.PIPE)
 
         return result
 
@@ -409,12 +424,41 @@ class MplusAnalysis(Analysis):
         results = outputs.extract(self.output_parameters, n_elements)
 
         self.generate_mask_ciftis(n_elements)
+
+        results.to_csv(self.paths.batch_cifits_path("extracted.csv"), index=False)
+
+        self.generate_ciftis_from_dataframe(results)
+
         return results
 
     def generate_mask_ciftis(self, n_elements):
+        """we display voxel level errors and problems by generating 'mask' ciftis of 0's and 1s
+        to allow easy filtering by the user in ConnectomeWorkbench
+
+
+        Build up a dataframe of masks, 1 row per voxel, each column will be turned into a cifti
+
+        Different masks that we generate include:
+        a:  1 if no problem at all (clean as a whistle), 0, if ANY problem.
+        b. 1 if no convergence , 0 if clean or problem [cuz we want the non-convergence issues specifically to stand out]
+        c. untrustworthy 1, 0 otherwise
+        d. per parameter/variable, untrustworthy 1, 0 otherwise
+        e. per parameter/variable and type of warning/error
+        """
+
+        #case 1: 1 if no problem at all (clean as a whistle), 0, if ANY problem.
         no_problem_vector = np.zeros(n_elements) + 1
         no_problem_vector[self.outputset.any_errors] = 0
 
-        no_problem_df = pd.DataFrame(no_problem_vector, columns = ["No_Problems"])
+        masks = pd.DataFrame(no_problem_vector, columns = ["No_Problems"])
 
-        self.generate_ciftis_from_dataframe(no_problem_df)
+
+
+        #case c. untrustworthy 1, 0 otherwise
+        untrustworthy_vector = np.zeros(n_elements)
+        untrustworthy_vector[self.outputset.untrustworthies]=1
+        masks["Untrustworthy"] = untrustworthy_vector
+
+        self.generate_ciftis_from_dataframe(masks)
+
+
