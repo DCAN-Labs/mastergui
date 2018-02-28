@@ -9,7 +9,7 @@ from views import view_utilities
 from views.mplus.output_chooser_dialog import *
 import sys
 
-output_radio_button_index = 2
+output_radio_button_index = 1
 
 class MplusOutputSelector(OutputBrowserWidget):
     def __init__(self, parentAnalysisWidget):
@@ -41,7 +41,9 @@ class MplusOutputSelector(OutputBrowserWidget):
     def on_file_row_changed(self, current, previous):
 
         if self.last_selected_pattern_id == output_radio_button_index:
-            path = os.path.join(self.output_dir, current.data())
+
+
+            path = os.path.join(self.analysis.paths.batch_outputs_path(), current.data())
 
             with open(path, 'r') as f:
                 contents = f.readlines()
@@ -126,21 +128,25 @@ class MplusOutputSelector(OutputBrowserWidget):
             if c.selection:
                 self.parentAnalysisWidget.addOutputParameter(c.selection)
 
+    @property
+    def analysis(self):
+        return self.parentAnalysisWidget.analysis
 
     def extract(self):
         try:
+            analysis = self.analysis
 
-            self.output_dir = self.outputDirWidget.text()
+#            self.output_dir = self.outputDirWidget.text()
 
-            path_template_for_data_including_voxel = os.path.join(self.output_dir, "input.voxel%s.inp.out")
+#            path_template_for_data_including_voxel = os.path.join(self.output_dir, "input.voxel%s.inp.out")
+            path_template_for_data_including_voxel = self.analysis.paths.batch_inputs_path("input.voxel%s.inp.out")
 
             input = self.parentAnalysisWidget.input
-            analysis = self.parentAnalysisWidget.analysis
 
-            path_split = os.path.split(self.output_dir)
-            analysis.output_dir = path_split[0] #self.output_dir
+            #path_split = os.path.split(self.output_dir)
+            #analysis.output_dir = path_split[0] #self.output_dir
 
-            analysis.batchTitle = path_split[1] #os.path.basename(self.output_dir)
+            #analysis.batchTitle = path_split[1] #os.path.basename(self.output_dir)
 
             if analysis.limit_by_voxel > 0:
                 cifti_vector_size = analysis.limit_by_voxel

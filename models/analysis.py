@@ -19,14 +19,21 @@ class Analysis():
         # this will be used when saving/loading files to indicate which kind of analysis it is
         self.module_name = module_name
         self.config = config
-        self.output_dir = self.config._data.get("output_dir", "")
-        self.paths = Paths(self.output_dir)
+        default_output_dir = self.config._data.get("output_dir", "")
+        self.paths = Paths(default_output_dir)
         self.required_config_keys = []
         self.filename = filename
         self.execution_history = []
         self.cancelling = False
         self.batchTitle = ""
 
+    @property
+    def output_dir(self):
+        return self.paths.root
+
+    @output_dir.setter
+    def output_dir(self, path):
+        self.paths.root = path
 
     @property
     def batches_dir(self):
@@ -123,4 +130,7 @@ class Analysis():
         keys_to_copy = ["output_dir"]
         for key in keys_to_copy:
             if key in load_data:
-                setattr(self, key, load_data[key])
+                #careful to use the __setattr__ instead of just setattr or we don't
+                #end up getting any customer property setters called
+                self.__setattr__(key, load_data[key])
+                #setattr(self, )

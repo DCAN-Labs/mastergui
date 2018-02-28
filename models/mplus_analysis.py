@@ -87,13 +87,21 @@ class MplusAnalysis(Analysis):
         else:
             return self.runAnalysisWithoutCiftiData()
 
-    def modelPathByVoxel(self, voxel_idx):
+    def modelInputPathByVoxel(self, voxel_idx):
 
         model_filename = self.mplus_model_filename_for_voxel(voxel_idx)
 
         model_input_file_path = self.paths.batch_inputs_path(model_filename)
 
         return model_input_file_path
+
+    def modelOutputPathByVoxel(self, voxel_idx):
+
+        model_filename = self.mplus_model_filename_for_voxel(voxel_idx)
+
+        model_output_file_path = self.paths.batch_outputs_path(model_filename)
+
+        return model_output_file_path
 
     def runAnalysisWithCiftiProcessing(self, path_to_voxel_mappings):
         """
@@ -173,7 +181,7 @@ class MplusAnalysis(Analysis):
     def generateInputModelsWithVoxel(self):
         for i in range(self.input.cifti_vector_size):
 
-            model_input_file_path = self.modelPathByVoxel(i)
+            model_input_file_path = self.modelInputPathByVoxel(i)
 
             datafile_path = self.data_filename + "." + str(i) + ".csv"
 
@@ -241,7 +249,7 @@ class MplusAnalysis(Analysis):
             if self.cancelling:
                 return
 
-            model_input_file_path = self.modelPathByVoxel(i)
+            model_input_file_path = self.modelInputPathByVoxel(i)
 
             model_output_file_path = self.paths.batch_outputs_path(self.mplus_model_filename_for_voxel(i) + ".out")
             result = self.runMplus(model_input_file_path, model_output_file_path)

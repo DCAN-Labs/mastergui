@@ -25,18 +25,11 @@ class OutputBrowserWidget(QWidget):
         self.outputDirWidget.returnPressed.connect(self.on_click_refresh)
         layout.addWidget(self.outputDirWidget)
 
-        layout.addWidget(QLabel("Specific Batch Output Sub-Directory:"))
-        self.batchDirWidget = QLineEdit()
-        self.batchDirWidget.setReadOnly(True)
-        layout.addWidget(self.batchDirWidget)
-
         self.batchDropDown = ComboBox(on_change = self.on_batch_row_changed)
+
 
         layout.addWidget(self.batchDropDown)
 
-        self.patternLabel = QLabel("File Pattern:")
-
-        layout.addWidget(self.patternLabel)
 
         exploreLayout = QHBoxLayout()
 
@@ -60,9 +53,21 @@ class OutputBrowserWidget(QWidget):
         self.initDetailUISpecific(exploreLayout)
         layout.addLayout(exploreLayout)
 
+
+
+        pathLayout = QFormLayout()
+        self.pathWidget = QLineEdit()
+        self.pathWidget.setReadOnly(True)
+        self.pathWidget.setFixedWidth(400)
+
+        pathLayout.addRow("Path:", self.pathWidget)
+
+        layout.addLayout(pathLayout)
+
+
         self.setLayout(layout)
 
-        self.output_dir = ""
+        #self.output_dir = ""
         self.pattern = ""
 
     def initDetailUI(self, exploreLayout):
@@ -71,6 +76,7 @@ class OutputBrowserWidget(QWidget):
     def initDetailUISpecific(self, exploreLayout):
         #for subclasses to override if necessary
         return
+
     def createRadioButtons(self):
 
         labels = ["Inputs", "Outputs", "Ciftis"]
@@ -83,20 +89,30 @@ class OutputBrowserWidget(QWidget):
         groupWidget = QWidget()
         layout = QHBoxLayout()
 
+        self.patternLabel = QLabel("File Pattern:")
+
+        layout.addWidget(self.patternLabel)
+
+
         idx = 0
-        for label in labels:
+        for i in range(len(labels)):
+            label = labels[i]
             btn = QRadioButton(label)
+            if i==1:
+                btn.setChecked(True)
 
             group.addButton(btn, idx)
             layout.addWidget(btn)
             idx += 1
+
+
 
         groupWidget.setLayout(layout)
         #groupWidget.setFixedWidth(400)
         group.buttonClicked.connect(self.on_pattern_btn_clicked)
         self.patternButtonGroup = group
 
-        self.patternWidget = QLineEdit()
+        self.patternWidget = QLineEdit("outputs/*.*")
         self.patternWidget.returnPressed.connect(self.on_click_refresh)
         layout.addWidget(self.patternWidget)
         button = util.addButton("Refesh", layout, self.on_click_refresh, 70)
@@ -104,6 +120,11 @@ class OutputBrowserWidget(QWidget):
         self.groupWidget = groupWidget
 
         return groupWidget
+
+    def setOutputDir(self, path):
+        self.outputDirWidget.setText(path)
+        self.refreshBatches()
+        self.refreshFiles()
 
     def on_pattern_btn_clicked(self, i):
 
@@ -179,6 +200,8 @@ class OutputBrowserWidget(QWidget):
         context = os.path.dirname(self.batch_context_path)
         path = os.path.join(context, current.data())
 
+        self.pathWidget.setText(path)
+
         self.last_selected_path = path
 
         if not self.ciftiButtion.isVisible():
@@ -191,6 +214,8 @@ class OutputBrowserWidget(QWidget):
     def on_batch_row_changed(self, text):
 
         self.parentAnalysisWidget.analysis.paths.current_batch_name = text
+
+        self.pathWidget.setText(self.parentAnalysisWidget.analysis.paths.current_batch_path)
 
         self.refreshFiles()
 

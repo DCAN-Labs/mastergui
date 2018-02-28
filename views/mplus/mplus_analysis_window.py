@@ -114,12 +114,20 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.addTab(self.dataPreview, "Input Data Review")
         self.addTab(self.modelBuilder, "Model Builder")
         self.addTab(self.execAnalysisWidget, "Execute")
+        self.initOutputTab()
 
         self.tabs.setCurrentIndex(0)
 
         self.progress = QProgressBar()
 
         [self.tabs.setTabEnabled(i, False) for i in range(1, self.tabs.count())]
+
+
+    def initOutputTab(self):
+
+        self.outputViewer = MplusOutputSelector(self)
+
+        self.addTab(self.outputViewer,"Output")
 
 
     def onTabChanged(self, p_int):
@@ -138,8 +146,8 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.outputTabs = QTabWidget()
 
         self.outputTabs.addTab(self.modelOutput,"Status")
-        self.outputViewer = MplusOutputSelector(self)
-        self.outputTabs.addTab(self.outputViewer, "Output")
+        #self.outputViewer = MplusOutputSelector(self)
+        #self.outputTabs.addTab(self.outputViewer, "Output")
 
         #self.outputSelector = MplusOutputSelector(self)
         #self.outputTabs.addTab(self.outputSelector, "Output Value Selector")
@@ -272,7 +280,7 @@ class MplusAnalysisWindow(AnalysisWindow):
 
     def on_click_add_output_parameter(self):
 
-        path = self.analysis.modelPathByVoxel(0)  + ".out"
+        path = self.analysis.modelOutputPathByVoxel(0) + ".out"
         if os.path.exists(path):
             c = OutputChooserDialog(path)
             if c.selection:
@@ -384,6 +392,10 @@ class MplusAnalysisWindow(AnalysisWindow):
 
             if "current_model" in saved_state:
                 self.modelBuilder.generatedModelViewer.setText(saved_state["current_model"])
+
+            if "output_dir" in saved_state:
+                self.outputViewer.setOutputDir(saved_state["output_dir"])
+
 
             self.outputViewer.refreshBatches()
 
