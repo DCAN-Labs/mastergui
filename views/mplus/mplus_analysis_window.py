@@ -362,6 +362,7 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.modelOutput.verticalScrollBar().setValue(self.modelOutput.verticalScrollBar().maximum())
 
     def onAnalysisProgressMessage(self, txt):
+
         self.appendTextToOutputDisplay(txt)
 
     def onAnalysisError(self, exception_info):
@@ -477,6 +478,10 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.modelOutput.setText("Starting Analysis...")
 
         self.analysis.setBatchTitle(self.title)
+
+        self.analysis.paths.create_new_batch()
+
+        self.outputViewer.refreshBatches()
 
         self.model.title = self.analysis.batchTitle
 

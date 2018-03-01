@@ -131,7 +131,7 @@ class InputSpreadsheet():
         else:
             upper_bound = self.cifti_vector_size
 
-        num_threads = 1  # todo parameterize this number
+        num_threads = 4  # todo parameterize this number
 
         threads = []
 

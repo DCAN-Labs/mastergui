@@ -64,7 +64,7 @@ class MplusAnalysis(Analysis):
 
         self.error_callback = error_callback
 
-        self.paths.create_new_batch()
+        #self.paths.create_new_batch()
 
         self.progressMessage(
             "Beginning analysis job, output will be generated in %s" % self.paths.current_batch_path)
@@ -108,7 +108,7 @@ class MplusAnalysis(Analysis):
         :return:
         """
         start_time = time.time()
-
+        self.progressMessage("Begin generation of csv data files with voxel data")
         self.input.prepare_with_cifti(path_to_voxel_mappings, self.scrubbed_data_path(),
                                       testing_only_limit_to_n_voxels=self.limit_by_voxel,
                                       only_save_columns=self.model.input_column_names_in_order,
@@ -120,6 +120,9 @@ class MplusAnalysis(Analysis):
 
         if self.cancelling:
             return
+
+        self.progressMessage("Begin generation of MPlus input model files")
+
         self.generateInputModelsWithVoxel()
 
         if self.cancelling:
@@ -131,6 +134,7 @@ class MplusAnalysis(Analysis):
         if self.cancelling:
             return
 
+        self.progressMessage("Begin execution of the MPlus models")
         self.runAllVoxelBasedModels()
 
         if self.cancelling:
@@ -141,23 +145,24 @@ class MplusAnalysis(Analysis):
         self.progressMessage("Time to run mplus model files %f seconds" % (time4 - time3))
 
         # load a standard baseline cifti that we will overwrite with our computed data
-        output_cifti = self.base_cifti_for_output()
+        #output_cifti = self.base_cifti_for_output()
 
-        path_template =   self.paths.batch_outputs_path(self.mplus_model_filename_for_voxel("%s") + ".out")
+        #path_template =   self.paths.batch_outputs_path(self.mplus_model_filename_for_voxel("%s") + ".out")
 
         if self.cancelling:
             return
 
         # note this code is a little confusing, there are updates happening to the cifti objects
         # while it is return a data frame that contains all the aggregated values
-        aggregated_results = self.model.aggregate_results(self.input.cifti_vector_size,
-                                                          path_template,
-                                                          ["Akaike (AIC)"],
-                                                          [output_cifti],
-                                                          testing_only_limit_to_n_rows=self.limit_by_row)
+
+#        aggregated_results = self.model.aggregate_results(self.input.cifti_vector_size,
+#                                                          path_template,
+#                                                          ["Akaike (AIC)"],
+#                                                          [output_cifti],
+#                                                          testing_only_limit_to_n_rows=self.limit_by_row)
         time5 = time.time()
 
-        self.progressMessage("Time to aggregate mplus results %f seconds" % (time5 - time4))
+ #       self.progressMessage("Time to aggregate mplus results %f seconds" % (time5 - time4))
 
         if self.cancelling:
             return
@@ -227,18 +232,28 @@ class MplusAnalysis(Analysis):
                     self.mplus_exec_count = count
 
                 if count > 0 and count % 1000 == 0:
+
                     seconds = time.time() - self.mplus_exec_start_time
                     rate = seconds / count
 
                     n = self.input.cifti_vector_size
                     remaining = (n - count) * rate / 60
-                    models_per_sec = count/sec
+                    models_per_sec = count/seconds
                     self.progressMessage(
-                        "Mplus Models executed: %i in %f seconds (%f sec/model). Estimated remaining time: %f minutes. Mplus errors so far: %s" % (
+                        "Mplus Models executed: %i in %f seconds (%f sec/model).\n\tEstimated remaining time: %f minutes.\n\tMplus errors so far: %s" % (
                             self.mplus_exec_count, seconds, models_per_sec, remaining, errors_so_far))
                 self.mplus_exec_counterQueue.task_done()
-        except:
-            self.progressMessage("queue monitor complete (empty queue)")
+
+        except Exception as ex:
+            #an exception is expected when the queue is empty and is usually not a problem but other exceptions are possible
+
+            if type(ex) == queue.Empty:
+                self.progressMessage("Completed queue of MPlus model file execution.")
+            else:
+                err_msg = "Exiting Queue Monitor. " + str(ex)
+                logging.error(err_msg)
+                self.progressMessage("Unexpected error processing MPlus model file queue, execution terminated early. %s" % err_msg)
+
 
     def runMplusForSetOfVoxels(self, set_of_voxels):
 

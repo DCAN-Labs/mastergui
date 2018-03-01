@@ -65,9 +65,8 @@ class OutputBrowserWidget(QWidget):
         #layout.addWidget(self.createRadioButtons())
 
         #pathLayout = QFormLayout()
-        self.pathWidget = QLineEdit()
-        self.pathWidget.setReadOnly(True)
-        self.pathWidget.setFixedWidth(400)
+
+        #self.pathWidget.setFixedWidth(400)
 
         #pathLayout.addRow("Path:", self.pathWidget)
 
@@ -95,10 +94,14 @@ class OutputBrowserWidget(QWidget):
         layout.addLayout(frm)
         layout.addLayout(exploreLayout)
 
-        newFrm = QFormLayout()
-
-        newFrm.addRow("Path:", self.pathWidget)
-        layout.addLayout(newFrm)
+        pathLine = QHBoxLayout()
+        self.pathWidget = QLineEdit()
+        self.pathWidget.setReadOnly(True)
+        pathLine.addWidget(QLabel("Path:"), stretch = 1 )
+        pathLine.addWidget(self.pathWidget, stretch = 50)
+        #make the path transparent background
+        self.pathWidget.setStyleSheet("background-color:rgba(0,0,0,0);border:None")
+        layout.addLayout(pathLine)
         self.setLayout(layout)
 
         #self.output_dir = ""
