@@ -14,7 +14,7 @@ import time
 
 class OtherAnalysisWindow(AnalysisWindow):
     def __init__(self, config):
-        self.default_missing_tokens_list = ["-888", "NA", "", "nan"]
+
         self.title = "Other Analysis (Demo)"
         self.analyzerName = "other"
         super(OtherAnalysisWindow, self).__init__(config)

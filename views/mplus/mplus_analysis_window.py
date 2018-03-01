@@ -33,7 +33,6 @@ tab_outputselector = 6
 
 class MplusAnalysisWindow(AnalysisWindow):
     def __init__(self, config, analysis=None):
-        self.default_missing_tokens_list = ["-888", "NA", "", "nan"]
         self.title = "Mplus Analysis"
         self.analyzerName = "mplus"
         super(MplusAnalysisWindow, self).__init__(config)
@@ -445,7 +444,6 @@ class MplusAnalysisWindow(AnalysisWindow):
         if len(selected_outputs) == 0:
             msg = "Analysis complete but no output fields were selected for extraction yet.  Go to the Output Selector tab and select the rows from the MPlus output that you would like aggregated and click Extract."
             self.appendTextToOutputDisplay(msg)
-            self.alert(msg)
         else:
 
             #todo this might be redundant, probably already extracted

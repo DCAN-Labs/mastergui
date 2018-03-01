@@ -15,7 +15,7 @@ class MplusOutputSelector(OutputBrowserWidget):
     def __init__(self, parentAnalysisWidget):
         super(MplusOutputSelector, self).__init__(parentAnalysisWidget)
         #self.hidePatternSelector()
-        self.patternWidget.setText("*.out")
+        self.patternWidget.setText("outputs/*.*")
         # self.fileViewer.setVisible(False)
         # self.exploreLayout.addWidget(self.listView,stretch = 5)
 
@@ -41,7 +41,6 @@ class MplusOutputSelector(OutputBrowserWidget):
     def on_file_row_changed(self, current, previous):
 
         if self.last_selected_pattern_id == output_radio_button_index:
-
 
             path = os.path.join(self.analysis.paths.batch_outputs_path(), current.data())
 

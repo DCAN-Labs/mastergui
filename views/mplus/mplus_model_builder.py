@@ -206,7 +206,10 @@ class MplusModelBuilder(QWidget):
 
 
     def on_click_apply_template_variables(self):
-        options = self.template_requirements.selectedValues()
+        if hasattr(self, "template_requirements"):
+            options = self.template_requirements.selectedValues()
+        else:
+            options = {}
 
         generated_mplus_model_text = self.analysis.updateModel(options, self.all_nonspreadsheet_variables_to_display())
 

@@ -20,23 +20,61 @@ class OutputBrowserWidget(QWidget):
     def initUI(self):
         layout = QVBoxLayout()
 
-        layout.addWidget(QLabel("Analysis Output Directory:"))
-        self.outputDirWidget = QLineEdit()
+        output_path_descriptor = [("label","Output Directory:") , ("line",), ("button","Change")]
+
+
+        outputPathLayout, outputPathWidgets = util.createHLineFromTemplate(output_path_descriptor)
+
+        change_output_path_button = outputPathWidgets[2]
+        change_output_path_button.clicked.connect(self.on_click_change_output_path)
+
+
+        #layout.addLayout(outputPathLayout)
+        #layout.addWidget(QLabel("Analysis Output Directory:"))
+
+        self.outputDirWidget = outputPathWidgets[1]
+        self.outputDirWidget.setEnabled(False)
+
+        #self.outputDirWidget = QLineEdit()
         self.outputDirWidget.returnPressed.connect(self.on_click_refresh)
-        layout.addWidget(self.outputDirWidget)
+        self.outputDirWidget.setFixedWidth(500)
+        #layout.addWidget(self.outputDirWidget)
 
         self.batchDropDown = ComboBox(on_change = self.on_batch_row_changed)
+        #batchLayout = util.createHLineFromWidgets([QLabel("Batches:"), self.batchDropDown])
+
+        frm = QFormLayout()
 
 
-        layout.addWidget(self.batchDropDown)
+        batchDeleteBtn = QPushButton("Delete Batch")
+        batchDeleteBtn.clicked.connect(self.on_click_delete_batch)
+        frm.addRow("Output Directory:",util.createHLineFromWidgets([self.outputDirWidget,change_output_path_button]) )
+
+        frm.addRow("Batches:", util.createHLineFromWidgets([self.batchDropDown, batchDeleteBtn]))
+
+
+        #layout.addLayout(batchLayout)
+
+        #layout.addWidget(self.batchDropDown)
 
 
         exploreLayout = QHBoxLayout()
 
         self.exploreLayout = exploreLayout
 
-        layout.addWidget(self.createRadioButtons())
+        #layout.addWidget(self.createRadioButtons())
 
+        #pathLayout = QFormLayout()
+        self.pathWidget = QLineEdit()
+        self.pathWidget.setReadOnly(True)
+        self.pathWidget.setFixedWidth(400)
+
+        #pathLayout.addRow("Path:", self.pathWidget)
+
+        #layout.addLayout(pathLayout)
+
+
+        frm.addRow(self.createRadioButtons())
         self.fileViewer = QTextEdit()
         self.fileViewer.setReadOnly(True)
 
@@ -51,24 +89,42 @@ class OutputBrowserWidget(QWidget):
         exploreLayout.addWidget(self.fileListView, stretch=1)
         self.initDetailUI(exploreLayout)
         self.initDetailUISpecific(exploreLayout)
+        #layout.addLayout(exploreLayout)
+        #frm.addRow(exploreLayout)
+
+        layout.addLayout(frm)
         layout.addLayout(exploreLayout)
 
+        newFrm = QFormLayout()
 
-
-        pathLayout = QFormLayout()
-        self.pathWidget = QLineEdit()
-        self.pathWidget.setReadOnly(True)
-        self.pathWidget.setFixedWidth(400)
-
-        pathLayout.addRow("Path:", self.pathWidget)
-
-        layout.addLayout(pathLayout)
-
-
+        newFrm.addRow("Path:", self.pathWidget)
+        layout.addLayout(newFrm)
         self.setLayout(layout)
 
         #self.output_dir = ""
         self.pattern = ""
+
+
+    def on_click_delete_batch(self):
+        path = self.analysis.paths.current_batch_path
+        prompt = "Are you SURE you want to delete the entire batch %s  (All mplus inputs, outputs, and generated results such as ciftis will be irrevocably deleted)?" % path
+        choice = QMessageBox.question(self,"Delete?",prompt, QMessageBox.Yes | QMessageBox.No)
+        if choice == QMessageBox.Yes:
+            try:
+                self.analysis.removeBatch(path)
+            except:
+                util.alert("Error attempting to remove batch.")
+            self.refreshBatches()
+
+    def on_click_change_output_path(self):
+
+        #openfile, ok = QFileDialog.getOpenFileName(self)
+        path = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
+        if path:
+            self.analysis.root = path
+            self.outputDirWidget.setText(path)
+            self.refreshBatches()
+            self.refreshFiles()
 
     def initDetailUI(self, exploreLayout):
         exploreLayout.addWidget(self.fileViewer, stretch=5)
@@ -213,9 +269,9 @@ class OutputBrowserWidget(QWidget):
 
     def on_batch_row_changed(self, text):
 
-        self.parentAnalysisWidget.analysis.paths.current_batch_name = text
+        self.analysis.paths.current_batch_name = text
 
-        self.pathWidget.setText(self.parentAnalysisWidget.analysis.paths.current_batch_path)
+        self.pathWidget.setText(self.analysis.paths.current_batch_path)
 
         self.refreshFiles()
 

@@ -13,7 +13,7 @@ from models.mplus.output_parser import *
 import models.mplus_template
 import numpy as np
 import pandas as pd
-
+import shutil
 
 """
 Note about paths:
@@ -61,16 +61,13 @@ class MplusAnalysis(Analysis):
     def go(self, input, missing_tokens_list, progress_callback=None, error_callback=None):
 
         self.progress_callback = progress_callback
+
         self.error_callback = error_callback
-
-        self.progressMessage(
-            "Beginning analysis job, output will be generated in %s" % self.paths.current_batch_path)
-
-        # create a directory composed of the analysis title and a timestamp into which all the writing will happen
 
         self.paths.create_new_batch()
 
-        #os.mkdir(self.batchOutputDir)
+        self.progressMessage(
+            "Beginning analysis job, output will be generated in %s" % self.paths.current_batch_path)
 
         self.model.title = self.title
 
@@ -357,16 +354,13 @@ class MplusAnalysis(Analysis):
                     self.voxelized_column_mappings[i] = tuple(self.voxelized_column_mappings[i])
 
 
-
         if "template" in load_data:
 
             self.template = models.mplus_template.MplusTemplate(load_data['template'])
 
             self.model = models.mplus_model.MplusModel()
             self.model.loadFromString(self.template.rawModel)
-
-            # if hasattr(self,"model"):
-                    #    self.model.voxelizedMappings = load_data["voxelizedMappings"]
+            self.updateModelVoxelizedList()
             if "additional_rules" in load_data:
                 rules = load_data["additional_rules"]
                 for key, rule_data in rules.items():
@@ -385,6 +379,9 @@ class MplusAnalysis(Analysis):
         if not t in self.voxelized_column_mappings:
             self.voxelized_column_mappings.append(t)
 
+        #keep the underlying model in sink
+        self.updateModelVoxelizedList()
+
     def removeVoxelizedColumn(self, from_column_of_paths, to_new_column_name):
         t = (from_column_of_paths, to_new_column_name)
         if t in self.voxelized_column_mappings:
@@ -398,8 +395,15 @@ class MplusAnalysis(Analysis):
         self.cancelling = True
         self.input.cancelAnalysis()
 
+    def updateModelVoxelizedList(self):
+        """the mplus model has a separate list of which variable/columns have been voxelized for its internal functionality
+        but this analysis class is the final source of truth for that info (to facillitate saving/loading).  this analysis class
+        needs to make sure the underlying mplus model has the correct voxelization information"""
+        if hasattr(self,'model'):
+            self.model.voxelized_column_names_in_order = self.voxelizedColumnNames()
+
     def updateModel(self, options, non_original_data_columnlist):
-        self.model.voxelized_column_names_in_order = self.voxelizedColumnNames()
+        self.updateModelVoxelizedList()
         return self.model.apply_options(options, non_original_data_columnlist)
 
 
@@ -470,3 +474,5 @@ class MplusAnalysis(Analysis):
         self.generate_ciftis_from_dataframe(masks)
 
 
+    def removeBatch(self,path):
+        shutil.rmtree(path)

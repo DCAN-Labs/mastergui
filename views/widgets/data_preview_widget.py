@@ -16,7 +16,7 @@ class DataPreviewWidget(QWidget):
         super(DataPreviewWidget, self).__init__()
 
         self.parentAnalysisWindow = parentAnalysisWindow
-        self.default_missing_tokens_list = ["-888", "-888.0", "NA", ".", "", "nan"]
+        self.default_missing_tokens_list = ["-888", "-888.0", "NA", "."," ","", "nan"]
 
         layout = QVBoxLayout()
 

@@ -206,18 +206,18 @@ class MplusModel():
         """
         return ["Analysis", "Fields"]
 
-    def getMappedName(self, from_col):
-        return self.voxelizedMappings.get(from_col, from_col)
-
     def add_rule(self, fields_from, operator, fields_to):
-        new_rule_text = "%s %s %s;" % (",".join(fields_from), operator, fields_to[0])
+        new_rule_text = "%s %s %s;" % (",".join(fields_from), operator, ",".join(fields_to))
         self.rules.append(new_rule_text)
         self.mplus_data["MODEL"] = self.template_MODEL_section + "\n" + self.rules_to_s() + "\n"
         # self.mplus_data["MODEL:"] = self.rules_to_s()
-        self.using_variables = self.using_variables.union(set(fields_from + fields_to))
+        self.using_variables = set(self.using_variables.union(set(fields_from + fields_to)))
 
         for colname in (fields_from + fields_to):
-            self.add_input_column_name(colname)
+            if colname not in self.voxelized_column_names_in_order:
+                self.add_input_column_name(colname)
+            else:
+                print("was already in voxelized columns")
 
         #save the actual parameters for reuse after reloading from saved file
         self.additional_rule_save_data[new_rule_text] = [fields_from, operator, fields_to]

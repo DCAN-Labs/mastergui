@@ -16,7 +16,7 @@ from views.workers import *
 
 class PalmAnalysisWindow(AnalysisWindow):
     def __init__(self, config):
-        # self.default_missing_tokens_list = ["-888", "NA", "", "nan"]
+
         self.title = "Palm Analysis"
         self.analyzerName = "palm"
         super(PalmAnalysisWindow, self).__init__(config)

@@ -98,3 +98,31 @@ def createBoldLabel(text):
 def addBoldLabel(text, container):
     l = createBoldLabel(text)
     container.addWidget(l)
+
+def createHLineFromTemplate(controls):
+    layout = QHBoxLayout()
+    widgets = []
+    for control in controls:
+        control_type = control[0]
+        ctl = None
+        if control_type == "button":
+            ctl = QPushButton(control[1])
+        elif control_type == "line":
+            ctl = QLineEdit()
+        elif control_type == "label":
+            ctl = QLabel(control[1])
+        else:
+            raise ValueError("unknown control type " + control_type)
+        layout.addWidget(ctl)
+        widgets.append(ctl)
+    return (layout, widgets)
+
+
+def createHLineFromWidgets(widgets):
+    layout = QHBoxLayout()
+
+    for w in widgets:
+        layout.addWidget(w)
+
+    return layout
+

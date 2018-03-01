@@ -15,7 +15,7 @@ from views.workers import *
 
 class FconnanovaAnalysisWindow(AnalysisWindow):
     def __init__(self, config):
-        #self.default_missing_tokens_list = ["-888", "NA", "", "nan"]
+
         self.title = "FCONNANOVA Analysis"
         self.analyzerName = "palm"
         super(FconnanovaAnalysisWindow, self).__init__(config)

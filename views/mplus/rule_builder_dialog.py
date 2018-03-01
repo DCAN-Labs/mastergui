@@ -47,11 +47,11 @@ class RuleBuilderDialog(QDialog):
         listB = util.selectedLabelsFromListView(self.columnSelectB)
 
         if len(listA) == 0:
-            util.alert("Please select 1 or more values from the list on the right.")
+            util.alert("Please select a value in the list on the left.")
             return
 
-        if len(listB) == 0 or len(listB) > 1:
-            util.alert("Please select one and only one variable on the right.")
+        if len(listB) == 0:
+            util.alert("Please select a value in the list on the right.")
             return
 
         operator = self.operatorButtonGroup.checkedButton().text()
