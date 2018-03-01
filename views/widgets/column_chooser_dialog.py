@@ -37,10 +37,14 @@ class ColumnChooserDialog(QDialog):
 
         self.setLayout(layout)
 
+    def validate(self):
+        #if your subclass needs validation logic when the user hits ok
+        #override this method in the subclass
+        return True
+
     def on_click_ok(self):
-        print("ok")
-        # todo implement
-        self.close()
+        if self.validate():
+            self.close()
 
     def on_click_cancel(self):
         self.close()

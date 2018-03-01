@@ -45,6 +45,19 @@ class VoxelizerDialog(ColumnChooserDialog):
 
         return None
 
+    def validate(self):
+        """overriding the default method to require that the user entered a name for their voxel"""
+        t = self.new_name_widget.text()
+        if len(t)>0:
+            if t in self.input_spreadsheet.columnnames():
+                util.alert("'%s' is a name of a column in the existing data, please provide a different unique name" % t)
+            else:
+                return True
+        else:
+            util.alert("Please provide a unique name for the voxel data.")
+
+        return False
+
     def showModally(self):
         self.setWindowModality(Qt.WindowModal)
         self.show()
