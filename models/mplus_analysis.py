@@ -240,7 +240,7 @@ class MplusAnalysis(Analysis):
                     remaining = (n - count) * rate / 60
                     models_per_sec = count/seconds
                     self.progressMessage(
-                        "Mplus Models executed: %i in %f seconds (%f sec/model).\n\tEstimated remaining time: %f minutes.\n\tMplus errors so far: %s" % (
+                        "Mplus Models executed: %i in %f seconds (%f models/sec).\n\tEstimated remaining time: %f minutes.\n\tMplus errors so far: %s" % (
                             self.mplus_exec_count, seconds, models_per_sec, remaining, errors_so_far))
                 self.mplus_exec_counterQueue.task_done()
 
@@ -422,7 +422,7 @@ class MplusAnalysis(Analysis):
         return self.model.apply_options(options, non_original_data_columnlist)
 
 
-    def aggregate_results(self,path_template, n_elements = 0):
+    def aggregate_results(self,path_template="", n_elements = 0):
         """
         parse results out of the per-voxel output files and aggregate them into cifti files. it accepts a list
         of fields to extract from the outputs and there must be one Cifti instance provided per field as
@@ -442,7 +442,8 @@ class MplusAnalysis(Analysis):
             # rerun value extractions without recomputing the size of all ciftis.
             n_elements = 91282  # set to the default value
 
-        #path_template = self.filename_prefix + ".voxel%s.inp.out"
+        if len(path_template)==0:
+            path_template = self.paths.batch_outputs_path("input.voxel%s.inp.out")
 
         outputs = MplusOutputSet(path_template)
 
@@ -450,9 +451,9 @@ class MplusAnalysis(Analysis):
 
         results = outputs.extract(self.output_parameters, n_elements)
 
-        self.generate_mask_ciftis(n_elements)
-
         results.to_csv(self.paths.batch_cifits_path("extracted.csv"), index=False)
+
+        self.generate_mask_ciftis(n_elements)
 
         self.generate_ciftis_from_dataframe(results)
 

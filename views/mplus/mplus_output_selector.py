@@ -16,6 +16,7 @@ class MplusOutputSelector(OutputBrowserWidget):
         super(MplusOutputSelector, self).__init__(parentAnalysisWidget)
         #self.hidePatternSelector()
         self.patternWidget.setText("outputs/*.*")
+        self.last_selected_pattern_id = output_radio_button_index
         # self.fileViewer.setVisible(False)
         # self.exploreLayout.addWidget(self.listView,stretch = 5)
 
@@ -135,17 +136,7 @@ class MplusOutputSelector(OutputBrowserWidget):
         try:
             analysis = self.analysis
 
-#            self.output_dir = self.outputDirWidget.text()
-
-#            path_template_for_data_including_voxel = os.path.join(self.output_dir, "input.voxel%s.inp.out")
-            path_template_for_data_including_voxel = self.analysis.paths.batch_inputs_path("input.voxel%s.inp.out")
-
             input = self.parentAnalysisWidget.input
-
-            #path_split = os.path.split(self.output_dir)
-            #analysis.output_dir = path_split[0] #self.output_dir
-
-            #analysis.batchTitle = path_split[1] #os.path.basename(self.output_dir)
 
             if analysis.limit_by_voxel > 0:
                 cifti_vector_size = analysis.limit_by_voxel
@@ -155,17 +146,9 @@ class MplusOutputSelector(OutputBrowserWidget):
                 else:
                     cifti_vector_size = 0
 
-
-            results = analysis.aggregate_results(path_template_for_data_including_voxel, cifti_vector_size)
+            results = analysis.aggregate_results(n_elements = cifti_vector_size)
 
             self.showextractionwarnings(analysis.outputset)
-
-#            results = self.parentAnalysisWidget.model.aggregate_results_by_line_number(cifti_vector_size,
- #                                                                                      path_template_for_data_including_voxel,
- #                                                                                      selected)
-            #results.to_csv(os.path.join(self.output_dir, "extracted.csv"), index=False)
-
-#            analysis.generate_ciftis_from_dataframe(results)
 
         except:
             self.parentAnalysisWidget.alert(sys.exc_info()[1])
