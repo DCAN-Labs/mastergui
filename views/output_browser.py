@@ -124,7 +124,7 @@ class OutputBrowserWidget(QWidget):
         #openfile, ok = QFileDialog.getOpenFileName(self)
         path = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
         if path:
-            self.analysis.root = path
+            self.analysis.paths.root = path
             self.outputDirWidget.setText(path)
             self.refreshBatches()
             self.refreshFiles()
