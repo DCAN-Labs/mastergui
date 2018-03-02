@@ -53,6 +53,9 @@ class Paths():
     def current_batch_path(self):
         return os.path.join(self.batches_dir,self.current_batch_name)
 
+    def path_for_batch_name(self, batch_name):
+        return os.path.join(self.batches_dir,batch_name)
+
     def create_new_batch(self):
         if self.confirm_batches_dir():
             new_batch_dir_name = str(datetime.datetime.now()).replace(" ", ".").replace(":", ".")

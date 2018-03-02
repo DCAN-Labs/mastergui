@@ -14,8 +14,10 @@ class OutputBrowserWidget(QWidget):
     def __init__(self, parentAnalysisWidget):
         super(OutputBrowserWidget, self).__init__()
         self.parentAnalysisWidget = parentAnalysisWidget
+        self.selected_batch_name = ""
         self.last_selected_pattern_id = 0
         self.initUI()
+        self.refreshing_batches = False
 
     def initUI(self):
         layout = QVBoxLayout()
@@ -109,7 +111,7 @@ class OutputBrowserWidget(QWidget):
 
 
     def on_click_delete_batch(self):
-        path = self.analysis.paths.current_batch_path
+        path = self.selected_batch_path
         prompt = "Are you SURE you want to delete the entire batch %s  (All mplus inputs, outputs, and generated results such as ciftis will be irrevocably deleted)?" % path
         choice = QMessageBox.question(self,"Delete?",prompt, QMessageBox.Yes | QMessageBox.No)
         if choice == QMessageBox.Yes:
@@ -210,9 +212,13 @@ class OutputBrowserWidget(QWidget):
         self.refreshFiles()
         self.refreshBatches()
 
+    @property
+    def selected_batch_path(self):
+        return self.analysis.paths.path_for_batch_name(self.selected_batch_name)
+
     def refreshFiles(self):
 
-        path = os.path.join(self.parentAnalysisWidget.analysis.paths.current_batch_path, self.patternWidget.text())
+        path = os.path.join(self.selected_batch_path, self.patternWidget.text())
 
         self.batch_context_path = path
 
@@ -230,22 +236,14 @@ class OutputBrowserWidget(QWidget):
 
     def loadOutputFiles(self, path_pattern):
         self.last_selected_path = ""
-        #self.output_dir = output_dir
-        #self.pattern = pattern
-
-        #self.outputDirWidget.setText(output_dir)
-        #self.patternWidget.setText(pattern)
-        # len(glob.glob(os.path.join(analysis.batchOutputDir, "*.inp.out")))
 
         paths = glob.glob(path_pattern)
 
         model = QStandardItemModel()
 
-        templates = {}
-
         # todo possibly parameterize and/or change UI but loading 92k+ paths is not viable in the current model, hangs the UI
         max_paths_to_show = 100
-        paths = paths[:100]
+        paths = paths[:max_paths_to_show]
         for p in paths:
             name = os.path.basename(p)
             item = QStandardItem(name)
@@ -272,20 +270,11 @@ class OutputBrowserWidget(QWidget):
 
     def on_batch_row_changed(self, text):
 
-        self.analysis.paths.current_batch_name = text
+        self.selected_batch_name = text
 
-        self.pathWidget.setText(self.analysis.paths.current_batch_path)
+        self.pathWidget.setText(self.selected_batch_path)
 
         self.refreshFiles()
 
-        #self.last_selected_path = path
-
-        #if not self.ciftiButtion.isVisible():
-        #    path = os.path.join(self.output_dir, current.data())
-
-#            with open(path, 'r') as f:
-#                contents = f.readlines()
-
-#            self.fileViewer.setText("".join(contents))
     def hidePatternSelector(self):
         self.groupWidget.setVisible(False)
