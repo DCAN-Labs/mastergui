@@ -8,7 +8,7 @@ import views.view_utilities as util
 from models import paths
 from views.widgets.combobox import *
 
-cifti_radio_button_index = 3
+cifti_radio_button_index = 2
 
 class OutputBrowserWidget(QWidget):
     def __init__(self, parentAnalysisWidget):
