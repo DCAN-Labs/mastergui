@@ -117,8 +117,8 @@ class MplusOutputSelector(OutputBrowserWidget):
 
 
     def on_click_extract(self):
-        self.extract()
-        util.alert("Extraction complete. Go to the output tab to open the cifti in Connectome Workbench.")
+        self.extract(True)
+        util.alert("Extraction complete.")
 
     def on_click_chooseparameters(self):
 
@@ -133,7 +133,7 @@ class MplusOutputSelector(OutputBrowserWidget):
     def analysis(self):
         return self.parentAnalysisWidget.analysis
 
-    def extract(self):
+    def extract(self, use_currently_viewed_batch = False):
         try:
             analysis = self.analysis
 
@@ -147,7 +147,11 @@ class MplusOutputSelector(OutputBrowserWidget):
                 else:
                     cifti_vector_size = 0
 
-            results = analysis.aggregate_results(n_elements = cifti_vector_size)
+            if use_currently_viewed_batch:
+                path_template = os.path.join(self.selected_batch_path, "outputs","input.voxel%s.inp.out")
+                results = analysis.aggregate_results(path_template = path_template, n_elements=cifti_vector_size)
+            else:
+                results = analysis.aggregate_results(n_elements = cifti_vector_size)
 
             self.showextractionwarnings(analysis.outputset)
 
