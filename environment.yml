@@ -1,0 +1,20 @@
+name: mastergui-env
+dependencies:
+- python=3.6
+- numpy
+- mpmath==1.0.0
+- numpy==1.13.3
+- pandas==0.21.0
+- python-dateutil==2.6.1
+- pytz==2017.3
+- PyYAML==3.12
+- six==1.11.0
+- xlrd==1.1.0
+- sympy==1.1.1
+- qt
+- pip
+- pip:
+    - sip==4.19.6
+    - pyqt5==5.9.2
+    - nibabel==2.2.1
+    - nipy==0.4.1
