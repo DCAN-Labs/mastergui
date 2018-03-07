@@ -145,10 +145,6 @@ class PalmAnalysisWindow(AnalysisWindow):
         self.appendTextToOutputDisplay("Error! %s" % exception_info[1])
 
     def runAnalysisBackgroundWorker(self, progress_callback, finished_callback, error_callback):
-        # for testing, halt after n rows of data processing. Set to 0 to do everything.
-        halt_after_n = int(self.config.getOptional('testing_halt_after_n_voxels', 0))
-
-        # mappings = self.dataPreview.voxelized_columns
 
         mappings = self.dataPreview.selected_voxelized_columns()
 
