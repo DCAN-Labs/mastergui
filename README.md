@@ -5,9 +5,24 @@ The initial version is focused on Mplus so far, but it intended to be a platform
 See Oscar Miranda-Dominguez, Eric Earl, or David Ball for more info. 
 
 # System Requirements
-Python 3
+Python 3.6
+Qt5
+
+# Installing Qt5
+
+Qt5 Instructions vary by operating system.  For Windows and Mac there are installation packages available [here](https://www.qt.io/download).
+
+If you use the Anaconda installation procedure (described below) you may not need to independently install Qt5. 
 
 # Installation
+
+## Conda Install (preferred)
+
+Instructions coming soon! 
+
+
+
+## Alternative (virtualenv)
 
 After checking out, set up the virtual environment:
 
@@ -21,21 +36,11 @@ pip freeze > requirements.txt
 ```
 
 
-pip install packages from requirements.txt
-
-The MatLab Python API needs to be installed separately from PIP
-
-After activating your virtualenv at the command line, cd to your "{matlabroot}\extern\engines\python"
-and run:
-
-```
-python setup.py build - -build - base = "{replace_with_path_to_your_mastergui_installation}/venv/build" install
-```
 
 # Configuration
-Change config.yml.default to config.yml and populate with appropriate values for your local environment
+Change config.json.default to config.json and populate with appropriate values for your local environment
 
-Note: your own private config.yml has been added to .gitignore so it will not be updated by git pull
+Note: your own private config.json has been added to .gitignore so it will not be updated by git pull
 
 
 # Usage: 
