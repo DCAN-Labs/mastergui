@@ -2,6 +2,7 @@
   "analyzers":
     {
       "mplus": {
+        "title":"MPlus",
         "templates": "./templates/mplus"
       },
       "palm": {
