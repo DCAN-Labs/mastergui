@@ -13,13 +13,12 @@
         "templates": "./templates/fconnanova"
       }
     },
-  "open_path_on_launch": "/Users/David/Documents/projects/mastergui/tests/input_csv_file_test_case_Evan_simple.xlsx",
   "output_dir": "~/mastergui/output",
   "MPlus_command": "/Applications/MplusDemo/mpdemo",
   "Base_cifti_for_output": "data/base_output.dscalar.nii",
   "default_maps": "data/default_maps/",
   "wb_view_path_prefix": "/Applications/connectomeworkbench/bin_macosx64/",
-  "wb_command_path_prefix":"/Applications/connectomeworkbench/bin_macosx64/",
-  "ztesting_halt_after_n_voxels": 10
+  "wb_command_path_prefix":"/Applications/connectomeworkbench/bin_macosx64/"
+  "recent_files_path":"~/mastergui_recents.txt"
 }
 
