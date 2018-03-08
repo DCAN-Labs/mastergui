@@ -219,6 +219,7 @@ class OutputBrowserWidget(QWidget):
     def refreshFiles(self):
 
         path = os.path.join(self.selected_batch_path, self.patternWidget.text())
+        self.selected_file_context = os.path.split(path)[0]
 
         self.batch_context_path = path
 

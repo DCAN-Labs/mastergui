@@ -43,8 +43,7 @@ class MplusOutputSelector(OutputBrowserWidget):
 
         if self.last_selected_pattern_id == output_radio_button_index:
 
-
-            path = os.path.join(self.analysis.paths.batch_outputs_path(), current.data())
+            path = os.path.join(self.selected_file_context, current.data())
 
             with open(path, 'r') as f:
                 contents = f.readlines()
