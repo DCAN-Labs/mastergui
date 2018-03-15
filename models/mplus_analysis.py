@@ -465,9 +465,12 @@ class MplusAnalysis(Analysis):
         for col in results_dataframe.columns:
             if "P-Value" in col:
                 try:
-                    neg_log_p = -np.log10(results_dataframe[col])
+                    #we had some p-values with value 0 which shouldn't happen!
+                    raw = results_dataframe[col].copy()
+                    positives = raw > 0
+                    raw[positives] = -np.log10(raw[positives])
                     new_colname = col.replace("P-VALUE", "NegLogP-Value")
-                    results_dataframe[new_colname] = neg_log_p
+                    results_dataframe[new_colname] = raw
                 except:
                     logging.error("Error computing negative log p values for " + col)
 
