@@ -451,6 +451,8 @@ class MplusAnalysis(Analysis):
 
         results = outputs.extract(self.output_parameters, n_elements)
 
+        self.add_negative_log_p_values(results)
+
         results.to_csv(self.paths.batch_cifits_path("extracted.csv"), index=False)
 
         self.generate_mask_ciftis(n_elements)
@@ -458,6 +460,16 @@ class MplusAnalysis(Analysis):
         self.generate_ciftis_from_dataframe(results)
 
         return results
+
+    def add_negative_log_p_values(self, results_dataframe):
+        for col in results_dataframe.columns:
+            if "P-VALUE" in col:
+                try:
+                    neg_log_p = -np.log10(results_dataframe[col])
+                    new_colname = col.replace("P-VALUE", "NegLogP-Value")
+                    results_dataframe[new_colname] = neg_log_p
+                except:
+                    logging.error("Error computing negative log p values for " + col)
 
     def generate_mask_ciftis(self, n_elements):
         """we display voxel level errors and problems by generating 'mask' ciftis of 0's and 1s
