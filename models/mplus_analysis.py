@@ -463,7 +463,7 @@ class MplusAnalysis(Analysis):
 
     def add_negative_log_p_values(self, results_dataframe):
         for col in results_dataframe.columns:
-            if "P-VALUE" in col:
+            if "P-Value" in col:
                 try:
                     neg_log_p = -np.log10(results_dataframe[col])
                     new_colname = col.replace("P-VALUE", "NegLogP-Value")
