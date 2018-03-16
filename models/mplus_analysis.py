@@ -14,7 +14,7 @@ import models.mplus_template
 import numpy as np
 import pandas as pd
 import shutil
-
+import models.paths
 """
 Note about paths:
 System wide default output directory, defined in the config file.
@@ -144,38 +144,14 @@ class MplusAnalysis(Analysis):
 
         self.progressMessage("Time to run mplus model files %f seconds" % (time4 - time3))
 
-        # load a standard baseline cifti that we will overwrite with our computed data
-        #output_cifti = self.base_cifti_for_output()
-
-        #path_template =   self.paths.batch_outputs_path(self.mplus_model_filename_for_voxel("%s") + ".out")
-
         if self.cancelling:
             return
 
-        # note this code is a little confusing, there are updates happening to the cifti objects
-        # while it is return a data frame that contains all the aggregated values
-
-#        aggregated_results = self.model.aggregate_results(self.input.cifti_vector_size,
-#                                                          path_template,
-#                                                          ["Akaike (AIC)"],
-#                                                          [output_cifti],
-#                                                          testing_only_limit_to_n_rows=self.limit_by_row)
         time5 = time.time()
 
- #       self.progressMessage("Time to aggregate mplus results %f seconds" % (time5 - time4))
-
         if self.cancelling:
             return
 
-        #cifti_output_path = self.scrubbed_data_path() + ".out.dscalar.nii"
-        #output_cifti.save(cifti_output_path)
-        #time6 = time.time()
-
-        #if self.cancelling:
-        #    return
-
-        #aggregated_results.to_csv(cifti_output_path + ".raw.csv", header=True, index=False)
-        #self._cifti_output_path = cifti_output_path
 
         self.progressMessage("TOTAL TIME %f seconds" % (time.time() - start_time))
         return "Ran vectorized model. %i of %s failed" % (self.mplus_exec_errors, self.mplus_exec_count)
@@ -422,13 +398,13 @@ class MplusAnalysis(Analysis):
         return self.model.apply_options(options, non_original_data_columnlist)
 
 
-    def aggregate_results(self,path_template="", n_elements = 0):
+    def aggregate_results(self,batch_path="", n_elements = 0):
         """
         parse results out of the per-voxel output files and aggregate them into cifti files. it accepts a list
         of fields to extract from the outputs and there must be one Cifti instance provided per field as
         we only write one given output field to one cifti at present
         :param inputspreadsheet:
-        :param path_template:
+        :param batch_path: optionally provide the path to the root of a batch (i.e. the dir that contains inputs, outputs, ciftis dir. If not provided the current batch will be used
         :param look_for_fields:
         :param ciftis:
         :return: a pandas data frame with the extracted values from the mplus output files
@@ -437,13 +413,20 @@ class MplusAnalysis(Analysis):
         if len(self.output_parameters) == 0:
             raise ValueError("No output parameters are selected.")
 
+        filename_for_extracted_csv = "extracted.csv"
         if n_elements == 0:
             # todo this override is not a great compromise but is making it easier to
             # rerun value extractions without recomputing the size of all ciftis.
             n_elements = 91282  # set to the default value
 
-        if len(path_template)==0:
+        if len(batch_path)==0:
             path_template = self.paths.batch_outputs_path("input.voxel%s.inp.out")
+            extracted_csv_path = self.paths.batch_cifits_path(filename_for_extracted_csv)
+        else:
+            path_template = os.path.join(batch_path, models.paths.OUTPUTS_DIRNAME, "input.voxel%s.inp.out")
+            extracted_csv_path = os.path.join(batch_path, models.paths.CIFITS_DIRNAME, filename_for_extracted_csv)
+
+        print("Extracting mplus output: " + path_template)
 
         outputs = MplusOutputSet(path_template)
 
@@ -453,11 +436,11 @@ class MplusAnalysis(Analysis):
 
         self.add_negative_log_p_values(results)
 
-        results.to_csv(self.paths.batch_cifits_path("extracted.csv"), index=False)
+        results.to_csv(extracted_csv_path, index=False)
 
-        self.generate_mask_ciftis(n_elements)
+        self.generate_mask_ciftis(n_elements, override_batch_path=batch_path)
 
-        self.generate_ciftis_from_dataframe(results)
+        self.generate_ciftis_from_dataframe(results, override_batch_path= batch_path)
 
         return results
 
@@ -474,7 +457,7 @@ class MplusAnalysis(Analysis):
                 except:
                     logging.error("Error computing negative log p values for " + col)
 
-    def generate_mask_ciftis(self, n_elements):
+    def generate_mask_ciftis(self, n_elements, override_batch_path = ""):
         """we display voxel level errors and problems by generating 'mask' ciftis of 0's and 1s
         to allow easy filtering by the user in ConnectomeWorkbench
 
@@ -502,7 +485,7 @@ class MplusAnalysis(Analysis):
         untrustworthy_vector[self.outputset.untrustworthies]=1
         masks["Untrustworthy"] = untrustworthy_vector
 
-        self.generate_ciftis_from_dataframe(masks)
+        self.generate_ciftis_from_dataframe(masks, override_batch_path = override_batch_path)
 
 
     def removeBatch(self,path):

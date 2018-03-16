@@ -103,13 +103,13 @@ class Analysis():
         data = pd.read_csv(csv_path)
         self.generate_ciftis_from_dataframe(data)
 
-    def generate_ciftis_from_dataframe(self, data):
+    def generate_ciftis_from_dataframe(self, data, override_batch_path = ""):
 
         for c in data.columns:
             cifti = self.base_cifti_for_output()
             cifti.setVector(data[c])
             filename = c + ".dscalar.nii"
-            cifti_output_path =  self.paths.batch_cifits_path(filename)
+            cifti_output_path =  self.paths.batch_cifits_path(filename, override_batch_path=override_batch_path)
             cifti.save(cifti_output_path)
 
     @property

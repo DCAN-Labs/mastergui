@@ -88,5 +88,9 @@ class Paths():
         """
         return os.path.join(self.current_batch_path, OUTPUTS_DIRNAME, filename)
 
-    def batch_cifits_path(self, filename = ""):
-        return os.path.join(self.current_batch_path, CIFITS_DIRNAME, filename)
+    def batch_cifits_path(self, filename = "", override_batch_path = ""):
+        if len(override_batch_path)==0:
+            batch_path = self.current_batch_path
+        else:
+            batch_path = override_batch_path
+        return os.path.join(batch_path, CIFITS_DIRNAME, filename)

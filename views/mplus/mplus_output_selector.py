@@ -147,8 +147,7 @@ class MplusOutputSelector(OutputBrowserWidget):
                     cifti_vector_size = 0
 
             if use_currently_viewed_batch:
-                path_template = os.path.join(self.selected_batch_path, "outputs","input.voxel%s.inp.out")
-                results = analysis.aggregate_results(path_template = path_template, n_elements=cifti_vector_size)
+                results = analysis.aggregate_results(batch_path = self.selected_batch_path, n_elements=cifti_vector_size)
             else:
                 results = analysis.aggregate_results(n_elements = cifti_vector_size)
 
