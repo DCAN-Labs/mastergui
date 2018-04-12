@@ -436,7 +436,11 @@ class MplusAnalysis(Analysis):
 
         self.add_negative_log_p_values(results)
 
-        results.to_csv(extracted_csv_path, index=False)
+        #note: currently all MPlus output numbers appear to have a maximum 3 significant digits of precision
+        #due to standard floating point issues the standard representation of numbers in floats is off by a tiny amount, i.e 10^-9, or so
+        #so when saving the values to csv we must round so we don't show that erroneous over-precision that is simply an artifact of
+        #floating point number representation. 
+        results.to_csv(extracted_csv_path, index=False, float_format='%.3f')
 
         self.generate_mask_ciftis(n_elements, override_batch_path=batch_path)
 
@@ -456,6 +460,7 @@ class MplusAnalysis(Analysis):
                     results_dataframe[new_colname] = raw
                 except:
                     logging.error("Error computing negative log p values for " + col)
+
 
     def generate_mask_ciftis(self, n_elements, override_batch_path = ""):
         """we display voxel level errors and problems by generating 'mask' ciftis of 0's and 1s
