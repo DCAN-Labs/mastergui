@@ -416,7 +416,7 @@ class MplusOutputSet():
         #this code to disable the multithreading in this step is just to facilliate debugging.
         #in production, use_threads should be true for best performance
         if use_threads:
-            num_threads = 4 #todo set back to 4
+            num_threads = 4
 
             sets_of_voxel_indexes = np.array_split(list(range(n_voxels_expected)), num_threads)
 
