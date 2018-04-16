@@ -110,6 +110,19 @@ class InputSpreadsheet():
             with threading.Lock():
                 v.cancelling = True
 
+    def save_prevoxelized_version_for_permutation_testing(self, simple_base_dataframe, output_path_prefix):
+        """
+        for permutation testing we are going to use an external tool to generate the permuted datasets and run MasterGui upon them.
+        That external tool requires an input file consisting of just the initial data columns that will be used, including column names,
+        without the voxel data added yet.
+        :param simple_base_dataframe:
+        :param output_path_prefix:
+        :return:
+        """
+        parts = os.path.split(output_path_prefix)
+        prevoxel_path = os.path.join(parts[0] , "prevoxel" + parts[1])
+        simple_base_dataframe.to_csv(prevoxel_path, header=True, index=False, quoting=csv.QUOTE_NONNUMERIC)
+
     def prepare_with_cifti(self, path_to_voxel_mappings, output_path_prefix, testing_only_limit_to_n_voxels=0,
                            standard_missing_char=".", only_save_columns=[], limit_by_row=-1):
         """generate a separate file for each voxel in a cift
@@ -125,6 +138,9 @@ class InputSpreadsheet():
         self.loadAllCiftis(path_to_voxel_mappings)
 
         base_df = self.getBaseDataFrame(only_save_columns, path_to_voxel_mappings)
+
+        #saving a version of the data before voxels but with headers to be processed by external permutation testing tool
+        self.save_prevoxelized_version_for_permutation_testing(base_df, output_path_prefix)
 
         if testing_only_limit_to_n_voxels > 0:
             upper_bound = testing_only_limit_to_n_voxels

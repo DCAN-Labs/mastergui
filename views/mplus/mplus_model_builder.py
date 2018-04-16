@@ -182,7 +182,8 @@ class MplusModelBuilder(QWidget):
         self.generatedModelViewer.setText(generated_mplus_model)
 
     def refresh(self):
-        self.addInputColumnNamesToListViews()
+        #if any ui elements need updating implement that here
+        pass
 
     def loadVariables(self):
         if not hasattr(self, "analysis"):
@@ -214,15 +215,6 @@ class MplusModelBuilder(QWidget):
         generated_mplus_model_text = self.analysis.updateModel(options, self.all_nonspreadsheet_variables_to_display())
 
         self.generatedModelViewer.setText(generated_mplus_model_text)
-
-    def addInputColumnNamesToListViews(self):
-
-        # cols = ["i", "q", "s", "r"] + self.parentAnalysis.dataPreview.possibleColumnNames()
-        # todo restore column refreshing if necessary in the updated ui
-
-        # util.addColumnNamesToListView(self.columnSelectA, cols)
-        # util.addColumnNamesToListView(self.columnSelectB, cols)
-        print("what else to refresh?")
 
     def updateDataColumns(self):
         if hasattr(self, "template_requirements"):
