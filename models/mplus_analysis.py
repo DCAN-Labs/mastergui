@@ -449,6 +449,8 @@ class MplusAnalysis(Analysis):
         return results
 
     def add_negative_log_p_values(self, results_dataframe):
+        p_value_identifier = "P-Value"  # if we find this in the attribute name consider it a p-value
+
         for col in results_dataframe.columns:
             if "P-Value" in col:
                 try:
@@ -456,7 +458,7 @@ class MplusAnalysis(Analysis):
                     raw = results_dataframe[col].copy()
                     positives = raw > 0
                     raw[positives] = -np.log10(raw[positives])
-                    new_colname = col.replace("P-VALUE", "NegLogP-Value")
+                    new_colname = col.replace(p_value_identifier, "NegLogP-Value")
                     results_dataframe[new_colname] = raw
                 except:
                     logging.error("Error computing negative log p values for " + col)
