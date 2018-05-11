@@ -7,6 +7,9 @@ import numpy as np
 from views.output_browser import *
 from views import view_utilities
 from views.mplus.output_chooser_dialog import *
+from views.mplus.mplus_postprocessing_options import *
+from views.widgets import *
+
 import sys
 
 output_radio_button_index = 1
@@ -14,14 +17,10 @@ output_radio_button_index = 1
 class MplusOutputSelector(OutputBrowserWidget):
     def __init__(self, parentAnalysisWidget):
         super(MplusOutputSelector, self).__init__(parentAnalysisWidget)
-        #self.hidePatternSelector()
+
         self.patternWidget.setText("outputs/*.*")
         self.last_selected_pattern_id = output_radio_button_index
-        # self.fileViewer.setVisible(False)
-        # self.exploreLayout.addWidget(self.listView,stretch = 5)
 
-        # self.exploreLayout.removeWidget(self.)
-        # self.layout().removeWidget(self.groupWidget)
         self.parentAnalysisWidget = parentAnalysisWidget
         view_utilities.addButton("Extract", self.groupWidget.layout(), self.on_click_extract)
         view_utilities.addButton("Choose Parameters", self.groupWidget.layout(), self.on_click_chooseparameters)
@@ -30,6 +29,25 @@ class MplusOutputSelector(OutputBrowserWidget):
         self.createOutputSelector()
         self.selectableOutput.setVisible(False)
         exploreLayout.addWidget(self.selectableOutput, stretch=5)
+
+    #todo planned UI refactor to move these output parameter and post processing options to the Output tab
+   #     self.outputParameterChoiceList = ColumnList("Output Parameters",
+   #                                                 self.on_click_add_output_parameter,
+   #                                                 self.on_click_remove_output_parameter,
+   #                                                 checkable=False)
+   #     self.outputParameterChoiceList.setFixedHeight(150)
+
+   #     self.addWidget(self.outputParameterChoiceList)
+
+        self.postProcessingOptions = MPlusPostProcessingOptions(self.parentAnalysisWidget.config, self.get_selected_file_path)
+        self.postProcessingOptions.setVisible(False) #this is only shown when Ciftis are being shown
+        exploreLayout.addWidget(self.postProcessingOptions)
+
+    def get_selected_file_path(self):
+        if hasattr(self,'last_selected_path'):
+            return self.last_selected_path
+        else:
+            return ""
 
     def createOutputSelector(self):
 
@@ -93,7 +111,10 @@ class MplusOutputSelector(OutputBrowserWidget):
         pattern = self.patterns[selected_id]
         self.patternWidget.setText(pattern)
 
-        self.ciftiButtion.setVisible(selected_id==cifti_radio_button_index)
+        #some commands only make sense when ciftis are available
+        show_cifti_options = selected_id==cifti_radio_button_index
+        self.ciftiButtion.setVisible(show_cifti_options)
+        self.postProcessingOptions.setVisible(show_cifti_options)
 
         if selected_id == cifti_radio_button_index:
             if self.fileViewer.isVisible():

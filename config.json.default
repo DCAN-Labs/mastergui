@@ -3,7 +3,11 @@
     {
       "mplus": {
         "title":"MPlus",
-        "templates": "./templates/mplus"
+        "templates": "./templates/mplus",
+        "postprocessingoptions":[{"name":"test","command":"postprocessing/test_wrapper.sh","param_filepath":"postprocessing/CIFTIStatMapToZscore_params.bash"},
+                        {"name":"FDR","command":"postprocessing/CIFTIStatMapToZscore_wrapper.sh","param_filepath":"postprocessing/CIFTIStatMapToZscore_params.bash"},
+                                {"name":"Cluster Detection","command":"postprocessing/PalMPlusClusterDetection_wrapper.sh","param_filepath":"postprocessing/PalMPlusClusterDetection_params.bash"}
+        ]
       },
       "palm": {
         "title":"Palm",

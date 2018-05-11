@@ -3,7 +3,7 @@ from views.widgets.addremove_buttonbar import *
 
 class ColumnList(QWidget):
     """displays a list with a title above and a add/remove buttons at the bottom of it,
-    generally used for displaying columns of non-imaging data"""
+    generally used in this app for displaying columns of non-imaging data but can be used for any sort of list"""
 
     def __init__(self, caption, on_click_add = None, on_click_remove = None, checkable = True):
         """

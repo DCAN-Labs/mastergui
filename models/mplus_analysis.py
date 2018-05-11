@@ -304,7 +304,6 @@ class MplusAnalysis(Analysis):
 
         if len(model_output_file_path)==0:
             model_output_file_path = model_input_file_path + ".out"
-        cmd = self.config._data["MPlus_command"] + " " + model_input_file_path
 
         result = subprocess.run([self.config._data["MPlus_command"],
                                  model_input_file_path,

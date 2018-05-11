@@ -15,6 +15,7 @@ from views.output_browser import *
 from views.mplus.mplus_output_selector import *
 from views.mplus.template_requirements import *
 from views.mplus.mplus_model_builder import *
+from views.mplus.mplus_postprocessing_options import *
 from views.workers import *
 from views.widgets import *
 from views.mplus import *
@@ -228,8 +229,6 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.cancelBtn = self.addButton("Cancel Analysis", command_box, self.on_click_cancel, width=130)
         self.cancelBtn.setEnabled(False)
 
-        #self.initOutputParameterChoices()
-
         self.outputParameterChoiceList = ColumnList("Output Parameters",
                                                     self.on_click_add_output_parameter,
                                                     self.on_click_remove_output_parameter,
@@ -237,9 +236,6 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.outputParameterChoiceList.setFixedHeight(150)
 
         command_bar.addWidget(self.outputParameterChoiceList)
-        #command_bar.addWidget(self.outputParameterChoiceContainer)
-
-#        self.outputParameterChoices.show()
 
         command_bar.addLayout(command_box)
 
@@ -250,32 +246,6 @@ class MplusAnalysisWindow(AnalysisWindow):
         l.addWidget(self.outputTabs)
 
         self.execAnalysisWidget.setLayout(l)
-
-    def initOutputParameterChoices(self):
-        container = QWidget()
-        layout = QVBoxLayout()
-
-
-
-        addBoldLabel("Output Parameter Choices", layout)
-
-        tbl = QTableWidget()
-        headers = ["MPlus Name", "Custom Column Name", "Cifti File Name"]
-        for i in range(len(headers)):
-            tbl.setHorizontalHeaderItem(i, QTableWidgetItem(headers[i]))
-
-        tbl.setFixedHeight(100)
-        layout.addWidget(tbl)
-        outputChoiceButtonBar = AddRemoveButtonBar(self.on_click_add_output_parameter, self.on_click_remove_output_parameter)
-
-        layout.addWidget(outputChoiceButtonBar)
-
-        self.outputParameterChoices = tbl
-
-        container.setLayout(layout)
-        self.outputParameterChoiceContainer = container
-
-        self.loadOutputParameterChoices()
 
     def on_click_add_output_parameter(self):
 

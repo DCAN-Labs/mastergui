@@ -30,20 +30,14 @@ class OutputBrowserWidget(QWidget):
         change_output_path_button = outputPathWidgets[2]
         change_output_path_button.clicked.connect(self.on_click_change_output_path)
 
-
-        #layout.addLayout(outputPathLayout)
-        #layout.addWidget(QLabel("Analysis Output Directory:"))
-
         self.outputDirWidget = outputPathWidgets[1]
         self.outputDirWidget.setEnabled(False)
 
-        #self.outputDirWidget = QLineEdit()
         self.outputDirWidget.returnPressed.connect(self.on_click_refresh)
         self.outputDirWidget.setFixedWidth(500)
-        #layout.addWidget(self.outputDirWidget)
+
 
         self.batchDropDown = ComboBox(on_change = self.on_batch_row_changed)
-        #batchLayout = util.createHLineFromWidgets([QLabel("Batches:"), self.batchDropDown])
 
         frm = QFormLayout()
 
@@ -54,34 +48,17 @@ class OutputBrowserWidget(QWidget):
 
         frm.addRow("Batches:", util.createHLineFromWidgets([self.batchDropDown, batchDeleteBtn]))
 
-
-        #layout.addLayout(batchLayout)
-
-        #layout.addWidget(self.batchDropDown)
-
-
         exploreLayout = QHBoxLayout()
 
         self.exploreLayout = exploreLayout
 
-        #layout.addWidget(self.createRadioButtons())
-
-        #pathLayout = QFormLayout()
-
-        #self.pathWidget.setFixedWidth(400)
-
-        #pathLayout.addRow("Path:", self.pathWidget)
-
-        #layout.addLayout(pathLayout)
-
-
         frm.addRow(self.createRadioButtons())
+
+
         self.fileViewer = QTextEdit()
         self.fileViewer.setReadOnly(True)
 
-
-
-        self.ciftiButtion = util.addButton("Open Cifti", layout, self.on_click_opencifti)
+        self.ciftiButtion = util.addButton("Open Cifti", self.groupWidget.layout(), self.on_click_opencifti)
         self.ciftiButtion.setVisible(False)
 
         self.fileListView = QListView()
@@ -90,8 +67,6 @@ class OutputBrowserWidget(QWidget):
         exploreLayout.addWidget(self.fileListView, stretch=1)
         self.initDetailUI(exploreLayout)
         self.initDetailUISpecific(exploreLayout)
-        #layout.addLayout(exploreLayout)
-        #frm.addRow(exploreLayout)
 
         layout.addLayout(frm)
         layout.addLayout(exploreLayout)
@@ -106,7 +81,6 @@ class OutputBrowserWidget(QWidget):
         layout.addLayout(pathLine)
         self.setLayout(layout)
 
-        #self.output_dir = ""
         self.pattern = ""
 
 
@@ -123,7 +97,6 @@ class OutputBrowserWidget(QWidget):
 
     def on_click_change_output_path(self):
 
-        #openfile, ok = QFileDialog.getOpenFileName(self)
         path = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
         if path:
             self.analysis.paths.root = path
