@@ -271,17 +271,19 @@ class MplusAnalysis(Analysis):
         return True
 
     def runAnalysisWithoutCiftiData(self):
-        model_filename = "input.inp"
-        model_input_file_path = os.path.join(self.batchOutputDir, model_filename)
-        model_output_file_path = model_input_file_path + ".out"
+        """This is the path for just running a simple MPlus model that doesn't require the
+        integration of voxel information, and therefore doesn't require the execution of 91k+ MPlus models.
+        """
 
         nonimaging_data_path = self.scrubbed_data_path()
 
+        model_output_file_path = nonimaging_data_path + ".out"
+
         self.input.save(nonimaging_data_path, self.model.input_column_names_in_order)
 
-        self.model.save_for_datafile(self.data_filename, model_input_file_path)
+        self.model.save_for_datafile(self.data_filename, nonimaging_data_path)
 
-        result = self.runMplus(model_input_file_path)
+        result = self.runMplus(nonimaging_data_path)
 
         self.mplus_stdout = str(result.stdout, 'utf-8')
 
