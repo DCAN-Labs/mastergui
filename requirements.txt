@@ -3,6 +3,7 @@ nibabel==2.2.1
 nipy==0.4.1
 numpy==1.13.3
 pandas==0.21.0
+pkg-resources==0.0.0
 PyQt5==5.9.2
 python-dateutil==2.6.1
 pytz==2017.3
