@@ -9,6 +9,7 @@ from models.paths import *
 
 BATCHES_DIRNAME = "batches"
 
+
 class Analysis():
     """SuperClass for Specific analyses such as Mplus, Palm, etc
 
@@ -39,7 +40,6 @@ class Analysis():
     def batches_dir(self):
         return self.paths.batches_dir
 
-
     def batches(self):
         return self.paths.batches()
 
@@ -55,7 +55,7 @@ class Analysis():
         return missing + invalid_directories
 
     def setBatchTitle(self, raw_title):
-        #todo this is moving towards obsolete as refactor path functionality into paths.py
+        # todo this is moving towards obsolete as refactor path functionality into paths.py
 
         self.batchTitle = re.sub('[^0-9a-zA-Z]+', '_', self.dir_name_for_title(raw_title))
 
@@ -103,13 +103,13 @@ class Analysis():
         data = pd.read_csv(csv_path)
         self.generate_ciftis_from_dataframe(data)
 
-    def generate_ciftis_from_dataframe(self, data, override_batch_path = ""):
+    def generate_ciftis_from_dataframe(self, data, override_batch_path=""):
 
         for c in data.columns:
             cifti = self.base_cifti_for_output()
             cifti.setVector(data[c])
             filename = c + ".dscalar.nii"
-            cifti_output_path =  self.paths.batch_cifits_path(filename, override_batch_path=override_batch_path)
+            cifti_output_path = self.paths.batch_cifits_path(filename, override_batch_path=override_batch_path)
             cifti.save(cifti_output_path)
 
     @property
@@ -130,7 +130,7 @@ class Analysis():
         keys_to_copy = ["output_dir"]
         for key in keys_to_copy:
             if key in load_data:
-                #careful to use the __setattr__ instead of just setattr or we don't
-                #end up getting any customer property setters called
+                # careful to use the __setattr__ instead of just setattr or we don't
+                # end up getting any customer property setters called
                 self.__setattr__(key, load_data[key])
-                #setattr(self, )
+                # setattr(self, )

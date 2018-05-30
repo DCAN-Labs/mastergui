@@ -4,6 +4,7 @@ import datetime
 import os.path
 import subprocess
 
+
 class PostProcessing():
     def __init__(self, config):
         self.config = config
@@ -26,13 +27,13 @@ class PostProcessing():
 
         dir_of_cifti = os.path.split(source_cifti_path)[0]
 
-        timestamp = str(datetime.datetime.now()).replace(" ","_")
+        timestamp = str(datetime.datetime.now()).replace(" ", "_")
 
-        param_file_name = os.path.join(dir_of_cifti, "%s_%s_%s_params.bash" % (source_cifti_path, postprocessing_command_name, timestamp ))
+        param_file_name = os.path.join(dir_of_cifti, "%s_%s_%s_params.bash" % (
+        source_cifti_path, postprocessing_command_name, timestamp))
 
         with open(param_file_name, "w") as f:
             f.write(param_file_contents)
-
 
         result = subprocess.run([cmd,
                                  param_file_name], stdout=subprocess.PIPE)
@@ -53,16 +54,17 @@ class PostProcessing():
                 with open(default_options_path, "r") as f:
                     lines = f.readlines()
 
-                #remove the lines from the default param file with "InputCifti=" and "OutputCifti=" as
-                #those will be overwritten by MasterGUI
+                # remove the lines from the default param file with "InputCifti=" and "OutputCifti=" as
+                # those will be overwritten by MasterGUI
 
                 lines = [line for line in lines if
                          line.strip().find("InputCIFTI=") == -1 and line.strip().find("OutputCIFTI=") == -1]
                 lines.append("InputCIFTI=%s\n" % source_cifti_path)
-                lines.append("OutputCIFTI=%s.%s.dscalar.nii\n" %  (source_cifti_path, postprocessing_command_name))
+                lines.append("OutputCIFTI=%s.%s.dscalar.nii\n" % (source_cifti_path, postprocessing_command_name))
 
                 return "".join(lines)
             except:
                 raise Exception("error opening parameter file template for post processing module")
         else:
-            raise Exception("No configuration information for post-procssing command %s is available.  " % postprocessing_command_name)
+            raise Exception(
+                "No configuration information for post-procssing command %s is available.  " % postprocessing_command_name)

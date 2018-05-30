@@ -3,6 +3,7 @@ import models.mplus_analysis
 import models.palm_analysis
 import models.fconnanova_analysis
 
+
 def load(filename, config):
     with open(filename, 'r') as f:
         load_data = json.load(f)

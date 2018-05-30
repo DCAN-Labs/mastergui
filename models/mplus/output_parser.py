@@ -11,15 +11,13 @@ Model_Fit_Information_Label = "MODEL_FIT_INFORMATION"
 Model_Results_Label = "MODEL_RESULTS"
 Standarized_Model_Results_Label = "STANDARDIZED_MODEL_RESULTS"
 key_delimiter = "-"
-Model_Termination_Section_Label="THE_MODEL_ESTIMATION_TERMINATED_NORMALLY"
+Model_Termination_Section_Label = "THE_MODEL_ESTIMATION_TERMINATED_NORMALLY"
 
-#for stripping keys of values that we don't want in filenames
+# for stripping keys of values that we don't want in filenames
 filename_unfriendly_character_detector = re.compile('[^0-9a-zA-Z\-]+')
 
-
-#many mplus model termination warnings are identical except for a condition number that we rarely need, use this to remove them.
+# many mplus model termination warnings are identical except for a condition number that we rarely need, use this to remove them.
 Condition_Number_Mask = re.compile("(.*HE CONDITION NUMBER IS )\s*([0-9\.D\-]*)\.")
-
 
 """Termination Warning example:   sometimes Mplus modes do terminate successfully but have warning messages under the heading
 THE MODEL ESTIMATION TERMINATED NORMALLY
@@ -53,15 +51,17 @@ MPlusOutputSet.warnings is the "*** WARNING" kind of warning
 
 
 """
+
+
 class MplusOutput():
-    def __init__(self,path, limit_to_keys = []):
-        #debug with tests/sample.mplus.modelwarning.out
+    def __init__(self, path, limit_to_keys=[]):
+        # debug with tests/sample.mplus.modelwarning.out
         self.limited_parse = len(limit_to_keys) > 0
         if self.limited_parse:
             self.limit_to_keys = limit_to_keys
             self.limit_to_sections = [key.split(key_delimiter)[0] for key in limit_to_keys]
-           # if not Model_Termination_Section_Label in self.limit_to_sections:
-           #     self.limit_to_keys.append(Model_Termination_Section_Label)
+            # if not Model_Termination_Section_Label in self.limit_to_sections:
+            #     self.limit_to_keys.append(Model_Termination_Section_Label)
         else:
             self.limit_to_keys = []
             self.limit_to_sections = []
@@ -72,7 +72,7 @@ class MplusOutput():
 
     def load(self):
 
-        #we are calling a 'heading' an all caps line with no indentation, - also allowed as in R-SQUARED
+        # we are calling a 'heading' an all caps line with no indentation, - also allowed as in R-SQUARED
         heading_detector = re.compile("^[A-Z][A-Z \-]*$")
 
         warning_detector = re.compile("^\*\*\* WARNING")
@@ -91,7 +91,7 @@ class MplusOutput():
 
         last_section_is_warning = False
 
-        #all_lines = []
+        # all_lines = []
 
         try:
             with open(self.path, "r") as f:
@@ -112,25 +112,25 @@ class MplusOutput():
                 last_section = self.cleanKey(line.strip())
                 last_section_lines = []
             else:
-                if len(last_section)>0:
+                if len(last_section) > 0:
                     last_section_lines.append(line)
 
         self.lines = all_lines
 
         if self.terminated_normally:
-            if len(self.model_convergence_warnings)>0:
+            if len(self.model_convergence_warnings) > 0:
                 self.any_error = True
         else:
             self.any_error = True
 
-
-    def process_section_contents(self,  last_section, last_section_lines):
+    def process_section_contents(self, last_section, last_section_lines):
         if last_section:
-            if last_section[:10]=="___WARNING":  #in the original MPlus this would have been ***WARNING but we have replaced non alphanumerics with _ at this point
+            if last_section[
+               :10] == "___WARNING":  # in the original MPlus this would have been ***WARNING but we have replaced non alphanumerics with _ at this point
                 self.warnings.append(" ".join([last_section] + last_section_lines))
             else:
                 if self.limited_parse and not last_section in self.limit_to_sections:
-                    #print("%s not in %s" % (last_section, str(self.limit_to_sections)))
+                    # print("%s not in %s" % (last_section, str(self.limit_to_sections)))
                     if not last_section == Model_Termination_Section_Label:
                         return
 
@@ -179,8 +179,8 @@ class MplusOutput():
         number_matcher = re.compile('([+-]?[0-9]*[.]?[0-9]+)')
 
         for line in section_lines:
-            #line = line.strip()
-            if line.strip(): #ignore empty lines
+            # line = line.strip()
+            if line.strip():  # ignore empty lines
                 first = line[0]
                 is_indented = first == " " or first == "\t"
 
@@ -193,7 +193,6 @@ class MplusOutput():
                         n = float(ends_in_number.groups()[0])
                         keyname = " ".join(parts[:-1])
 
-
                         keyname = key_delimiter.join(context_stack + [keyname])
 
                         self.setDataValue(Model_Fit_Information_Label + key_delimiter + keyname, n)
@@ -204,7 +203,7 @@ class MplusOutput():
                         if self.limited_parse:
                             if keyname in self.limit_to_keys:
                                 self.logNumberParsingError(keyname)
-                            #otherwise we can just ignore it
+                                # otherwise we can just ignore it
                         else:
                             self.logNumberParsingError(keyname)
 
@@ -214,18 +213,17 @@ class MplusOutput():
 
 
                         #
-                #     stripped_line = line.strip()
-                #     if stripped_line:
-                #         print("ever happen?")
-                #         context_stack.append(line.strip())
-                #         print(context_stack)
+                        #     stripped_line = line.strip()
+                        #     if stripped_line:
+                        #         print("ever happen?")
+                        #         context_stack.append(line.strip())
+                        #         print(context_stack)
         self.sections[Model_Fit_Information_Label] = section_data
 
     def logNumberParsingError(self, keyName):
 
         with threading.Lock():
             self.numberErrorsByKey[keyName] = True
-
 
     def process_results_table(self, title, lines):
         """
@@ -253,33 +251,33 @@ class MplusOutput():
                 PGS                0.023      0.009      2.449      0.014
 
         """
-        #print("Begin parse table "  + title)
-        first_char_finder  = re.compile('([A-Z])')
+        # print("Begin parse table "  + title)
+        first_char_finder = re.compile('([A-Z])')
         column_names = []
         section_data = {}
         ws = re.compile('\s+')
         for line in lines:
-            m = re.search(first_char_finder,line)
+            m = re.search(first_char_finder, line)
             if m:
                 idx = m.start()
-                #print("Start index %d" % idx)
-                #print(line)
+                # print("Start index %d" % idx)
+                # print(line)
                 if idx == 20:
-                    column_names = re.split(ws,line.strip())
+                    column_names = re.split(ws, line.strip())
                 elif idx == 1:
                     stat_type = line.strip()
                 elif idx == 4:
-                    #print("it was idx4")
-                    #print(line)
+                    # print("it was idx4")
+                    # print(line)
                     parts = re.split(ws, line.strip())
-                    #if len(parts) == 5:
+                    # if len(parts) == 5:
                     stat_name = parts[0]
-                    keyprefix = key_delimiter.join([title, stat_type,stat_name])
-                    for i in range(1,len(parts)):
-                        keyname = keyprefix + key_delimiter + column_names[i-1]
+                    keyprefix = key_delimiter.join([title, stat_type, stat_name])
+                    for i in range(1, len(parts)):
+                        keyname = keyprefix + key_delimiter + column_names[i - 1]
                         try:
                             value = float(parts[i])
-                            self.setDataValue(keyname,value)
+                            self.setDataValue(keyname, value)
                             section_data[keyname] = value
                         except:
 
@@ -289,8 +287,6 @@ class MplusOutput():
                                     # otherwise we can just ignore it
                             else:
                                 self.logNumberParsingError(keyname)
-
-
 
         self.sections[title] = section_data
 
@@ -317,42 +313,39 @@ class MplusOutput():
         warning = ""
         for line in lines:
             line = line.strip()
-            if len(line)>0:
-                if len(warning)>0:
-                    warning+=" "
+            if len(line) > 0:
+                if len(warning) > 0:
+                    warning += " "
                 warning += line
             else:
-                if len(warning)>0:
+                if len(warning) > 0:
                     warnings.append(warning)
                     warning = ""
-        if len(warning)>0:
+        if len(warning) > 0:
             warnings.append(warning)
 
         r3 = re.compile("(.*HE CONDITION NUMBER IS )([0-9\.D\-]*)\.")
         r3 = re.compile("(.*HE CONDITION NUMBER IS )\s*[0-9\.D\-]*\.")
 
-        #remove the condition # that is unnececessarily for our purposes making warnings unique.
+        # remove the condition # that is unnececessarily for our purposes making warnings unique.
         for i in range(len(warnings)):
             warnings[i] = re.sub(Condition_Number_Mask, r'\1 xxxx', warnings[i])
 
-
         condensed = "\n".join(warnings)
 
-        if len(condensed)>0:
+        if len(condensed) > 0:
             self.had_model_warnings = True
             self.model_warning_content = condensed
         self.model_convergence_warnings = warnings
 
-
     def print_report(self):
         print("Analysis of Mplus Output " + self.path)
         if Model_Fit_Information_Label in self.sections:
-            for k,v in self.sections[Model_Fit_Information_Label].items():
-                print("%s: %s" % (k,v))
-
+            for k, v in self.sections[Model_Fit_Information_Label].items():
+                print("%s: %s" % (k, v))
 
         print("Begin all keys flattenned:")
-        for k,v in self.data.items():
+        for k, v in self.data.items():
             print("%s: %s" % (k, v))
         print("Terminated normally?")
         print(self.terminated_normally())
@@ -361,7 +354,8 @@ class MplusOutput():
 class MplusOutputSet():
     def __init__(self, path_template):
         self.path_template = path_template
-        self.count=0
+        self.count = 0
+
     # def load_all(self):
     #     search_path = os.path.join(self.path, "*.out")
     #     files = glob.glob(search_path)
@@ -381,7 +375,7 @@ class MplusOutputSet():
     #
     #     return stats
 
-    def extract(self, keys_to_extract, n_voxels_expected = 91282):
+    def extract(self, keys_to_extract, n_voxels_expected=91282):
         """
         parse results out of the per-voxel output files and aggregate them into cifti files. it accepts a list
         of fields to extract from the outputs and there must be one Cifti instance provided per field as
@@ -410,23 +404,23 @@ class MplusOutputSet():
         self.any_errors = []
         self.untrustworthies = []
 
-
         use_threads = True
 
-        #this code to disable the multithreading in this step is just to facilliate debugging.
-        #in production, use_threads should be true for best performance
+        # this code to disable the multithreading in this step is just to facilliate debugging.
+        # in production, use_threads should be true for best performance
         if use_threads:
             num_threads = 4
 
             sets_of_voxel_indexes = np.array_split(list(range(n_voxels_expected)), num_threads)
 
-            #places for the threads to park their error findings without fighting to access the
-            #same data structures too much
+            # places for the threads to park their error findings without fighting to access the
+            # same data structures too much
 
             threads = []
 
             for i in range(len(sets_of_voxel_indexes)):
-                t = threading.Thread(target=self.loadForSetOfVoxels, args=[sets_of_voxel_indexes[i], keys_to_extract, all_found_results])
+                t = threading.Thread(target=self.loadForSetOfVoxels,
+                                     args=[sets_of_voxel_indexes[i], keys_to_extract, all_found_results])
                 t.start()
                 threads.append(t)
 
@@ -435,24 +429,24 @@ class MplusOutputSet():
         else:
             self.loadForSetOfVoxels(list(range(n_voxels_expected)), keys_to_extract, all_found_results)
 
-        #now reduce the warnings and notfounds found by each thread
+        # now reduce the warnings and notfounds found by each thread
         for warningset in self.warnings_sets:
-            for k,v in warningset.items():
-                warnings[k] = warnings.get(k,[]) + v
+            for k, v in warningset.items():
+                warnings[k] = warnings.get(k, []) + v
 
         for notfoundset in self.notfound_sets:
-            for k,v in notfoundset.items():
-                not_found_counts[k] = not_found_counts.get(k,0)  + v
+            for k, v in notfoundset.items():
+                not_found_counts[k] = not_found_counts.get(k, 0) + v
 
         termination_warnings = {}
         for terminationwarningset in self.termination_warning_sets:
-            for k,v in terminationwarningset.items():
+            for k, v in terminationwarningset.items():
                 if k in termination_warnings:
                     termination_warnings[k] = termination_warnings[k] + v
                 else:
                     termination_warnings[k] = v
 
-        warnings_counts = {k:len(v) for k,v in warnings.items()}
+        warnings_counts = {k: len(v) for k, v in warnings.items()}
 
         self.warnings = warnings
         self.warning_counts = warnings_counts
@@ -479,9 +473,9 @@ class MplusOutputSet():
             o = MplusOutput(path, keys_to_extract)
 
             for w in o.warnings:
-                warnings[w] = warnings.get(w,[]) + [i]
+                warnings[w] = warnings.get(w, []) + [i]
 
-            #for k in o.data.keys():
+            # for k in o.data.keys():
             #    print(k)
             for key_i in range(len(keys_to_extract)):
                 key = keys_to_extract[key_i]
@@ -489,8 +483,8 @@ class MplusOutputSet():
                     with threading.Lock():
                         all_found_results[i, key_i] = o.data[key]
                 else:
-                    not_found_counts[key] = not_found_counts.get(key,0)+1
-                    #print("Value not found for key %s in file %s" % (key, path)) #todo decide how to handle
+                    not_found_counts[key] = not_found_counts.get(key, 0) + 1
+                    # print("Value not found for key %s in file %s" % (key, path)) #todo decide how to handle
             if not o.terminated_normally:
                 not_terminated_normally.append(i)
             else:
@@ -498,7 +492,7 @@ class MplusOutputSet():
                 if o.model_warning_content in termination_warnings:
                     termination_warnings[o.model_warning_content].append(i)
                 else:
-                    termination_warnings[o.model_warning_content]=[i]
+                    termination_warnings[o.model_warning_content] = [i]
 
             if o.any_error:
                 any_errors.append(i)
@@ -506,8 +500,7 @@ class MplusOutputSet():
         with threading.Lock():
             self.notfound_sets.append(not_found_counts)
             self.warnings_sets.append(warnings)
-            self.not_terminated_voxels+=not_terminated_normally
+            self.not_terminated_voxels += not_terminated_normally
             self.termination_warning_sets.append(termination_warnings)
             self.any_errors += any_errors
             self.untrustworthies += untrustworthies
-

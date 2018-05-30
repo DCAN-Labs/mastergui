@@ -15,6 +15,7 @@ import numpy as np
 import pandas as pd
 import shutil
 import models.paths
+
 """
 Note about paths:
 System wide default output directory, defined in the config file.
@@ -26,6 +27,7 @@ Batch Directory.  When an analysis is executed, a unique directory is created fo
 
 
 """
+
 
 class MplusAnalysis(Analysis):
     def __init__(self, config, filename="", saved_data=None):
@@ -41,7 +43,6 @@ class MplusAnalysis(Analysis):
 
 
             self.loaded_from_data = saved_data
-
 
     @property
     def output_path(self):
@@ -64,7 +65,7 @@ class MplusAnalysis(Analysis):
 
         self.error_callback = error_callback
 
-        #self.paths.create_new_batch()
+        # self.paths.create_new_batch()
 
         self.progressMessage(
             "Beginning analysis job, output will be generated in %s" % self.paths.current_batch_path)
@@ -152,7 +153,6 @@ class MplusAnalysis(Analysis):
         if self.cancelling:
             return
 
-
         self.progressMessage("TOTAL TIME %f seconds" % (time.time() - start_time))
         return "Ran vectorized model. %i of %s failed" % (self.mplus_exec_errors, self.mplus_exec_count)
 
@@ -208,28 +208,27 @@ class MplusAnalysis(Analysis):
                     self.mplus_exec_count = count
 
                 if count > 0 and count % 1000 == 0:
-
                     seconds = time.time() - self.mplus_exec_start_time
                     rate = seconds / count
 
                     n = self.input.cifti_vector_size
                     remaining = (n - count) * rate / 60
-                    models_per_sec = count/seconds
+                    models_per_sec = count / seconds
                     self.progressMessage(
                         "Mplus Models executed: %i in %f seconds (%f models/sec).\n\tEstimated remaining time: %f minutes.\n\tMplus errors so far: %s" % (
                             self.mplus_exec_count, seconds, models_per_sec, remaining, errors_so_far))
                 self.mplus_exec_counterQueue.task_done()
 
         except Exception as ex:
-            #an exception is expected when the queue is empty and is usually not a problem but other exceptions are possible
+            # an exception is expected when the queue is empty and is usually not a problem but other exceptions are possible
 
             if type(ex) == queue.Empty:
                 self.progressMessage("Completed queue of MPlus model file execution.")
             else:
                 err_msg = "Exiting Queue Monitor. " + str(ex)
                 logging.error(err_msg)
-                self.progressMessage("Unexpected error processing MPlus model file queue, execution terminated early. %s" % err_msg)
-
+                self.progressMessage(
+                    "Unexpected error processing MPlus model file queue, execution terminated early. %s" % err_msg)
 
     def runMplusForSetOfVoxels(self, set_of_voxels):
 
@@ -304,7 +303,7 @@ class MplusAnalysis(Analysis):
 
         # todo safety check this in case of rogue yml input!
 
-        if len(model_output_file_path)==0:
+        if len(model_output_file_path) == 0:
             model_output_file_path = model_input_file_path + ".out"
 
         result = subprocess.run([self.config._data["MPlus_command"],
@@ -328,10 +327,10 @@ class MplusAnalysis(Analysis):
 
 
 
-#        save_data["batchOutputDir"] = self.batchOutputDir
+        #        save_data["batchOutputDir"] = self.batchOutputDir
 
     def process_load_data(self, load_data):
-        super(MplusAnalysis,self).process_load_data(load_data)
+        super(MplusAnalysis, self).process_load_data(load_data)
         # todo load all the attributes from the save file
         if "input_data_path" in load_data:
             self.input_data_path = load_data["input_data_path"]
@@ -345,7 +344,6 @@ class MplusAnalysis(Analysis):
                     # but json reads them in as lists to we are just converting each mapping from a list to a tuple here
                     self.voxelized_column_mappings[i] = tuple(self.voxelized_column_mappings[i])
 
-
         if "template" in load_data:
 
             self.template = models.mplus_template.MplusTemplate(load_data['template'])
@@ -356,14 +354,14 @@ class MplusAnalysis(Analysis):
             if "additional_rules" in load_data:
                 rules = load_data["additional_rules"]
                 for key, rule_data in rules.items():
-                    self.model.add_rule(rule_data[0],rule_data[1],rule_data[2])
+                    self.model.add_rule(rule_data[0], rule_data[1], rule_data[2])
 
         if "batchTitle" in load_data:
             self.batchTitle = load_data["batchTitle"]
 
         if "output_parameters" in load_data:
             self.output_parameters = load_data["output_parameters"]
-            if not type(self.output_parameters)==list:
+            if not type(self.output_parameters) == list:
                 self.output_parameters = []
 
     def addVoxelizedColumn(self, from_column_of_paths, to_new_column_name):
@@ -371,7 +369,7 @@ class MplusAnalysis(Analysis):
         if not t in self.voxelized_column_mappings:
             self.voxelized_column_mappings.append(t)
 
-        #keep the underlying model in sink
+        # keep the underlying model in sink
         self.updateModelVoxelizedList()
 
     def removeVoxelizedColumn(self, from_column_of_paths, to_new_column_name):
@@ -391,15 +389,14 @@ class MplusAnalysis(Analysis):
         """the mplus model has a separate list of which variable/columns have been voxelized for its internal functionality
         but this analysis class is the final source of truth for that info (to facillitate saving/loading).  this analysis class
         needs to make sure the underlying mplus model has the correct voxelization information"""
-        if hasattr(self,'model'):
+        if hasattr(self, 'model'):
             self.model.voxelized_column_names_in_order = self.voxelizedColumnNames()
 
     def updateModel(self, options, non_original_data_columnlist):
         self.updateModelVoxelizedList()
         return self.model.apply_options(options, non_original_data_columnlist)
 
-
-    def aggregate_results(self,batch_path="", n_elements = 0):
+    def aggregate_results(self, batch_path="", n_elements=0):
         """
         parse results out of the per-voxel output files and aggregate them into cifti files. it accepts a list
         of fields to extract from the outputs and there must be one Cifti instance provided per field as
@@ -420,7 +417,7 @@ class MplusAnalysis(Analysis):
             # rerun value extractions without recomputing the size of all ciftis.
             n_elements = 91282  # set to the default value
 
-        if len(batch_path)==0:
+        if len(batch_path) == 0:
             path_template = self.paths.batch_outputs_path("input.voxel%s.inp.out")
             extracted_csv_path = self.paths.batch_cifits_path(filename_for_extracted_csv)
         else:
@@ -437,15 +434,15 @@ class MplusAnalysis(Analysis):
 
         self.add_negative_log_p_values(results)
 
-        #note: currently all MPlus output numbers appear to have a maximum 3 significant digits of precision
-        #due to standard floating point issues the standard representation of numbers in floats is off by a tiny amount, i.e 10^-9, or so
-        #so when saving the values to csv we must round so we don't show that erroneous over-precision that is simply an artifact of
-        #floating point number representation. 
+        # note: currently all MPlus output numbers appear to have a maximum 3 significant digits of precision
+        # due to standard floating point issues the standard representation of numbers in floats is off by a tiny amount, i.e 10^-9, or so
+        # so when saving the values to csv we must round so we don't show that erroneous over-precision that is simply an artifact of
+        # floating point number representation.
         results.to_csv(extracted_csv_path, index=False, float_format='%.3f')
 
         self.generate_mask_ciftis(n_elements, override_batch_path=batch_path)
 
-        self.generate_ciftis_from_dataframe(results, override_batch_path= batch_path)
+        self.generate_ciftis_from_dataframe(results, override_batch_path=batch_path)
 
         return results
 
@@ -455,7 +452,7 @@ class MplusAnalysis(Analysis):
         for col in results_dataframe.columns:
             if "P-Value" in col:
                 try:
-                    #we had some p-values with value 0 which shouldn't happen!
+                    # we had some p-values with value 0 which shouldn't happen!
                     raw = results_dataframe[col].copy()
                     positives = raw > 0
                     raw[positives] = -np.log10(raw[positives])
@@ -464,8 +461,7 @@ class MplusAnalysis(Analysis):
                 except:
                     logging.error("Error computing negative log p values for " + col)
 
-
-    def generate_mask_ciftis(self, n_elements, override_batch_path = ""):
+    def generate_mask_ciftis(self, n_elements, override_batch_path=""):
         """we display voxel level errors and problems by generating 'mask' ciftis of 0's and 1s
         to allow easy filtering by the user in ConnectomeWorkbench
 
@@ -480,21 +476,18 @@ class MplusAnalysis(Analysis):
         e. per parameter/variable and type of warning/error
         """
 
-        #case 1: 1 if no problem at all (clean as a whistle), 0, if ANY problem.
+        # case 1: 1 if no problem at all (clean as a whistle), 0, if ANY problem.
         no_problem_vector = np.zeros(n_elements) + 1
         no_problem_vector[self.outputset.any_errors] = 0
 
-        masks = pd.DataFrame(no_problem_vector, columns = ["No_Problems"])
+        masks = pd.DataFrame(no_problem_vector, columns=["No_Problems"])
 
-
-
-        #case c. untrustworthy 1, 0 otherwise
+        # case c. untrustworthy 1, 0 otherwise
         untrustworthy_vector = np.zeros(n_elements)
-        untrustworthy_vector[self.outputset.untrustworthies]=1
+        untrustworthy_vector[self.outputset.untrustworthies] = 1
         masks["Untrustworthy"] = untrustworthy_vector
 
-        self.generate_ciftis_from_dataframe(masks, override_batch_path = override_batch_path)
+        self.generate_ciftis_from_dataframe(masks, override_batch_path=override_batch_path)
 
-
-    def removeBatch(self,path):
+    def removeBatch(self, path):
         shutil.rmtree(path)

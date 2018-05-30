@@ -75,7 +75,7 @@ class MplusModel():
             key_order.append(key)
         self.key_order = key_order
         self.mplus_data = mplus_data
-        self.template_MODEL_section = mplus_data.get("MODEL","")
+        self.template_MODEL_section = mplus_data.get("MODEL", "")
 
     @property
     def title(self):
@@ -219,7 +219,7 @@ class MplusModel():
             else:
                 print("was already in voxelized columns")
 
-        #save the actual parameters for reuse after reloading from saved file
+        # save the actual parameters for reuse after reloading from saved file
         self.additional_rule_save_data[new_rule_text] = [fields_from, operator, fields_to]
 
     def remove_rule_by_string(self, rule_as_string):
@@ -269,8 +269,6 @@ class MplusModel():
 
         return all_results_df
 
-
-
     def aggregate_results_by_line_number(self, n_elements, path_template, line_matching_info):
         """
         parse results out of the per-voxel output files and aggregate them into cifti files. it accepts a list
@@ -283,9 +281,9 @@ class MplusModel():
         :return: a pandas data frame with the extracted values from the mplus output files
         """
         if n_elements == 0:
-                #todo this override is not a great compromise but is making it easier to 
-                #rerun value extractions without recomputing the size of all ciftis. 
-                n_elements = 91282 #set to the default value
+            # todo this override is not a great compromise but is making it easier to
+            # rerun value extractions without recomputing the size of all ciftis.
+            n_elements = 91282  # set to the default value
         all_found_results = np.zeros((n_elements, len(line_matching_info)), dtype=np.float32)
         all_found_results[:] = np.nan
 
@@ -297,10 +295,10 @@ class MplusModel():
                 # todo how to handle NA's if field not found in results?
                 value = results[name]
                 all_found_results[i, j] = value
-        
+
         column_names = [m[2] for m in line_matching_info]
         all_results_df = pd.DataFrame(all_found_results, columns=column_names)
-        
+
         return all_results_df
 
     def parse_mplus_results(self, path, look_for_fields=[]):
@@ -357,7 +355,7 @@ class MplusModel():
                     except:
                         value = -999
                         err_msg = "Error extracting number for line %d of %s. Expected: \n%s, found: \n%s" % (
-                        line_number, path, sample_line, line)
+                            line_number, path, sample_line, line)
                         logging.error(err_msg)
 
                         # raise ValueError(err_msg)
@@ -370,7 +368,7 @@ class MplusModel():
                     tries += 1
             if not found:
                 err_msg = "Mplus Output File Line %d in file %s in unexpected shape. Expected: \n%s, found: \n%s" % (
-                line_number, path, sample_line, line)
+                    line_number, path, sample_line, line)
                 logging.error(err_msg)
                 values[output_name] = -888
                 # raise ValueError(err_msg)

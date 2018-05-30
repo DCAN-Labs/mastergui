@@ -7,6 +7,7 @@ INPUTS_DIRNAME = "inputs"
 OUTPUTS_DIRNAME = "outputs"
 CIFITS_DIRNAME = "ciftis"
 
+
 class Paths():
     def __init__(self, analysis_root_output_dir):
         self.root = analysis_root_output_dir
@@ -14,14 +15,14 @@ class Paths():
 
     @property
     def batches_dir(self):
-        return os.path.join(self.root,BATCHES_DIRNAME)
+        return os.path.join(self.root, BATCHES_DIRNAME)
 
     def batches(self):
 
         p = self.batches_dir
 
         if os.path.exists(p):
-            return [d for d in os.listdir(p) if os.path.isdir(os.path.join(p,d))]
+            return [d for d in os.listdir(p) if os.path.isdir(os.path.join(p, d))]
         else:
             return []
 
@@ -35,9 +36,10 @@ class Paths():
                 os.mkdir(p)
                 return True
             except Exception as e:
-                raise ValueError("Unable to create required 'batches' subdirectory in your choosen output directory %s for this analysis. Check your permissions." % s)
+                raise ValueError(
+                    "Unable to create required 'batches' subdirectory in your choosen output directory %s for this analysis. Check your permissions." % s)
 
-    #@property
+    # @property
     # def batch_output_dir(self):
     #     return os.path.join(self.batches_dir, self.current_batch_name,OUTPUTS_DIRNAME)
     #
@@ -51,10 +53,10 @@ class Paths():
 
     @property
     def current_batch_path(self):
-        return os.path.join(self.batches_dir,self.current_batch_name)
+        return os.path.join(self.batches_dir, self.current_batch_name)
 
     def path_for_batch_name(self, batch_name):
-        return os.path.join(self.batches_dir,batch_name)
+        return os.path.join(self.batches_dir, batch_name)
 
     def create_new_batch(self):
         if self.confirm_batches_dir():
@@ -68,7 +70,7 @@ class Paths():
             if len(CIFITS_DIRNAME) > 0:
                 os.mkdir(self.batch_cifits_path())
 
-    def batch_inputs_path(self, filename = ""):
+    def batch_inputs_path(self, filename=""):
         """
                 Uses the settings for this analysis, standard folder structure, and current batch title to
                 construct the path for inputs to the underlying analysis program  to go
@@ -78,7 +80,7 @@ class Paths():
                 """
         return os.path.join(self.current_batch_path, INPUTS_DIRNAME, filename)
 
-    def batch_outputs_path(self, filename = ""):
+    def batch_outputs_path(self, filename=""):
         """
         Uses the settings for this analysis, standard folder structure, and current batch title to
         construct the path for outputs that the underlying analysis program generates to go
@@ -88,8 +90,8 @@ class Paths():
         """
         return os.path.join(self.current_batch_path, OUTPUTS_DIRNAME, filename)
 
-    def batch_cifits_path(self, filename = "", override_batch_path = ""):
-        if len(override_batch_path)==0:
+    def batch_cifits_path(self, filename="", override_batch_path=""):
+        if len(override_batch_path) == 0:
             batch_path = self.current_batch_path
         else:
             batch_path = override_batch_path
