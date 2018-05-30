@@ -16,7 +16,7 @@ from views.view_utilities import *
 
 
 class ColumnChooser(QWidget):
-    def __init__(self, input_spreadsheet, default_value=None, checkable = True):
+    def __init__(self, input_spreadsheet, default_value=None, checkable=True):
         super(ColumnChooser, self).__init__()
         self.checkable = checkable
         self.default_value = default_value

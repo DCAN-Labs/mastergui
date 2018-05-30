@@ -17,7 +17,7 @@ from views.widgets.column_chooser import *
 
 
 class ColumnChooserDialog(QDialog):
-    def __init__(self, input_spreadsheet, checkable = True):
+    def __init__(self, input_spreadsheet, checkable=True):
         super(ColumnChooserDialog, self).__init__()
         self.checkable = checkable
         self.input_spreadsheet = input_spreadsheet
@@ -28,7 +28,7 @@ class ColumnChooserDialog(QDialog):
 
         layout = QVBoxLayout()
 
-        self.chooser = ColumnChooser(self.input_spreadsheet, checkable = self.checkable)
+        self.chooser = ColumnChooser(self.input_spreadsheet, checkable=self.checkable)
         #        layout.addWidget(radio_group)
         layout.addWidget(self.chooser)
 
@@ -38,8 +38,8 @@ class ColumnChooserDialog(QDialog):
         self.setLayout(layout)
 
     def validate(self):
-        #if your subclass needs validation logic when the user hits ok
-        #override this method in the subclass
+        # if your subclass needs validation logic when the user hits ok
+        # override this method in the subclass
         return True
 
     def on_click_ok(self):

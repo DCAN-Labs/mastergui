@@ -1,11 +1,12 @@
 from PyQt5.QtWidgets import *
 from views.widgets.addremove_buttonbar import *
 
+
 class ColumnList(QWidget):
     """displays a list with a title above and a add/remove buttons at the bottom of it,
     generally used in this app for displaying columns of non-imaging data but can be used for any sort of list"""
 
-    def __init__(self, caption, on_click_add = None, on_click_remove = None, checkable = True):
+    def __init__(self, caption, on_click_add=None, on_click_remove=None, checkable=True):
         """
         :param caption: displays as a bold title heading over the list
         """
@@ -28,7 +29,6 @@ class ColumnList(QWidget):
         list = QListView()
         list.setModel(model)
         self.columnListWidget = list
-
 
         layout.addWidget(list)
 
@@ -72,7 +72,7 @@ class ColumnList(QWidget):
     def selectedRow(self):
         m = self.columnListWidget.model()
         idx = self.columnListWidget.selectedIndexes()
-        if len(idx)>0:
+        if len(idx) > 0:
             return m.itemFromIndex(idx[0]).text()
 
         return None

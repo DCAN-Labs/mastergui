@@ -10,6 +10,7 @@ from views.widgets.combobox import *
 
 cifti_radio_button_index = 2
 
+
 class OutputBrowserWidget(QWidget):
     def __init__(self, parentAnalysisWidget):
         super(OutputBrowserWidget, self).__init__()
@@ -22,8 +23,7 @@ class OutputBrowserWidget(QWidget):
     def initUI(self):
         layout = QVBoxLayout()
 
-        output_path_descriptor = [("label","Output Directory:") , ("line",), ("button","Change")]
-
+        output_path_descriptor = [("label", "Output Directory:"), ("line",), ("button", "Change")]
 
         outputPathLayout, outputPathWidgets = util.createHLineFromTemplate(output_path_descriptor)
 
@@ -36,15 +36,13 @@ class OutputBrowserWidget(QWidget):
         self.outputDirWidget.returnPressed.connect(self.on_click_refresh)
         self.outputDirWidget.setFixedWidth(500)
 
-
-        self.batchDropDown = ComboBox(on_change = self.on_batch_row_changed)
+        self.batchDropDown = ComboBox(on_change=self.on_batch_row_changed)
 
         frm = QFormLayout()
 
-
         batchDeleteBtn = QPushButton("Delete Batch")
         batchDeleteBtn.clicked.connect(self.on_click_delete_batch)
-        frm.addRow("Output Directory:",util.createHLineFromWidgets([self.outputDirWidget,change_output_path_button]) )
+        frm.addRow("Output Directory:", util.createHLineFromWidgets([self.outputDirWidget, change_output_path_button]))
 
         frm.addRow("Batches:", util.createHLineFromWidgets([self.batchDropDown, batchDeleteBtn]))
 
@@ -53,7 +51,6 @@ class OutputBrowserWidget(QWidget):
         self.exploreLayout = exploreLayout
 
         frm.addRow(self.createRadioButtons())
-
 
         self.fileViewer = QTextEdit()
         self.fileViewer.setReadOnly(True)
@@ -74,20 +71,19 @@ class OutputBrowserWidget(QWidget):
         pathLine = QHBoxLayout()
         self.pathWidget = QLineEdit()
         self.pathWidget.setReadOnly(True)
-        pathLine.addWidget(QLabel("Path:"), stretch = 1 )
-        pathLine.addWidget(self.pathWidget, stretch = 50)
-        #make the path transparent background
+        pathLine.addWidget(QLabel("Path:"), stretch=1)
+        pathLine.addWidget(self.pathWidget, stretch=50)
+        # make the path transparent background
         self.pathWidget.setStyleSheet("background-color:rgba(0,0,0,0);border:None")
         layout.addLayout(pathLine)
         self.setLayout(layout)
 
         self.pattern = ""
 
-
     def on_click_delete_batch(self):
         path = self.selected_batch_path
         prompt = "Are you SURE you want to delete the entire batch %s  (All mplus inputs, outputs, and generated results such as ciftis will be irrevocably deleted)?" % path
-        choice = QMessageBox.question(self,"Delete?",prompt, QMessageBox.Yes | QMessageBox.No)
+        choice = QMessageBox.question(self, "Delete?", prompt, QMessageBox.Yes | QMessageBox.No)
         if choice == QMessageBox.Yes:
             try:
                 self.analysis.removeBatch(path)
@@ -108,7 +104,7 @@ class OutputBrowserWidget(QWidget):
         exploreLayout.addWidget(self.fileViewer, stretch=5)
 
     def initDetailUISpecific(self, exploreLayout):
-        #for subclasses to override if necessary
+        # for subclasses to override if necessary
         return
 
     def createRadioButtons(self):
@@ -117,7 +113,8 @@ class OutputBrowserWidget(QWidget):
         sep = os.path.sep
         suffix = sep + "*.*"
 
-        self.patterns = [paths.INPUTS_DIRNAME + suffix,paths.OUTPUTS_DIRNAME + suffix, paths.CIFITS_DIRNAME + sep + "*.nii"]
+        self.patterns = [paths.INPUTS_DIRNAME + suffix, paths.OUTPUTS_DIRNAME + suffix,
+                         paths.CIFITS_DIRNAME + sep + "*.nii"]
 
         group = QButtonGroup()
         groupWidget = QWidget()
@@ -127,22 +124,19 @@ class OutputBrowserWidget(QWidget):
 
         layout.addWidget(self.patternLabel)
 
-
         idx = 0
         for i in range(len(labels)):
             label = labels[i]
             btn = QRadioButton(label)
-            if i==1:
+            if i == 1:
                 btn.setChecked(True)
 
             group.addButton(btn, idx)
             layout.addWidget(btn)
             idx += 1
 
-
-
         groupWidget.setLayout(layout)
-        #groupWidget.setFixedWidth(400)
+        # groupWidget.setFixedWidth(400)
         group.buttonClicked.connect(self.on_pattern_btn_clicked)
         self.patternButtonGroup = group
 
@@ -167,7 +161,7 @@ class OutputBrowserWidget(QWidget):
         pattern = self.patterns[selected_id]
         self.patternWidget.setText(pattern)
 
-        self.ciftiButtion.setVisible(selected_id==cifti_radio_button_index)
+        self.ciftiButtion.setVisible(selected_id == cifti_radio_button_index)
 
         if selected_id == cifti_radio_button_index:
             if self.fileViewer.isVisible():
@@ -175,13 +169,12 @@ class OutputBrowserWidget(QWidget):
         elif not self.fileViewer.isVisible():
             self.fileViewer.setVisible(True)
 
-        #self.fileViewer.setVisible(selected_id != cifti_radio_button_index)
+        # self.fileViewer.setVisible(selected_id != cifti_radio_button_index)
 
         self.on_click_refresh()
 
-
     def on_click_refresh(self):
-        self.last_selected_path  = ""
+        self.last_selected_path = ""
         self.refreshFiles()
         self.refreshBatches()
 
@@ -199,13 +192,13 @@ class OutputBrowserWidget(QWidget):
         self.loadOutputFiles(path)
 
     def refreshBatches(self):
-        if hasattr(self.parentAnalysisWidget,"analysis"):
+        if hasattr(self.parentAnalysisWidget, "analysis"):
             batches = self.parentAnalysisWidget.analysis.batches()
             self.batchDropDown.update(batches)
 
     def on_click_opencifti(self):
         if hasattr(self, "last_selected_path"):
-            if len(self.last_selected_path)>0:
+            if len(self.last_selected_path) > 0:
                 self.parentAnalysisWidget.launchWorkbench(self.last_selected_path)
 
     def loadOutputFiles(self, path_pattern):
@@ -236,7 +229,6 @@ class OutputBrowserWidget(QWidget):
         self.last_selected_path = path
 
         if not self.ciftiButtion.isVisible():
-
             with open(path, 'r') as f:
                 contents = f.readlines()
 

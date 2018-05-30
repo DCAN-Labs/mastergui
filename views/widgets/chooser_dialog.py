@@ -21,13 +21,13 @@ class ChooserDialog(QDialog):
         super(ChooserDialog, self).__init__()
         self.data = data
         self.initUI()
-#        self.loadColumns()
+
+    #        self.loadColumns()
 
     def initUI(self):
-
         layout = QVBoxLayout()
 
-        self.chooser = Chooser(self.data, checkable = False)
+        self.chooser = Chooser(self.data, checkable=False)
         #        layout.addWidget(radio_group)
         layout.addWidget(self.chooser)
 
@@ -45,12 +45,11 @@ class ChooserDialog(QDialog):
         self.close()
 
 
-   # def loadColumns(self):
+        # def loadColumns(self):
 
-        #self.addColumnNamesToListView(self.columnListWidget, self.data)
+        # self.addColumnNamesToListView(self.columnListWidget, self.data)
 
     def addColumnNamesToListView(self, listView, columnNames):
-
         model = listView.model()
 
         model.clear()

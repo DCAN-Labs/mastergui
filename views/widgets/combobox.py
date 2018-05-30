@@ -16,7 +16,7 @@ from views.view_utilities import *
 
 
 class ComboBox(QComboBox):
-    def __init__(self, data=[], initial_value="", on_change = None):
+    def __init__(self, data=[], initial_value="", on_change=None):
         super(ComboBox, self).__init__()
         self.data = data
 
@@ -24,17 +24,16 @@ class ComboBox(QComboBox):
         self.setValue(initial_value)
         if on_change:
             self.currentTextChanged.connect(on_change)
-        #self.setMinimumWidth(200)
+            # self.setMinimumWidth(200)
 
     def loadColumns(self):
         old_value = self.currentText()
         self.clear()
 
-
         for col in self.data:
             self.addItem(col)
 
-        if len(old_value)>0:
+        if len(old_value) > 0:
             idx = self.findText(old_value)
             if idx >= 0:
                 self.setCurrentIndex(idx)

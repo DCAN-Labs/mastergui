@@ -13,6 +13,7 @@ import traceback
 import time
 from views.workers import *
 
+
 class FconnanovaAnalysisWindow(AnalysisWindow):
     def __init__(self, config):
 
@@ -39,8 +40,6 @@ class FconnanovaAnalysisWindow(AnalysisWindow):
             self.fileName = fileName
             self.open_input_file(fileName)
 
-
-
     def initUISpecific(self):
         """
         This method is invoked by the base class upon initial loading and should contain the GUI
@@ -60,7 +59,6 @@ class FconnanovaAnalysisWindow(AnalysisWindow):
         self.tabs.setCurrentIndex(0)
 
         self.progress = QProgressBar()
-
 
     def initExecAnalysisWidget(self):
         self.execAnalysisWidget = QWidget()
@@ -117,9 +115,6 @@ class FconnanovaAnalysisWindow(AnalysisWindow):
 
         self.addInputColumnNamesToListViews()
 
-
-
-
     def launchWorkbench(self, cifti_output_path):
         try:
             views.workbench_launcher.launch(self.config, cifti_output_path)
@@ -156,7 +151,7 @@ class FconnanovaAnalysisWindow(AnalysisWindow):
                                                       progress_callback=progress_callback,
                                                       error_callback=error_callback)
 
-        #finished_callback.emit()  this is called when the worker completes automatically
+        # finished_callback.emit()  this is called when the worker completes automatically
 
         return "Done."
 
@@ -186,7 +181,7 @@ class FconnanovaAnalysisWindow(AnalysisWindow):
         self.threadpool = QThreadPool()
         print("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount())
 
-        #self.updateGeneratedMPlusInputFile()  #this probably shouldn't be here
+        # self.updateGeneratedMPlusInputFile()  #this probably shouldn't be here
 
         self.modelOutput.setText("Starting Analysis...")
 
@@ -196,7 +191,7 @@ class FconnanovaAnalysisWindow(AnalysisWindow):
 
         self.model.title = self.analysis.batchTitle
 
-        self.outputViewer.loadOutputFiles(self.analysis.batchOutputDir,"*.inp.out")
+        self.outputViewer.loadOutputFiles(self.analysis.batchOutputDir, "*.inp.out")
 
         worker = Worker(self.runAnalysisBackgroundWorker)  # Any other args, kwargs are passed to the run function
 

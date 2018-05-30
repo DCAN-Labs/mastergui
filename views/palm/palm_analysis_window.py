@@ -14,6 +14,7 @@ import traceback
 import time
 from views.workers import *
 
+
 class PalmAnalysisWindow(AnalysisWindow):
     def __init__(self, config):
 

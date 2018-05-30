@@ -19,7 +19,7 @@ from views.mplus.mplus_postprocessing_options import *
 from views.workers import *
 from views.widgets import *
 from views.mplus import *
-#from views.mplus.mplus_output_selector import *
+# from views.mplus.mplus_output_selector import *
 
 import views.mplus.output_chooser_dialog
 
@@ -122,36 +122,33 @@ class MplusAnalysisWindow(AnalysisWindow):
 
         [self.tabs.setTabEnabled(i, False) for i in range(1, self.tabs.count())]
 
-
     def initOutputTab(self):
 
         self.outputViewer = MplusOutputSelector(self)
 
-        self.addTab(self.outputViewer,"Output")
-
+        self.addTab(self.outputViewer, "Output")
 
     def onTabChanged(self, p_int):
         # print("tab select %d " % p_int)
         if p_int == tab_modelbuilder:
             self.modelBuilder.refresh()
-        #elif p_int == tab_modelbuilder:
+        # elif p_int == tab_modelbuilder:
         #    self.dataPreview.update_selected_checks_from_analysis(self.model)
         elif p_int == tab_execute:
             self.outputViewer.on_click_refresh()
-        #elif p_int == tab_outputselector:
-        #    self.outputSelector.on_click_refresh()
+            # elif p_int == tab_outputselector:
+            #    self.outputSelector.on_click_refresh()
 
     def initOutputTabs(self):
 
         self.outputTabs = QTabWidget()
 
-        self.outputTabs.addTab(self.modelOutput,"Status")
-        #self.outputViewer = MplusOutputSelector(self)
-        #self.outputTabs.addTab(self.outputViewer, "Output")
+        self.outputTabs.addTab(self.modelOutput, "Status")
+        # self.outputViewer = MplusOutputSelector(self)
+        # self.outputTabs.addTab(self.outputViewer, "Output")
 
-        #self.outputSelector = MplusOutputSelector(self)
-        #self.outputTabs.addTab(self.outputSelector, "Output Value Selector")
-
+        # self.outputSelector = MplusOutputSelector(self)
+        # self.outputTabs.addTab(self.outputSelector, "Output Value Selector")
 
     def initModelBuilder(self):
         """
@@ -216,7 +213,6 @@ class MplusAnalysisWindow(AnalysisWindow):
 
         self.initTestAnalysisFrame(command_bar)
 
-
         command_box = QVBoxLayout()
 
         self.chkAutoLaunchWorkbench = QCheckBox("Launch Workbench When Complete")
@@ -232,7 +228,7 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.outputParameterChoiceList = ColumnList("Output Parameters",
                                                     self.on_click_add_output_parameter,
                                                     self.on_click_remove_output_parameter,
-                                                    checkable = False)
+                                                    checkable=False)
         self.outputParameterChoiceList.setFixedHeight(150)
 
         command_bar.addWidget(self.outputParameterChoiceList)
@@ -255,7 +251,8 @@ class MplusAnalysisWindow(AnalysisWindow):
             if c.selection:
                 self.addOutputParameter(c.selection)
         else:
-            util.alert("Sample output not found. Run Test Analysis first so that you have some sample Mplus output from which you can choose columns.")
+            util.alert(
+                "Sample output not found. Run Test Analysis first so that you have some sample Mplus output from which you can choose columns.")
 
     def on_click_remove_output_parameter(self):
         value = self.outputParameterChoiceList.selectedRow()
@@ -263,7 +260,6 @@ class MplusAnalysisWindow(AnalysisWindow):
             if value in self.analysis.output_parameters:
                 self.analysis.output_parameters.remove(value)
         self.loadOutputParameterChoices()
-
 
     def loadOutputParameterChoices(self):
 
@@ -346,11 +342,10 @@ class MplusAnalysisWindow(AnalysisWindow):
 
             self.model = self.analysis.model
 
-            if hasattr(self.analysis,"model"):
+            if hasattr(self.analysis, "model"):
 
-
-               # self.open_mplus_model_raw(raw_mplus_model_text)
-                #self.onSelectTemplate(self.analysis.template)
+                # self.open_mplus_model_raw(raw_mplus_model_text)
+                # self.onSelectTemplate(self.analysis.template)
                 self.hideTemplateChoiceDisplay()
 
                 self.modelBuilder.loadAnalysis(self.analysis, self)
@@ -365,7 +360,6 @@ class MplusAnalysisWindow(AnalysisWindow):
 
             if "output_dir" in saved_state:
                 self.outputViewer.setOutputDir(saved_state["output_dir"])
-
 
             self.outputViewer.refreshBatches()
 
@@ -415,7 +409,7 @@ class MplusAnalysisWindow(AnalysisWindow):
             self.appendTextToOutputDisplay(msg)
         else:
 
-            #todo this might be redundant, probably already extracted
+            # todo this might be redundant, probably already extracted
             self.outputViewer.extract()
 
             if len(cifti_output_path) > 0 and not self.cancelling:
@@ -452,7 +446,6 @@ class MplusAnalysisWindow(AnalysisWindow):
         self.outputViewer.refreshBatches()
 
         self.model.title = self.analysis.batchTitle
-
 
         self.analysis.limit_by_row = limit_by_row
         self.analysis.limit_by_voxel = limit_by_voxel

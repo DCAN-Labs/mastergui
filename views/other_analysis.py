@@ -14,7 +14,6 @@ import time
 
 class OtherAnalysisWindow(AnalysisWindow):
     def __init__(self, config):
-
         self.title = "Other Analysis (Demo)"
         self.analyzerName = "other"
         super(OtherAnalysisWindow, self).__init__(config)

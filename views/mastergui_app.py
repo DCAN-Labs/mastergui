@@ -37,10 +37,12 @@ def init_logging(config):
     ch.setFormatter(formatter)
 
 
-#extra "ugly" error messages with diagnostics info that ultimately we won't want to subject
-#end users to but are useful during development
+# extra "ugly" error messages with diagnostics info that ultimately we won't want to subject
+# end users to but are useful during development
 
 debug_mode = True
+
+
 # https://riverbankcomputing.com/pipermail/pyqt/2009-May/022961.html
 def excepthook(excType, excValue, tracebackobj):
     """
@@ -66,6 +68,7 @@ def excepthook(excType, excValue, tracebackobj):
     errorbox = QMessageBox()
     errorbox.setText(user_facing_notice)
     errorbox.exec_()
+
 
 # global exception handler, usually disabled during development but should be enabled in production
 sys.excepthook = excepthook
@@ -207,8 +210,8 @@ class MasterGuiApp(QMainWindow):
         self.new_mplus_analysis()
 
     def new_mplus_analysis(self, analysis=None):
-        #optional variable analysis.  if an existing analysis model instance is not provided,
-        #a new one will be created for you withing the MplusAnalysisWindow
+        # optional variable analysis.  if an existing analysis model instance is not provided,
+        # a new one will be created for you withing the MplusAnalysisWindow
         analysis_window = MplusAnalysisWindow(self.config, analysis)
 
         self.displayNewAnalysis(analysis_window)

@@ -18,7 +18,7 @@ from views.widgets.chooser_dialog import *
 from views.widgets.chooser import *
 from models.mplus.output_parser import *
 
-#from views.mplus import *
+# from views.mplus import *
 import views.mplus.output_chooser_dialog
 
 
@@ -31,7 +31,6 @@ class OutputChooserDialog(ChooserDialog):
         self.selection = None
         self.showModally()
 
-
     def readOutputFile(self, path_to_mplus_output):
         try:
             mp = MplusOutput(path_to_mplus_output)
@@ -39,9 +38,7 @@ class OutputChooserDialog(ChooserDialog):
         except:
             util.alert("Error opening MPlus Output file %s" % path_to_mplus_output)
 
-
     def on_click_ok(self):
         self.selection = self.chooser.selectedRow()
         # todo implement
         self.close()
-

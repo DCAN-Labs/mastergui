@@ -19,7 +19,7 @@ from views.widgets.column_chooser_dialog import *
 
 class VoxelizerDialog(ColumnChooserDialog):
     def __init__(self, input_spreadsheet):
-        super(VoxelizerDialog, self).__init__(input_spreadsheet, checkable = False)
+        super(VoxelizerDialog, self).__init__(input_spreadsheet, checkable=False)
         self.initMoreUI()
 
     def initMoreUI(self):
@@ -48,9 +48,10 @@ class VoxelizerDialog(ColumnChooserDialog):
     def validate(self):
         """overriding the default method to require that the user entered a name for their voxel"""
         t = self.new_name_widget.text()
-        if len(t)>0:
+        if len(t) > 0:
             if t in self.input_spreadsheet.columnnames():
-                util.alert("'%s' is a name of a column in the existing data, please provide a different unique name" % t)
+                util.alert(
+                    "'%s' is a name of a column in the existing data, please provide a different unique name" % t)
             else:
                 return True
         else:

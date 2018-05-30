@@ -16,9 +16,9 @@ from views.view_utilities import *
 from views.widgets.column_chooser import *
 from models.post_processing import *
 
-class MPlusPostProcessingOptionsEditor(QDialog):
-    def __init__(self,config, pp_command_name, path_to_cifti):
 
+class MPlusPostProcessingOptionsEditor(QDialog):
+    def __init__(self, config, pp_command_name, path_to_cifti):
         super(MPlusPostProcessingOptionsEditor, self).__init__()
 
         self.pp = PostProcessing(config)
@@ -30,7 +30,6 @@ class MPlusPostProcessingOptionsEditor(QDialog):
         self.initUI()
 
     def initUI(self):
-
         layout = QVBoxLayout()
 
         self.text = QTextEdit()
@@ -45,8 +44,8 @@ class MPlusPostProcessingOptionsEditor(QDialog):
         self.setLayout(layout)
 
     def validate(self):
-        #if your subclass needs validation logic when the user hits ok
-        #override this method in the subclass
+        # if your subclass needs validation logic when the user hits ok
+        # override this method in the subclass
         return True
 
     def on_click_ok(self):

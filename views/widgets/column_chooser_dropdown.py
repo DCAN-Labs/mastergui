@@ -42,7 +42,7 @@ class ColumnChooserDropDown(QComboBox):
         for col in columns:
             self.addItem(col)
 
-        if len(old_value)>0:
+        if len(old_value) > 0:
             idx = self.findText(old_value)
             if idx >= 0:
                 self.setCurrentIndex(idx)

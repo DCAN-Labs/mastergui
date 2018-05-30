@@ -14,6 +14,7 @@ import sys
 
 output_radio_button_index = 1
 
+
 class MplusOutputSelector(OutputBrowserWidget):
     def __init__(self, parentAnalysisWidget):
         super(MplusOutputSelector, self).__init__(parentAnalysisWidget)
@@ -30,21 +31,22 @@ class MplusOutputSelector(OutputBrowserWidget):
         self.selectableOutput.setVisible(False)
         exploreLayout.addWidget(self.selectableOutput, stretch=5)
 
-    #todo planned UI refactor to move these output parameter and post processing options to the Output tab
-   #     self.outputParameterChoiceList = ColumnList("Output Parameters",
-   #                                                 self.on_click_add_output_parameter,
-   #                                                 self.on_click_remove_output_parameter,
-   #                                                 checkable=False)
-   #     self.outputParameterChoiceList.setFixedHeight(150)
+        # todo planned UI refactor to move these output parameter and post processing options to the Output tab
+        #     self.outputParameterChoiceList = ColumnList("Output Parameters",
+        #                                                 self.on_click_add_output_parameter,
+        #                                                 self.on_click_remove_output_parameter,
+        #                                                 checkable=False)
+        #     self.outputParameterChoiceList.setFixedHeight(150)
 
-   #     self.addWidget(self.outputParameterChoiceList)
+        #     self.addWidget(self.outputParameterChoiceList)
 
-        self.postProcessingOptions = MPlusPostProcessingOptions(self.parentAnalysisWidget.config, self.get_selected_file_path)
-        self.postProcessingOptions.setVisible(False) #this is only shown when Ciftis are being shown
+        self.postProcessingOptions = MPlusPostProcessingOptions(self.parentAnalysisWidget.config,
+                                                                self.get_selected_file_path)
+        self.postProcessingOptions.setVisible(False)  # this is only shown when Ciftis are being shown
         exploreLayout.addWidget(self.postProcessingOptions)
 
     def get_selected_file_path(self):
-        if hasattr(self,'last_selected_path'):
+        if hasattr(self, 'last_selected_path'):
             return self.last_selected_path
         else:
             return ""
@@ -70,7 +72,7 @@ class MplusOutputSelector(OutputBrowserWidget):
             self.addValuesToList(self.selectableOutput, contents)
             # self.fileViewer.setText("".join(contents))
         else:
-            super(MplusOutputSelector,self).on_file_row_changed(current, previous)
+            super(MplusOutputSelector, self).on_file_row_changed(current, previous)
 
     def is_number(self, word):
         try:
@@ -111,8 +113,8 @@ class MplusOutputSelector(OutputBrowserWidget):
         pattern = self.patterns[selected_id]
         self.patternWidget.setText(pattern)
 
-        #some commands only make sense when ciftis are available
-        show_cifti_options = selected_id==cifti_radio_button_index
+        # some commands only make sense when ciftis are available
+        show_cifti_options = selected_id == cifti_radio_button_index
         self.ciftiButtion.setVisible(show_cifti_options)
         self.postProcessingOptions.setVisible(show_cifti_options)
 
@@ -131,10 +133,9 @@ class MplusOutputSelector(OutputBrowserWidget):
             if not self.fileViewer.isVisible():
                 self.fileViewer.setVisible(True)
 
-        #self.fileViewer.setVisible(selected_id != cifti_radio_button_index)
+        # self.fileViewer.setVisible(selected_id != cifti_radio_button_index)
 
         self.on_click_refresh()
-
 
     def on_click_extract(self):
         self.extract(True)
@@ -142,7 +143,7 @@ class MplusOutputSelector(OutputBrowserWidget):
 
     def on_click_chooseparameters(self):
 
-        if hasattr(self,'last_selected_output_file_path'):
+        if hasattr(self, 'last_selected_output_file_path'):
 
             c = OutputChooserDialog(self.last_selected_output_file_path)
 
@@ -153,7 +154,7 @@ class MplusOutputSelector(OutputBrowserWidget):
     def analysis(self):
         return self.parentAnalysisWidget.analysis
 
-    def extract(self, use_currently_viewed_batch = False):
+    def extract(self, use_currently_viewed_batch=False):
         try:
             analysis = self.analysis
 
@@ -168,9 +169,9 @@ class MplusOutputSelector(OutputBrowserWidget):
                     cifti_vector_size = 0
 
             if use_currently_viewed_batch:
-                results = analysis.aggregate_results(batch_path = self.selected_batch_path, n_elements=cifti_vector_size)
+                results = analysis.aggregate_results(batch_path=self.selected_batch_path, n_elements=cifti_vector_size)
             else:
-                results = analysis.aggregate_results(n_elements = cifti_vector_size)
+                results = analysis.aggregate_results(n_elements=cifti_vector_size)
 
             self.showextractionwarnings(analysis.outputset)
 
@@ -178,41 +179,38 @@ class MplusOutputSelector(OutputBrowserWidget):
             self.parentAnalysisWidget.alert(sys.exc_info()[1])
             return
 
-    def showextractionwarnings(self,outputset):
+    def showextractionwarnings(self, outputset):
 
         msg = "\nExtraction Errors And Warnings\n\n"
 
         msg += "Mplus Outputs with Any Error: %d\n" % len(outputset.any_errors)
-        if len(outputset.any_errors)>0:
+        if len(outputset.any_errors) > 0:
             msg += "\tExamples: %s\n" % str(outputset.any_errors[:10])
 
         msg += "\nWarnings:\n"
         warning_counts = outputset.warning_counts
 
+        for k, v in warning_counts.items():
+            msg += "%d instances of %s\n" % (v, k)
 
-        for k,v in warning_counts.items():
-            msg += "%d instances of %s\n" % (v,k)
-
-        msg+="Counts of Missing Keys:\n"
+        msg += "Counts of Missing Keys:\n"
 
         for k, v in outputset.not_found_counts.items():
             msg += "%d instances of %s\n not found\n" % (v, k)
 
-
         ntv = outputset.not_terminated_voxels
-        if len(ntv)==0:
-            msg+="\nAll models 'terminated normally'\n"
+        if len(ntv) == 0:
+            msg += "\nAll models 'terminated normally'\n"
         else:
-            msg+="\n%d models did not terminate normally\n" % len(ntv)
-            msg+="\tExamples: %s\n" % str(ntv[:10])
-
+            msg += "\n%d models did not terminate normally\n" % len(ntv)
+            msg += "\tExamples: %s\n" % str(ntv[:10])
 
         tw = outputset.termination_warnings
-        if len(tw)==0:
-            msg+="\nNo termination warnings among the models that 'terminated normally'\n"
+        if len(tw) == 0:
+            msg += "\nNo termination warnings among the models that 'terminated normally'\n"
         else:
-            msg+="\nModel termination warnings among those that 'terminated normally':\n"
+            msg += "\nModel termination warnings among those that 'terminated normally':\n"
             for warn, ids in tw.items():
-                msg+="\n\t%d examples of:\n\t%s\n" % (len(ids),warn)
+                msg += "\n\t%d examples of:\n\t%s\n" % (len(ids), warn)
                 msg += "\n\tExamples: %s\n" % str(ids[:10])
         self.parentAnalysisWidget.appendTextToOutputDisplay(msg)

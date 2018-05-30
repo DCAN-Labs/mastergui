@@ -50,7 +50,7 @@ class MplusModelBuilder(QWidget):
 
         self.loadVariables()
 
-        util.addButton("Apply", self.left_panel.layout(), self.on_click_apply_template_variables, 140 )
+        util.addButton("Apply", self.left_panel.layout(), self.on_click_apply_template_variables, 140)
 
         self.setLayout(top_level_layout)
 
@@ -77,19 +77,19 @@ class MplusModelBuilder(QWidget):
 
     def createColumnsWidgets(self):
         w = QGroupBox("Created Variables")
-        #w.setAutoFillBackground(True)
+        # w.setAutoFillBackground(True)
         w.setFlat(True)
         w.setFont(util.boldQFont())
 
         layout = QHBoxLayout()
-        layout.setContentsMargins(2,2,2,2)
-        self.voxelized_list = ColumnList("Voxelized Columns", checkable = False)
+        layout.setContentsMargins(2, 2, 2, 2)
+        self.voxelized_list = ColumnList("Voxelized Columns", checkable=False)
         self.voxelized_list.setFixedHeight(150)
         self.voxelized_list.setAddClickHandler(self.on_click_add_voxelized_column)
         self.voxelized_list.setRemoveClickHandler(self.on_click_remove_voxelized_column)
         layout.addWidget(self.voxelized_list)
 
-        self.other_variables_list = ColumnList("Latent Variables", checkable = False)
+        self.other_variables_list = ColumnList("Latent Variables", checkable=False)
         self.other_variables_list.setFixedHeight(150)
 
         layout.addWidget(self.other_variables_list)
@@ -182,7 +182,7 @@ class MplusModelBuilder(QWidget):
         self.generatedModelViewer.setText(generated_mplus_model)
 
     def refresh(self):
-        #if any ui elements need updating implement that here
+        # if any ui elements need updating implement that here
         pass
 
     def loadVariables(self):
@@ -204,7 +204,6 @@ class MplusModelBuilder(QWidget):
                 self.left_panel.layout().insertWidget(1, template_requirements, stretch=5)
                 self.template_requirements = template_requirements
                 self.variables_loaded = True
-
 
     def on_click_apply_template_variables(self):
         if hasattr(self, "template_requirements"):

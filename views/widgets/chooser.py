@@ -16,7 +16,7 @@ from views.view_utilities import *
 
 
 class Chooser(QWidget):
-    def __init__(self, data, filter_labels = [], default_value=None, checkable = True):
+    def __init__(self, data, filter_labels=[], default_value=None, checkable=True):
         super(Chooser, self).__init__()
         self.checkable = checkable
         self.default_value = default_value
@@ -24,7 +24,6 @@ class Chooser(QWidget):
         self.filter_labels = filter_labels
         self.initUI()
         self.loadColumns()
-
 
     def initUI(self):
 
@@ -36,7 +35,7 @@ class Chooser(QWidget):
         list.setModel(model)
         self.columnListWidget = list
 
-        if len(self.filter_labels)>0:
+        if len(self.filter_labels) > 0:
             self.filter = self.createFilter()
 
             layout.addWidget(self.filter)

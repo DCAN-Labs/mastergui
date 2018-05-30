@@ -7,8 +7,7 @@ import os
 from models import input_spreadsheet
 
 
-
-def addButton(caption, container, on_click = None, width=-1, height = -1):
+def addButton(caption, container, on_click=None, width=-1, height=-1):
     """simple helper method to add a PyQt button
     with the most common settings
 
@@ -38,8 +37,8 @@ def addButton(caption, container, on_click = None, width=-1, height = -1):
 
     return button
 
-def addColumnNamesToListView(listView, columnNames, checkable = True):
 
+def addColumnNamesToListView(listView, columnNames, checkable=True):
     model = listView.model()
 
     model.clear()
@@ -51,6 +50,7 @@ def addColumnNamesToListView(listView, columnNames, checkable = True):
         if checkable:
             item.setCheckable(True)
         model.appendRow(item)
+
 
 def createColumnNameListWidget(single_selection=False):
     model = QStandardItemModel()
@@ -66,13 +66,14 @@ def createColumnNameListWidget(single_selection=False):
 
     return view
 
+
 def alert(txt):
     errorbox = QMessageBox()
     errorbox.setText(str(txt))
     errorbox.exec_()
 
-def selectedLabelsFromListView(list):
 
+def selectedLabelsFromListView(list):
     m = list.model()
     labels = []
     for i in range(m.rowCount()):
@@ -82,22 +83,25 @@ def selectedLabelsFromListView(list):
 
     return labels
 
+
 def boldQFont():
     f = QFont()
     f.setBold(True)
     return f
 
-def createBoldLabel(text):
 
+def createBoldLabel(text):
     f = boldQFont()
     l = QLabel(text)
     l.setFont(f)
-    #l.setAutoFillBackground(True)
+    # l.setAutoFillBackground(True)
     return l
+
 
 def addBoldLabel(text, container):
     l = createBoldLabel(text)
     container.addWidget(l)
+
 
 def createHLineFromTemplate(controls):
     layout = QHBoxLayout()
@@ -125,4 +129,3 @@ def createHLineFromWidgets(widgets):
         layout.addWidget(w)
 
     return layout
-
