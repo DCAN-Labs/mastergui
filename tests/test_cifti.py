@@ -44,14 +44,12 @@ class TestCifti(unittest.TestCase):
         self.assertEqual(c2.getPosition(1), 2)
 
     def test_generation_from_dataframe(self):
-
         p = "tests/ones.dscalar.nii"
 
         c = cifti.Cifti(p)
         size = c.size
 
-
-        col1_data = [i/10 for i in range(size)]
+        col1_data = [i / 10 for i in range(size)]
         col2_data = [i / 100 for i in range(size)]
 
         d = {'col1': col1_data, 'col2': col2_data}
@@ -63,7 +61,8 @@ class TestCifti(unittest.TestCase):
 
     def test_load_via_wb(self):
         p = "tests/ones.dscalar.nii"
-        c = cifti.Cifti(p,True)
+        c = cifti.Cifti(p, True)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -58,7 +58,7 @@ class TestMPlusAnalyzer(unittest.TestCase):
         mappings = [('PATH_HCP', 'VOXEL')]
 
         analysis.go(model, title, input, missing_tokens_list, testing_only_limit_to_n_rows=cap_at_n_vector_positions,
-                    path_to_voxel_mappings = mappings)
+                    path_to_voxel_mappings=mappings)
         print("done analysis test")
         # def go(self, model, title, input, missing_tokens_list, testing_only_limit_to_n_rows=3, needsCiftiProcessing=True):
         n_output_files = len(glob.glob(os.path.join(analysis.batchOutputDir, "*.inp.out")))

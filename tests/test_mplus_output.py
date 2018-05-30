@@ -1,7 +1,7 @@
-
 import unittest
 
 from models.mplus.output_parser import *
+
 
 class TestMplusModelOutput(unittest.TestCase):
     def test_reprocessdata(self):
@@ -12,10 +12,9 @@ class TestMplusModelOutput(unittest.TestCase):
 
         o = MplusOutput(p)
 
+        # o.print_report()
 
-        #o.print_report()
-
-        #print(o.warnings)
+        # print(o.warnings)
         print("end test_reprocessdata")
 
     def test_dir_of_output(self):
@@ -25,8 +24,8 @@ class TestMplusModelOutput(unittest.TestCase):
 
         output_set = MplusOutputSet(pattern)
 
-        #stats = output_set.extract(["STANDARDIZED MODEL RESULTS|Means|PC6|Estimate"],2)
-        stats = output_set.extract(["MODEL_FIT_INFORMATION-Information_Criteria-Bayesian_BIC_"],2)
+        # stats = output_set.extract(["STANDARDIZED MODEL RESULTS|Means|PC6|Estimate"],2)
+        stats = output_set.extract(["MODEL_FIT_INFORMATION-Information_Criteria-Bayesian_BIC_"], 2)
 
         print(stats)
         print("WARNINGS:")

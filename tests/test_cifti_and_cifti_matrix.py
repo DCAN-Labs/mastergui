@@ -16,7 +16,7 @@ class TestCiftiAndCiftiMatrix(unittest.TestCase):
 
         connectome_workbench_prefix = "/Applications/connectomeworkbench/bin_macosx64/"
 
-        cm = cifti_matrix.CiftiMatrix(p,connectome_workbench_prefix)
+        cm = cifti_matrix.CiftiMatrix(p, connectome_workbench_prefix)
 
         self.assertEqual(c.matrix.shape, (1, 91282))
 

@@ -17,10 +17,12 @@ class TestMplusModel(unittest.TestCase):
 
         path_template_for_data_including_voxel = "tests/output/input.voxel%s.inp.out"
 
-        aggregated_results = m.aggregate_results(20, path_template_for_data_including_voxel,["Akaike (AIC)","Bayesian (BIC)"],[c,c2])
+        aggregated_results = m.aggregate_results(20, path_template_for_data_including_voxel,
+                                                 ["Akaike (AIC)", "Bayesian (BIC)"], [c, c2])
 
         print("survived")
         print(aggregated_results)
+
 
 if __name__ == '__main__':
     unittest.main()
