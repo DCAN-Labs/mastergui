@@ -174,6 +174,12 @@ class MplusModel():
         self.template_variable_values = options
 
     def to_string(self):
+        """
+        This iterates through the major sections of the original MPLUS templates and substitutes in any key values
+        that have been set
+
+        :return: return a string that is the full contents of an MPLUS model file, ready for execution by MPLUS
+        """
         self.refresh_VARIABLE_section()
 
         output_str = ""
@@ -193,6 +199,7 @@ class MplusModel():
             # for some reason a byte order mark character started showing up in the beginning of the generated
             # model file and mplus would choke on it
             output_str = output_str[1:]
+
         return output_str
 
     def template_text_for_variable(self, varname):

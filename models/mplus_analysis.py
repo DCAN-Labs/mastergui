@@ -272,27 +272,35 @@ class MplusAnalysis(Analysis):
     def runAnalysisWithoutCiftiData(self):
         """This is the path for just running a simple MPlus model that doesn't require the
         integration of voxel information, and therefore doesn't require the execution of 91k+ MPlus models.
+
+        :return: the string output from mplus. this is the same as what mplus will have written to the .out file.
         """
+
+        #it will only need to generate a single mplus model file.
         model_filename = "input.inp"
+
+        #it will still use the overall "batch" path naming system that is used for the voxelized versions of mplus execution flow
+        #get the full path for this mplus input model file
         model_input_file_path = self.paths.batch_inputs_path(model_filename)
 
-        self.paths.batch_inputs_path(self.data_filename)
-
-
+        #get the path to reference for the cleaned up input data
         nonimaging_data_path = self.scrubbed_data_path()
 
-        model_output_file_path = nonimaging_data_path + ".out"
+        model_output_file_path = self.paths.batch_outputs_path(model_filename + ".out")
 
+        #save the cleaned input data to the correct location and with the correct column order
         self.input.save(nonimaging_data_path, self.model.input_column_names_in_order)
 
-        self.model.save_for_datafile(nonimaging_data_path, model_input_file_path)
+        #update the mplus model representation with the appropriate target paths and save it
+        self.model.save_for_datafile(self.data_filename, model_input_file_path)
 
-        result = self.runMplus(model_input_file_path)
+        result = self.runMplus(model_input_file_path, model_output_file_path)
 
         self.mplus_stdout = str(result.stdout, 'utf-8')
 
         with open(model_output_file_path, "r") as f:
             mplus_output_contents = f.read()
+
 
         return mplus_output_contents
 
