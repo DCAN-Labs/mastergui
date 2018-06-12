@@ -273,6 +273,11 @@ class MplusAnalysis(Analysis):
         """This is the path for just running a simple MPlus model that doesn't require the
         integration of voxel information, and therefore doesn't require the execution of 91k+ MPlus models.
         """
+        model_filename = "input.inp"
+        model_input_file_path = self.paths.batch_inputs_path(model_filename)
+
+        self.paths.batch_inputs_path(self.data_filename)
+
 
         nonimaging_data_path = self.scrubbed_data_path()
 
@@ -280,9 +285,9 @@ class MplusAnalysis(Analysis):
 
         self.input.save(nonimaging_data_path, self.model.input_column_names_in_order)
 
-        self.model.save_for_datafile(self.data_filename, nonimaging_data_path)
+        self.model.save_for_datafile(nonimaging_data_path, model_input_file_path)
 
-        result = self.runMplus(nonimaging_data_path)
+        result = self.runMplus(model_input_file_path)
 
         self.mplus_stdout = str(result.stdout, 'utf-8')
 
