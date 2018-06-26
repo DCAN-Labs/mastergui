@@ -21,14 +21,6 @@ class TestMPlusAnalyzer(unittest.TestCase):
         with self.assertRaises(TypeError):
             s.split(2)
 
-    def test_results_parsing(self):
-        m = MplusModel()
-        look_for_fields = ['Akaike (AIC)', "CFI "]
-        test_output = "tests/mplus_output_sample.inp.out"
-        r = m.parse_mplus_results(test_output, look_for_fields)
-        print(r)
-        print(type(r))
-
     def test_generate_inputs_from_voxels(self):
         print("todo")
 
