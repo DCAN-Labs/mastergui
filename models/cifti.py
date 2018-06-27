@@ -3,15 +3,17 @@ import numpy as np
 import subprocess
 import time
 import pandas as pd
-
+import os
+import random
 
 class Cifti():
     def __init__(self, path, use_wbcommand=False):
-
+        """Loads a cifti using either nibabel or using workbench command to create a 
+        temporary file and read it in.  The workbench command method is much faster.
+        """
         # cift2.load returns a Cifti2Image
         # which inherits from a DataobjImage
         # http: // nipy.org / nibabel / reference / nibabel.cifti2.html  # nibabel.cifti2.cifti2.Cifti2Image
-
         if use_wbcommand:
             self.loadViaWbCommand(path)
         else:
@@ -22,7 +24,15 @@ class Cifti():
 
         # or wb_command -nifti-information -print-matrix base_output.dscalar.nii
         i = 0
-        output_path = path + ".csv"
+        #It needs to write a temporary csv file of just the numbers.
+        #the source dir of the ciftis is not necessarily writeable to the
+        #user running this so it writes that temporary csv to the users home directory
+        #and deletes it shortly later.  A random number is prepended to the filename
+        #to avoid name collisions
+        output_filename = str(random.randint(1,100000000)) + "." + os.path.basename(path)+".csv"
+
+        output_path = os.path.expanduser(os.path.join("~",output_filename))
+
         start_time = time.time()
 
         result = subprocess.run(["wb_command", "-cifti-convert", "-to-text", path, output_path])
