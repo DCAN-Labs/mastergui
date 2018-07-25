@@ -16,7 +16,7 @@ class CiftiSet():
     def verify_paths(self):
         not_found = []
         for path in self._path_list:
-            if not os.path.exists(path):
+            if not os.path.exists(path) or path==".":
                 not_found.append(path)
         return not_found
 
@@ -38,19 +38,17 @@ class CiftiSet():
         self.matrix = allCiftiMatrix
 
     def load_all(self):
-        # todo monitor memory usage
-
 
         self.setupMatrix()
 
         last_shape = None
 
-        # todo this would benefit from multiple threads as there is a lot of disk i/o time
-
         num_threads = 2  # todo parameterize this number of threads
 
         threads = []
 
+        #the list of paths is being split up for processing by multiple threads but we need to
+        #know the original row indexes too so they are here turned into a tuple of (index, path)
         indexed_paths = [(i, path) for i, path in enumerate(self._path_list)]
 
         sets_of_paths = np.array_split(indexed_paths, num_threads)
@@ -83,7 +81,9 @@ class CiftiSet():
             row_index = int(t[0])
             path = t[1]
 
-            if os.path.exists(path):
+            if path==".":  #this is the case where no value was provided in the source data but by now mastergui will have replaced ACTUALLY missing data with a "."
+                print("Warning:  Row %d had no cifti path provided." % row_index)
+            elif os.path.exists(path):
 
                 start_time = time.time()
                 try:
