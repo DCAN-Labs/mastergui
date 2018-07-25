@@ -32,6 +32,8 @@ class CiftiSet():
             if len(p)>0 and p!=".":
                 first_path = p
                 break
+        if first_path == "":
+            print("There are no actual paths to ciftis found in your selected column so we can not create the CiftiMatrix")
 
         c = CiftiMatrix(first_path, self.wb_command_prefix)
         m = c.matrix
