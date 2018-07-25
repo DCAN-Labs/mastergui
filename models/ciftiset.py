@@ -22,10 +22,17 @@ class CiftiSet():
 
     def setupMatrix(self):
         # we need all ciftis to be the same size in a given set.
-        # so somewhat arbitrarily we will assume that the first one in the list of
+        # so somewhat arbitrarily we will assume that the first non-empty one in the list of
         # cifti paths has the correct size and compare all subsequent ones to taht
 
-        first_path = self._path_list[0]
+        first_path = ""
+
+        for i in range(len(self._path_list)):
+            p = self._path_list[i];
+            if len(p)>0 and p!=".":
+                first_path = p
+                break
+
         c = CiftiMatrix(first_path, self.wb_command_prefix)
         m = c.matrix
         size = m.size
