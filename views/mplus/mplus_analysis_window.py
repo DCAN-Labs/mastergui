@@ -248,7 +248,11 @@ class MplusAnalysisWindow(AnalysisWindow):
         path = self.analysis.modelOutputPathByVoxel(0) + ".out"
         if os.path.exists(path):
             c = OutputChooserDialog(path)
-            if c.selection:
+            # @ Darrick if c.selection is list...
+            if isinstance(c.selection, list):
+                for selection in c.selection:
+                    self.addOutputParameter(selection)
+            elif c.selection:
                 self.addOutputParameter(c.selection)
         else:
             util.alert(

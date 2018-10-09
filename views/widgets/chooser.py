@@ -24,12 +24,14 @@ class Chooser(QWidget):
         self.filter_labels = filter_labels
         self.initUI()
         self.loadColumns()
+        self.items = []
 
     def initUI(self):
 
         layout = QVBoxLayout()
 
         model = QStandardItemModel()
+        model.itemChanged.connect(self.setItems)  # @ Darrick final changes
 
         list = QListView()
         list.setModel(model)
@@ -90,3 +92,13 @@ class Chooser(QWidget):
             return m.itemFromIndex(idx[0]).text()
 
         return None
+
+    # @ Darrick added
+    def setItems(self, item):
+        if item.checkState() == Qt.Checked:
+            self.items.append(item)
+        if item.checkState() == Qt.Unchecked:
+            self.items.remove(item)
+
+    def getItems(self):
+        return [i.text() for i in self.items]

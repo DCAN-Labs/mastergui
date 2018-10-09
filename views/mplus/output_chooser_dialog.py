@@ -39,6 +39,6 @@ class OutputChooserDialog(ChooserDialog):
             util.alert("Error opening MPlus Output file %s" % path_to_mplus_output)
 
     def on_click_ok(self):
-        self.selection = self.chooser.selectedRow()
+        self.selection = self.getItems()
         # todo implement
         self.close()

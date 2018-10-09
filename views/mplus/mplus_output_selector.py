@@ -144,11 +144,16 @@ class MplusOutputSelector(OutputBrowserWidget):
     def on_click_chooseparameters(self):
 
         if hasattr(self, 'last_selected_output_file_path'):
-
             c = OutputChooserDialog(self.last_selected_output_file_path)
-
             if c.selection:
-                self.parentAnalysisWidget.addOutputParameter(c.selection)
+                # @ Darrick: Maybe this shouldn't be here (isinstance)
+                if isinstance(c.selection, list):
+                    for i in c.selection:
+                        # @ Darrick test if we can take out checkable
+                        i.setCheckable(False)
+                        self.parentAnalysisWidget.addOutputParameter(i)
+                else:
+                    self.parentAnalysisWidget.addOutputParameter(c.selection)
 
     @property
     def analysis(self):

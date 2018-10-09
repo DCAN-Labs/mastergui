@@ -27,7 +27,8 @@ class ChooserDialog(QDialog):
     def initUI(self):
         layout = QVBoxLayout()
 
-        self.chooser = Chooser(self.data, checkable=False)
+        self.chooser = Chooser(self.data, checkable=True)
+        # False:True
         #        layout.addWidget(radio_group)
         layout.addWidget(self.chooser)
 
@@ -58,7 +59,6 @@ class ChooserDialog(QDialog):
             item = QStandardItem(col)
             # check = Qt.Checked if 1 == 1 else Qt.Unchecked
             # item.setCheckState(check)
-            item.setCheckable(True)
             model.appendRow(item)
 
     def showModally(self):
@@ -68,3 +68,7 @@ class ChooserDialog(QDialog):
 
     def selectedRow(self):
         return self.chooser.selectedRow()
+
+    # @ Darrick added this method
+    def getItems(self):
+        return self.chooser.getItems()
