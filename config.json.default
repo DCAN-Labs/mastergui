@@ -23,7 +23,7 @@
   "Base_cifti_for_output": "data/base_output.dscalar.nii",
   "default_maps": "data/default_maps/",
   "wb_view_path_prefix": "/Applications/connectomeworkbench/bin_macosx64/",
-  "wb_command_path_prefix":"/Applications/connectomeworkbench/bin_macosx64/"
+  "wb_command_path_prefix":"/Applications/connectomeworkbench/bin_macosx64/",
   "recent_files_path":"~/mastergui_recents.txt"
 }
 
