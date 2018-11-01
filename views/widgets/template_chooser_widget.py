@@ -25,12 +25,23 @@ class TemplateChooserWidget(QWidget):
 
         layout = QHBoxLayout()
 
-        template_paths = glob.glob(os.path.join(path_to_templates, "*.json"))
+
+        # Sorting Templates by key <name> in json file
+        temp_paths = glob.glob(os.path.join(path_to_templates, "*.json"))
+        sorted_paths = []
+        for path in temp_paths:
+            with open(path, 'r') as template_file:
+                dict = json.load(template_file, strict=False)
+                template_name = dict['name']
+                sorted_paths.append((template_name, path))
+        temp_list = sorted(sorted_paths)
+        template_paths = [path[1] for path in temp_list]
+
 
         model = QStandardItemModel()
-
+        # creating list to sort templates by name
         templates = {}
-
+        
         for p in template_paths:
 
             # template_info = json.load(f, strict=False)
@@ -44,12 +55,12 @@ class TemplateChooserWidget(QWidget):
 
             while template.name in templates:
                 template.name += "[DupName]"
-
+            
             item = QStandardItem(template.name)
             model.appendRow(item)
-
             templates[template.name] = template
-
+            
+            
         self.templates = templates
 
         view = QListView()
