@@ -56,7 +56,18 @@ class SplashWindow(QWidget):
         l.setFont(f)
         new_button_layout.addWidget(l)
         new_button_layout.setAlignment(Qt.AlignTop)
+        # This is maddening, these need to be sorted each time this screen pops up.
+        sorted_analyses_list = []   # Creating list to sort these
         for k, v in self.config.getOptional("analyzers", {}).items():
+            print(k, ': ', v)
+            print('*'*100)
+            tuple_for_list = (k, v)
+            sorted_analyses_list.append(tuple_for_list)
+        # Sorting these buttons by analysis type.
+        sorted_analyses_list.sort()
+        for a_tuple in sorted_analyses_list:
+            k = a_tuple[0]  # this is lazy but I know it'll work.
+            v = a_tuple[1]
             util.addButton("New " + v.get("title", ""), new_button_layout, self.newClickHandler(k))
 
         new_button_widget = QWidget()
