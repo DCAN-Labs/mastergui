@@ -9,12 +9,18 @@ import views.view_utilities as util
 
 
 class SplashWindow(QWidget):
+    """
+    This is the main screen for mastergui, on launch it's what you see.
+    I don't understand all of it's functionality at this moment in time
+    but I endeavor to persevere and will continue to update functions,
+    classes, etc with docstrings as I go.
+    :inherits QWidget the 'base' object for PyQt5, nearly every class inherits
+    from QWidget.
+    """
     def __init__(self, parent_application_window):
         super(SplashWindow, self).__init__()
         self.parent_application_window = parent_application_window
-
         self.config = self.parent_application_window.config
-
         font = QFont()
         font.setPointSize(16)
         self.initUIGeneral()
@@ -84,7 +90,9 @@ class SplashWindow(QWidget):
         try:
             row = a.row()
 
-            if row == 0:  # the first row is an artificial entry, offering Browse, rather than coming from the actual list of recent files.
+            if row == 0:
+                # the first row is an artificial entry, offering Browse
+                # rather than coming from the actual list of recent files.
                 self.parent_application_window.open_action()
             else:
                 path = self.recentList.model().item(a.row()).text().strip()

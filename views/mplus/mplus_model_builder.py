@@ -138,8 +138,8 @@ class MplusModelBuilder(QWidget):
     def initModelBuilderViewTabs(self):
         self.modelTemplateViewer = QTextEdit()
         self.generatedModelViewer = QTextEdit()
-        self.modelBuilderTemplateViewTabs.addTab(self.generatedModelViewer, "Modeliiiiiii")
-        self.modelBuilderTemplateViewTabs.addTab(self.modelTemplateViewer, "Templateiiiiiiiii")
+        self.modelBuilderTemplateViewTabs.addTab(self.generatedModelViewer, "Model")
+        self.modelBuilderTemplateViewTabs.addTab(self.modelTemplateViewer, "Template")
 
 
     def onTextChange(self):

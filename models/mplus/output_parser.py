@@ -12,6 +12,7 @@ Model_Results_Label = "MODEL_RESULTS"
 Standarized_Model_Results_Label = "STANDARDIZED_MODEL_RESULTS"
 key_delimiter = "-"
 Model_Termination_Section_Label = "THE_MODEL_ESTIMATION_TERMINATED_NORMALLY"
+Sample_Statistics_Label = "SAMPLE_STATISTICS"
 
 # for stripping keys of values that we don't want in filenames
 filename_unfriendly_character_detector = re.compile('[^0-9a-zA-Z\-]+')
@@ -105,7 +106,8 @@ class MplusOutput():
         for line in all_lines:
 
             new_section_detected = False
-
+            # what is heading detector matching for to get wat appear to be the first 30 lines of all lines
+            # last_section_lines is the input file for mplus, generated in the model builder.
             if heading_detector.match(line) or warning_detector.match(line):
                 new_section_detected = True
                 self.process_section_contents(last_section, last_section_lines)
@@ -114,7 +116,7 @@ class MplusOutput():
             else:
                 if len(last_section) > 0:
                     last_section_lines.append(line)
-
+        # All lines contains the entirety of the output file
         self.lines = all_lines
 
         if self.terminated_normally:
@@ -136,6 +138,8 @@ class MplusOutput():
 
                 if last_section == Model_Fit_Information_Label:
                     self.process_model_fit(last_section_lines)
+               # elif last_section == Sample_Statistics_Label:
+                #    self.process_sample_stats(Sample_Statistics_Label, last_section_lines)
                 elif last_section == Model_Results_Label:
                     self.process_results_table(Model_Results_Label, last_section_lines)
                 elif last_section == Standarized_Model_Results_Label:
@@ -144,6 +148,72 @@ class MplusOutput():
                     self.process_model_termination_section(last_section_lines)
                 else:
                     self.sections[last_section] = last_section_lines
+
+    def process_sample_stats(self, section_lines):
+
+        """
+	SAMPLE STATISTICS
+
+
+	     ESTIMATED SAMPLE STATISTICS
+
+
+	           Means
+	              C21           C36           C11           C4            RLNIL6
+	              ________      ________      ________      ________      ________
+	                3.202         3.127         3.249         3.466         0.775
+
+
+	           Means
+	              RMDIET        RSEX
+	              ________      ________
+	                0.595         0.548
+
+
+	           Covariances
+	              C21           C36           C11           C4            RLNIL6
+	              ________      ________      ________      ________      ________
+	 C21            0.112
+	 C36            0.057         0.063
+	 C11            0.037         0.019         0.061
+	 C4             0.095         0.044         0.029         0.115
+	 RLNIL6        -0.002         0.011         0.005         0.002         0.097
+	 RMDIET         0.052         0.013         0.039         0.036        -0.003
+	 RSEX           0.084         0.034         0.029         0.050        -0.008
+
+
+	           Covariances
+	              RMDIET        RSEX
+	              ________      ________
+	 RMDIET         0.241
+	 RSEX           0.126         0.248
+
+
+	           Correlations
+	              C21           C36           C11           C4            RLNIL6
+	              ________      ________      ________      ________      ________
+	 C21            1.000
+	 C36            0.682         1.000
+	 C11            0.451         0.307         1.000
+	 C4             0.839         0.513         0.349         1.000
+	 RLNIL6        -0.019         0.144         0.063         0.019         1.000
+	 RMDIET         0.318         0.109         0.323         0.215        -0.022
+	 RSEX           0.506         0.271         0.236         0.294        -0.055
+
+
+	           Correlations
+	              RMDIET        RSEX
+	              ________      ________
+	 RMDIET         1.000
+	 RSEX           0.517         1.000
+
+
+	     MAXIMUM LOG-LIKELIHOOD VALUE FOR THE UNRESTRICTED (H1) MODEL IS -55.905
+
+
+	"""
+
+    # self.sections[Sample_Statistics_Label] = ["Happy Chaunaka"]
 
     def process_model_fit(self, section_lines):
 
@@ -210,7 +280,6 @@ class MplusOutput():
                 else:
                     if not is_indented:
                         context_stack = [line.strip()]
-
 
                         #
                         #     stripped_line = line.strip()

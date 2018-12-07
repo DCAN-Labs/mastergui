@@ -1,0 +1,28 @@
+{
+  "analyzers":
+    {
+      "mplus": {
+        "title":"MPlus",
+        "templates": "./templates/mplus",
+        "postprocessingoptions":[{"name":"test","command":"postprocessing/test_wrapper.sh","param_filepath":"postprocessing/CIFTIStatMapToZscore_params.bash"},
+                        {"name":"FDR","command":"postprocessing/CIFTIStatMapToZscore_wrapper.sh","param_filepath":"postprocessing/CIFTIStatMapToZscore_params.bash"},
+                                {"name":"Cluster Detection","command":"postprocessing/PalMPlusClusterDetection_wrapper.sh","param_filepath":"postprocessing/PalMPlusClusterDetection_params.bash"}
+        ]
+      },
+      "palm": {
+        "title":"Palm",
+        "templates": "./templates/palm"
+      },
+      "fconnanova":{
+        "title":"FCONNANOVA",
+        "templates": "./templates/fconnanova"
+      }
+    },
+  "output_dir": "~/masterguioutput",
+  "MPlus_command": "/mnt/max/software/mplus/8/mplus",
+  "Base_cifti_for_output": "/mnt/max/shared/projects/mastergui/data/monkey_surface_base.dscalar.nii",
+  "default_maps": "/mnt/max/shared/projects/mastergui/data/default_maps_monkey/",
+  "mplus_threads":8,
+  "recent_files_path":"~/mastergui_recents",
+  "log_path":"/mnt/max/shared/projects/mastergui/logs"
+}
