@@ -58,6 +58,8 @@ class MplusOutput():
     def __init__(self, path, limit_to_keys=[]):
         # debug with tests/sample.mplus.modelwarning.out
         self.limited_parse = len(limit_to_keys) > 0
+        self.sample_lines = []
+        self.lines = []
         if self.limited_parse:
             self.limit_to_keys = limit_to_keys
             self.limit_to_sections = [key.split(key_delimiter)[0] for key in limit_to_keys]
@@ -69,7 +71,9 @@ class MplusOutput():
 
         self.path = path
         self.warnings = []
+
         self.load()
+        #self.process_sample_stats()
 
     def load(self):
 
@@ -92,7 +96,6 @@ class MplusOutput():
 
         last_section_is_warning = False
 
-        # all_lines = []
 
         try:
             with open(self.path, "r") as f:
@@ -118,6 +121,7 @@ class MplusOutput():
                     last_section_lines.append(line)
         # All lines contains the entirety of the output file
         self.lines = all_lines
+        self.process_sample_stats(all_lines)
 
         if self.terminated_normally:
             if len(self.model_convergence_warnings) > 0:
@@ -136,10 +140,11 @@ class MplusOutput():
                     if not last_section == Model_Termination_Section_Label:
                         return
 
-                if last_section == Model_Fit_Information_Label:
+                if last_section == Sample_Statistics_Label:
+                    print('\n'*60, ' it fired '*100)
+
+                elif last_section == Model_Fit_Information_Label:
                     self.process_model_fit(last_section_lines)
-               # elif last_section == Sample_Statistics_Label:
-                #    self.process_sample_stats(Sample_Statistics_Label, last_section_lines)
                 elif last_section == Model_Results_Label:
                     self.process_results_table(Model_Results_Label, last_section_lines)
                 elif last_section == Standarized_Model_Results_Label:
@@ -149,71 +154,55 @@ class MplusOutput():
                 else:
                     self.sections[last_section] = last_section_lines
 
-    def process_sample_stats(self, section_lines):
+    def process_sample_stats(self, every_friggen_line):
+        lines = every_friggen_line
+        things_to_check = ['Means', 'Covariances', 'Correlations']
 
-        """
-	SAMPLE STATISTICS
+        main_heading = 'SAMPLE STATISTICS'
+        sub_heading  = 'ESTIMATED SAMPLE STATISTICS'
+        end_section = 'UNIVARIATE SAMPLE STATISTICS'
+        start_index = None
+        stop_index = None
 
+        sample_stat_lines = []
 
-	     ESTIMATED SAMPLE STATISTICS
-
-
-	           Means
-	              C21           C36           C11           C4            RLNIL6
-	              ________      ________      ________      ________      ________
-	                3.202         3.127         3.249         3.466         0.775
-
-
-	           Means
-	              RMDIET        RSEX
-	              ________      ________
-	                0.595         0.548
+        for index, line in enumerate(lines):
+            if sub_heading in line:
+                start_index = index
+            if end_section in line:
+                stop_index = index - 1
 
 
-	           Covariances
-	              C21           C36           C11           C4            RLNIL6
-	              ________      ________      ________      ________      ________
-	 C21            0.112
-	 C36            0.057         0.063
-	 C11            0.037         0.019         0.061
-	 C4             0.095         0.044         0.029         0.115
-	 RLNIL6        -0.002         0.011         0.005         0.002         0.097
-	 RMDIET         0.052         0.013         0.039         0.036        -0.003
-	 RSEX           0.084         0.034         0.029         0.050        -0.008
+        self.sample_lines = lines[start_index: stop_index]
+
+        data = {}
+        covar_dict = {}
+        corr_dict = {}
+        means_dict = {}
+        for thing in things_to_check:
+            for i, sample_line in enumerate(self.sample_lines):
+
+                if thing in sample_line:
+
+                    if thing is "Means":
+
+                        variables = self.sample_lines[i +1].strip('\n').split()
+                        values = self.sample_lines[i+3].strip('\n').split()
+                        for ix, var in enumerate(variables):
+
+                            means_dict['Estimated_Mean_' + var] = values[ix]
+
+        self.sections['Estimated_Means'] = means_dict
+        for key, value in means_dict.items():
+            #self.sections['STANDARDIZED_MODEL_RESULTS'][key] = value
+            #self.sections['MODEL_RESULTS']['MODEL_RESULTS    ' + key] = value
+            self.data['MODEL_RESULTS_ESTIMATED_MEANS_' + key] = value
 
 
-	           Covariances
-	              RMDIET        RSEX
-	              ________      ________
-	 RMDIET         0.241
-	 RSEX           0.126         0.248
+        #print(data)
+        print("OHH YEAH")
 
 
-	           Correlations
-	              C21           C36           C11           C4            RLNIL6
-	              ________      ________      ________      ________      ________
-	 C21            1.000
-	 C36            0.682         1.000
-	 C11            0.451         0.307         1.000
-	 C4             0.839         0.513         0.349         1.000
-	 RLNIL6        -0.019         0.144         0.063         0.019         1.000
-	 RMDIET         0.318         0.109         0.323         0.215        -0.022
-	 RSEX           0.506         0.271         0.236         0.294        -0.055
-
-
-	           Correlations
-	              RMDIET        RSEX
-	              ________      ________
-	 RMDIET         1.000
-	 RSEX           0.517         1.000
-
-
-	     MAXIMUM LOG-LIKELIHOOD VALUE FOR THE UNRESTRICTED (H1) MODEL IS -55.905
-
-
-	"""
-
-    # self.sections[Sample_Statistics_Label] = ["Happy Chaunaka"]
 
     def process_model_fit(self, section_lines):
 
@@ -357,7 +346,11 @@ class MplusOutput():
                             else:
                                 self.logNumberParsingError(keyname)
 
+        #self/.process_sample_stats(lines)
+
         self.sections[title] = section_data
+        print("SECTION DATA**************************", section_data)
+        print("HURR DURR")
 
     def cleanKey(self, key):
         """replace filename unfriendly characters with _ """
@@ -573,3 +566,21 @@ class MplusOutputSet():
             self.termination_warning_sets.append(termination_warnings)
             self.any_errors += any_errors
             self.untrustworthies += untrustworthies
+
+if __name__ == "__main__":
+    ugly_baby = '/mnt/max/shared/projects/NHP/HFD/Experiments/cortical_thickness/subjects/9172018/testing/batches/2018-12-07.14.03.28.776151/outputs/input.voxel0.inp.out'
+
+    test_mplus_output = MplusOutput(path=ugly_baby)
+    test_mplus_output.path = 'mplus_output.txt'
+    for line in test_mplus_output.lines:
+        print(line.strip('\n'))
+
+    #print(test_mplus_output.sections)
+    test_mplus_output.data
+
+    #test_mplus_output.process_sample_stats()
+    x = test_mplus_output.sample_lines
+    for each in x:
+        print(each)
+
+

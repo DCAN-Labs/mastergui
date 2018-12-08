@@ -1,0 +1,353 @@
+Mplus VERSION 8 (Linux)
+MUTHEN & MUTHEN
+12/07/2018  11:49 AM
+
+INPUT INSTRUCTIONS
+
+  TITLE:
+  Mplus Analysis
+  DATA:
+  FILE is input.csv.0.csv;
+  VARIABLE:
+  Names are a
+  	o
+  	e
+  	u;
+  USEVARIABLES = a
+  	u
+  	o
+  	e;
+  MISSING=.;
+
+  ANALYSIS:
+
+          h1iter = 1000000;
+  	
+
+  MODEL:
+  	
+  !a;
+  !o;
+  !e;
+  !u;	
+            i s q| a@0,o@0.7,e@1.7,u@3.2;
+
+  	q@0;
+
+
+  OUTPUT:
+
+   stdyx SAMP;
+
+
+
+*** WARNING in MODEL command
+  All continuous latent variable covariances involving Q have been fixed to 0
+  because the variance of Q is fixed at 0.
+*** WARNING
+  Data set contains cases with missing on all variables.
+  These cases were not included in the analysis.
+  Number of cases with missing on all variables:  17
+   2 WARNING(S) FOUND IN THE INPUT INSTRUCTIONS
+
+
+
+
+Mplus Analysis
+
+SUMMARY OF ANALYSIS
+
+Number of groups                                                 1
+Number of observations                                          53
+
+Number of dependent variables                                    4
+Number of independent variables                                  0
+Number of continuous latent variables                            3
+
+Observed dependent variables
+
+  Continuous
+   A           U           O           E
+
+Continuous latent variables
+   I           S           Q
+
+
+Estimator                                                       ML
+Information matrix                                        OBSERVED
+Maximum number of iterations                                  1000
+Convergence criterion                                    0.500D-04
+Maximum number of steepest descent iterations                   20
+Maximum number of iterations for H1                        1000000
+Convergence criterion for H1                             0.100D-03
+
+Input data file(s)
+  input.csv.0.csv
+
+Input data format  FREE
+
+
+SUMMARY OF DATA
+
+     Number of missing data patterns             9
+
+
+COVARIANCE COVERAGE OF DATA
+
+Minimum covariance coverage value   0.100
+
+
+     PROPORTION OF DATA PRESENT
+
+
+           Covariance Coverage
+              A             U             O             E
+              ________      ________      ________      ________
+ A              0.660
+ U              0.170         0.491
+ O              0.491         0.377         0.736
+ E              0.358         0.491         0.566         0.698
+
+
+SAMPLE STATISTICS
+
+
+     ESTIMATED SAMPLE STATISTICS
+
+
+           Means
+              A             U             O             E
+              ________      ________      ________      ________
+                3.917         3.325         3.482         3.419
+
+
+           Covariances
+              A             U             O             E
+              ________      ________      ________      ________
+ A              0.240
+ U              0.073         0.187
+ O              0.117         0.130         0.158
+ E              0.104         0.162         0.129         0.210
+
+
+           Correlations
+              A             U             O             E
+              ________      ________      ________      ________
+ A              1.000
+ U              0.347         1.000
+ O              0.602         0.753         1.000
+ E              0.466         0.818         0.708         1.000
+
+
+     MAXIMUM LOG-LIKELIHOOD VALUE FOR THE UNRESTRICTED (H1) MODEL IS -49.331
+
+
+UNIVARIATE SAMPLE STATISTICS
+
+
+     UNIVARIATE HIGHER-ORDER MOMENT DESCRIPTIVE STATISTICS
+
+         Variable/         Mean/     Skewness/   Minimum/ % with                Percentiles
+        Sample Size      Variance    Kurtosis    Maximum  Min/Max      20%/60%    40%/80%    Median
+
+     A                     3.924      -0.582       2.733    2.86%       3.363      3.866      4.013
+              35.000       0.247      -0.263       4.691    2.86%       4.123      4.356
+     U                     3.290      -0.501       2.189    3.85%       2.796      3.282      3.400
+              26.000       0.204      -0.064       4.222    3.85%       3.471      3.627
+     O                     3.446       0.387       2.722    2.56%       3.040      3.245      3.390
+              39.000       0.173      -0.405       4.432    2.56%       3.565      3.733
+     E                     3.369      -0.536       2.149    2.70%       2.853      3.345      3.412
+              37.000       0.201       0.189       4.246    2.70%       3.515      3.688
+
+
+THE MODEL ESTIMATION TERMINATED NORMALLY
+
+     WARNING:  THE RESIDUAL COVARIANCE MATRIX (THETA) IS NOT POSITIVE DEFINITE.
+     THIS COULD INDICATE A NEGATIVE VARIANCE/RESIDUAL VARIANCE FOR AN OBSERVED
+     VARIABLE, A CORRELATION GREATER OR EQUAL TO ONE BETWEEN TWO OBSERVED
+     VARIABLES, OR A LINEAR DEPENDENCY AMONG MORE THAN TWO OBSERVED VARIABLES.
+     CHECK THE RESULTS SECTION FOR MORE INFORMATION.
+     PROBLEM INVOLVING VARIABLE U.
+
+
+
+
+MODEL FIT INFORMATION
+
+Number of Free Parameters                       10
+
+Loglikelihood
+
+          H0 Value                         -55.010
+          H1 Value                         -49.331
+
+Information Criteria
+
+          Akaike (AIC)                     130.021
+          Bayesian (BIC)                   149.724
+          Sample-Size Adjusted BIC         118.314
+            (n* = (n + 2) / 24)
+
+Chi-Square Test of Model Fit
+
+          Value                             11.359
+          Degrees of Freedom                     4
+          P-Value                           0.0228
+
+RMSEA (Root Mean Square Error Of Approximation)
+
+          Estimate                           0.186
+          90 Percent C.I.                    0.063  0.318
+          Probability RMSEA <= .05           0.039
+
+CFI/TLI
+
+          CFI                                0.889
+          TLI                                0.833
+
+Chi-Square Test of Model Fit for the Baseline Model
+
+          Value                             72.079
+          Degrees of Freedom                     6
+          P-Value                           0.0000
+
+SRMR (Standardized Root Mean Square Residual)
+
+          Value                              0.147
+
+
+
+MODEL RESULTS
+
+                                                    Two-Tailed
+                    Estimate       S.E.  Est./S.E.    P-Value
+
+ I        |
+    A                  1.000      0.000    999.000    999.000
+    O                  1.000      0.000    999.000    999.000
+    E                  1.000      0.000    999.000    999.000
+    U                  1.000      0.000    999.000    999.000
+
+ S        |
+    A                  0.000      0.000    999.000    999.000
+    O                  0.700      0.000    999.000    999.000
+    E                  1.700      0.000    999.000    999.000
+    U                  3.200      0.000    999.000    999.000
+
+ Q        |
+    A                  0.000      0.000    999.000    999.000
+    O                  0.490      0.000    999.000    999.000
+    E                  2.890      0.000    999.000    999.000
+    U                 10.240      0.000    999.000    999.000
+
+ S        WITH
+    I                 -0.011      0.012     -0.908      0.364
+
+ Means
+    I                  3.823      0.081     46.938      0.000
+    S                 -0.435      0.098     -4.448      0.000
+    Q                  0.087      0.024      3.625      0.000
+
+ Intercepts
+    A                  0.000      0.000    999.000    999.000
+    U                  0.000      0.000    999.000    999.000
+    O                  0.000      0.000    999.000    999.000
+    E                  0.000      0.000    999.000    999.000
+
+ Variances
+    I                  0.129      0.038      3.364      0.001
+    S                  0.016      0.009      1.725      0.085
+    Q                  0.000      0.000    999.000    999.000
+
+ Residual Variances
+    A                  0.122      0.046      2.671      0.008
+    U                 -0.043      0.043     -1.020      0.308
+    O                  0.047      0.022      2.155      0.031
+    E                  0.081      0.027      2.997      0.003
+
+
+STANDARDIZED MODEL RESULTS
+
+
+STDYX Standardization
+
+                                                    Two-Tailed
+                    Estimate       S.E.  Est./S.E.    P-Value
+
+ I        |
+    A                  0.717      0.089      8.053      0.000
+    O                  0.876      0.092      9.486      0.000
+    E                  0.768      0.099      7.771      0.000
+    U                  0.846      0.138      6.137      0.000
+
+ S        |
+    A                  0.000      0.000    999.000    999.000
+    O                  0.217      0.068      3.192      0.001
+    E                  0.462      0.119      3.895      0.000
+    U                  0.957      0.275      3.475      0.001
+
+ Q        |
+    A                999.000    999.000    999.000    999.000
+    O                999.000    999.000    999.000    999.000
+    E                999.000    999.000    999.000    999.000
+    U                999.000    999.000    999.000    999.000
+
+ S        WITH
+    I                 -0.241      0.200     -1.207      0.228
+
+ Means
+    I                 10.639      1.596      6.668      0.000
+    S                 -3.424      1.111     -3.083      0.002
+    Q                999.000    999.000    999.000    999.000
+
+ Intercepts
+    A                  0.000      0.000    999.000    999.000
+    U                  0.000      0.000    999.000    999.000
+    O                  0.000      0.000    999.000    999.000
+    E                  0.000      0.000    999.000    999.000
+
+ Variances
+    I                  1.000      0.000    999.000    999.000
+    S                  1.000      0.000    999.000    999.000
+    Q                999.000    999.000    999.000    999.000
+
+ Residual Variances
+    A                  0.485      0.128      3.798      0.000
+    U                 -0.240    999.000    999.000    999.000
+    O                  0.278      0.117      2.386      0.017
+    E                  0.368      0.085      4.316      0.000
+
+
+R-SQUARE
+
+    Observed                                        Two-Tailed
+    Variable        Estimate       S.E.  Est./S.E.    P-Value
+
+    A                  0.515      0.128      4.026      0.000
+    U               Undefined   0.12401E+01
+    O                  0.722      0.117      6.194      0.000
+    E                  0.632      0.085      7.399      0.000
+
+
+QUALITY OF NUMERICAL RESULTS
+
+     Condition Number for the Information Matrix              0.627E-03
+       (ratio of smallest to largest eigenvalue)
+
+
+     Beginning Time:  11:49:09
+        Ending Time:  11:49:09
+       Elapsed Time:  00:00:00
+
+
+
+MUTHEN & MUTHEN
+3463 Stoner Ave.
+Los Angeles, CA  90066
+
+Tel: (310) 391-9971
+Fax: (310) 391-8971
+Web: www.StatModel.com
+Support: Support@StatModel.com
+
+Copyright (c) 1998-2017 Muthen & Muthen
