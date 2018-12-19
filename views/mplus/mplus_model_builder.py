@@ -138,12 +138,15 @@ class MplusModelBuilder(QWidget):
     def initModelBuilderViewTabs(self):
         self.modelTemplateViewer = QTextEdit()
         self.generatedModelViewer = QTextEdit()
-
         self.modelBuilderTemplateViewTabs.addTab(self.generatedModelViewer, "Model")
         self.modelBuilderTemplateViewTabs.addTab(self.modelTemplateViewer, "Template")
 
-    def add_rule(self):
 
+    def onTextChange(self):
+        x = self.modelBuilderTemplateViewTabs.keyPressEvent(self)
+        print(x)
+
+    def add_rule(self):
         rbd = RuleBuilderDialog(self.analysis.input, self.all_nonspreadsheet_variables_to_display())
         rule = rbd.showModally()
 
@@ -183,6 +186,7 @@ class MplusModelBuilder(QWidget):
 
     def refresh(self):
         # if any ui elements need updating implement that here
+        # Adding logic here if self.generatedModelViewer changes do stuff
         pass
 
     def loadVariables(self):
@@ -206,12 +210,17 @@ class MplusModelBuilder(QWidget):
                 self.variables_loaded = True
 
     def on_click_apply_template_variables(self):
+        def_string = "on_click_apply_template_variables"
         if hasattr(self, "template_requirements"):
             options = self.template_requirements.selectedValues()
+            print(def_string, '\n', 'options:')
+            for k, v in options.items():
+                print(k, ': ', v)
         else:
             options = {}
 
         generated_mplus_model_text = self.analysis.updateModel(options, self.all_nonspreadsheet_variables_to_display())
+        print(def_string, 'generated_mplus_model_text', generated_mplus_model_text)
 
         self.generatedModelViewer.setText(generated_mplus_model_text)
 

@@ -9,12 +9,18 @@ import views.view_utilities as util
 
 
 class SplashWindow(QWidget):
+    """
+    This is the main screen for mastergui, on launch it's what you see.
+    I don't understand all of it's functionality at this moment in time
+    but I endeavor to persevere and will continue to update functions,
+    classes, etc with docstrings as I go.
+    :inherits QWidget the 'base' object for PyQt5, nearly every class inherits
+    from QWidget.
+    """
     def __init__(self, parent_application_window):
         super(SplashWindow, self).__init__()
         self.parent_application_window = parent_application_window
-
         self.config = self.parent_application_window.config
-
         font = QFont()
         font.setPointSize(16)
         self.initUIGeneral()
@@ -56,7 +62,18 @@ class SplashWindow(QWidget):
         l.setFont(f)
         new_button_layout.addWidget(l)
         new_button_layout.setAlignment(Qt.AlignTop)
+        # This is maddening, these need to be sorted each time this screen pops up.
+        sorted_analyses_list = []   # Creating list to sort these
         for k, v in self.config.getOptional("analyzers", {}).items():
+            print(k, ': ', v)
+            print('*'*100)
+            tuple_for_list = (k, v)
+            sorted_analyses_list.append(tuple_for_list)
+        # Sorting these buttons by analysis type.
+        sorted_analyses_list.sort()
+        for a_tuple in sorted_analyses_list:
+            k = a_tuple[0]  # this is lazy but I know it'll work.
+            v = a_tuple[1]
             util.addButton("New " + v.get("title", ""), new_button_layout, self.newClickHandler(k))
 
         new_button_widget = QWidget()
@@ -73,7 +90,9 @@ class SplashWindow(QWidget):
         try:
             row = a.row()
 
-            if row == 0:  # the first row is an artificial entry, offering Browse, rather than coming from the actual list of recent files.
+            if row == 0:
+                # the first row is an artificial entry, offering Browse
+                # rather than coming from the actual list of recent files.
                 self.parent_application_window.open_action()
             else:
                 path = self.recentList.model().item(a.row()).text().strip()

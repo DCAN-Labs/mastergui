@@ -9,3 +9,4 @@ output/
 *.swo
 templates/
 config.json
+venv/

@@ -12,6 +12,7 @@ Model_Results_Label = "MODEL_RESULTS"
 Standarized_Model_Results_Label = "STANDARDIZED_MODEL_RESULTS"
 key_delimiter = "-"
 Model_Termination_Section_Label = "THE_MODEL_ESTIMATION_TERMINATED_NORMALLY"
+Sample_Statistics_Label = "SAMPLE_STATISTICS"
 
 # for stripping keys of values that we don't want in filenames
 filename_unfriendly_character_detector = re.compile('[^0-9a-zA-Z\-]+')
@@ -57,6 +58,8 @@ class MplusOutput():
     def __init__(self, path, limit_to_keys=[]):
         # debug with tests/sample.mplus.modelwarning.out
         self.limited_parse = len(limit_to_keys) > 0
+        self.sample_lines = []
+        self.lines = []
         if self.limited_parse:
             self.limit_to_keys = limit_to_keys
             self.limit_to_sections = [key.split(key_delimiter)[0] for key in limit_to_keys]
@@ -68,7 +71,9 @@ class MplusOutput():
 
         self.path = path
         self.warnings = []
+
         self.load()
+        #self.process_sample_stats()
 
     def load(self):
 
@@ -91,7 +96,6 @@ class MplusOutput():
 
         last_section_is_warning = False
 
-        # all_lines = []
 
         try:
             with open(self.path, "r") as f:
@@ -105,7 +109,8 @@ class MplusOutput():
         for line in all_lines:
 
             new_section_detected = False
-
+            # what is heading detector matching for to get wat appear to be the first 30 lines of all lines
+            # last_section_lines is the input file for mplus, generated in the model builder.
             if heading_detector.match(line) or warning_detector.match(line):
                 new_section_detected = True
                 self.process_section_contents(last_section, last_section_lines)
@@ -114,8 +119,9 @@ class MplusOutput():
             else:
                 if len(last_section) > 0:
                     last_section_lines.append(line)
-
+        # All lines contains the entirety of the output file
         self.lines = all_lines
+        self.process_sample_stats(all_lines)
 
         if self.terminated_normally:
             if len(self.model_convergence_warnings) > 0:
@@ -134,7 +140,10 @@ class MplusOutput():
                     if not last_section == Model_Termination_Section_Label:
                         return
 
-                if last_section == Model_Fit_Information_Label:
+                if last_section == Sample_Statistics_Label:
+                    print('\n'*60, ' it fired '*100)
+
+                elif last_section == Model_Fit_Information_Label:
                     self.process_model_fit(last_section_lines)
                 elif last_section == Model_Results_Label:
                     self.process_results_table(Model_Results_Label, last_section_lines)
@@ -144,6 +153,68 @@ class MplusOutput():
                     self.process_model_termination_section(last_section_lines)
                 else:
                     self.sections[last_section] = last_section_lines
+
+    def process_sample_stats(self, every_friggen_line):
+        """
+        :param every_friggen_line: this is gathered from self.all_lines
+        and is an mplus output/input text file that has been read into a
+        list of strings.
+        :return: Places sample mean statistics into check-menu for output
+        params under the execute tab in mplus analysis.
+        analysis.
+        """
+        # TODO: add in the covariance and other sample statistics into
+        # TODO: the self.data dictionary below
+        lines = every_friggen_line
+        # Headings that we're searching for in the mplus output
+        # We anything that is 2 lines below these headings corresponds
+        # To the variables referenced
+        things_to_check = ['Means', 'Covariances', 'Correlations']
+
+        main_heading = 'SAMPLE STATISTICS'
+        sub_heading = 'ESTIMATED SAMPLE STATISTICS'
+        end_section = 'UNIVARIATE SAMPLE STATISTICS'
+        start_index = None
+        stop_index = None
+
+        # Finding the start and stop of the sample input
+        for index, mplus_line in enumerate(lines):
+            if sub_heading in mplus_line:
+                start_index = index
+            if end_section in mplus_line:
+                stop_index = index - 1
+
+
+        self.sample_lines = lines[start_index: stop_index]
+
+        data = {}
+        covar_dict = {}
+        corr_dict = {}
+        means_dict = {}
+        for thing in things_to_check:
+            for i, sample_line in enumerate(self.sample_lines):
+
+                if thing in sample_line:
+
+                    if thing is "Means":
+
+                        variables = self.sample_lines[i +1].strip('\n').split()
+                        values = self.sample_lines[i+3].strip('\n').split()
+                        for ix, var in enumerate(variables):
+
+                            means_dict['Estimated_Mean_' + var] = values[ix]
+
+        self.sections['Estimated_Means'] = means_dict
+        for key, value in means_dict.items():
+            #self.sections['STANDARDIZED_MODEL_RESULTS'][key] = value
+            #self.sections['MODEL_RESULTS']['MODEL_RESULTS    ' + key] = value
+            self.data['MODEL_RESULTS_ESTIMATED_MEANS_' + key] = value
+
+
+        #print(data)
+        print("OHH YEAH")
+
+
 
     def process_model_fit(self, section_lines):
 
@@ -210,7 +281,6 @@ class MplusOutput():
                 else:
                     if not is_indented:
                         context_stack = [line.strip()]
-
 
                         #
                         #     stripped_line = line.strip()
@@ -288,7 +358,11 @@ class MplusOutput():
                             else:
                                 self.logNumberParsingError(keyname)
 
+        #self/.process_sample_stats(lines)
+
         self.sections[title] = section_data
+        print("SECTION DATA**************************", section_data)
+        print("HURR DURR")
 
     def cleanKey(self, key):
         """replace filename unfriendly characters with _ """
@@ -504,3 +578,21 @@ class MplusOutputSet():
             self.termination_warning_sets.append(termination_warnings)
             self.any_errors += any_errors
             self.untrustworthies += untrustworthies
+
+if __name__ == "__main__":
+    ugly_baby = '/mnt/max/shared/projects/NHP/HFD/Experiments/cortical_thickness/subjects/9172018/testing/batches/2018-12-07.14.03.28.776151/outputs/input.voxel0.inp.out'
+
+    test_mplus_output = MplusOutput(path=ugly_baby)
+    test_mplus_output.path = 'mplus_output.txt'
+    for line in test_mplus_output.lines:
+        print(line.strip('\n'))
+
+    #print(test_mplus_output.sections)
+    test_mplus_output.data
+
+    #test_mplus_output.process_sample_stats()
+    x = test_mplus_output.sample_lines
+    for each in x:
+        print(each)
+
+
