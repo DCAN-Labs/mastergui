@@ -155,33 +155,21 @@ class MplusOutput():
                     self.sections[last_section] = last_section_lines
 
     def process_sample_stats(self, every_friggen_line):
-        """
-        :param every_friggen_line: this is gathered from self.all_lines
-        and is an mplus output/input text file that has been read into a
-        list of strings.
-        :return: Places sample mean statistics into check-menu for output
-        params under the execute tab in mplus analysis.
-        analysis.
-        """
-        # TODO: add in the covariance and other sample statistics into
-        # TODO: the self.data dictionary below
         lines = every_friggen_line
-        # Headings that we're searching for in the mplus output
-        # We anything that is 2 lines below these headings corresponds
-        # To the variables referenced
         things_to_check = ['Means', 'Covariances', 'Correlations']
 
         main_heading = 'SAMPLE STATISTICS'
-        sub_heading = 'ESTIMATED SAMPLE STATISTICS'
+        sub_heading  = 'ESTIMATED SAMPLE STATISTICS'
         end_section = 'UNIVARIATE SAMPLE STATISTICS'
         start_index = None
         stop_index = None
 
-        # Finding the start and stop of the sample input
-        for index, mplus_line in enumerate(lines):
-            if sub_heading in mplus_line:
+        sample_stat_lines = []
+
+        for index, line in enumerate(lines):
+            if sub_heading in line:
                 start_index = index
-            if end_section in mplus_line:
+            if end_section in line:
                 stop_index = index - 1
 
 
@@ -211,7 +199,7 @@ class MplusOutput():
             self.data['MODEL_RESULTS_ESTIMATED_MEANS_' + key] = value
 
 
-        #print(data)
+        print(data)
         print("OHH YEAH")
 
 
