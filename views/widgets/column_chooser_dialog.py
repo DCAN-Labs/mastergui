@@ -28,7 +28,8 @@ class ColumnChooserDialog(QDialog):
 
         layout = QVBoxLayout()
 
-        self.chooser = ColumnChooser(self.input_spreadsheet, checkable=self.checkable)
+        self.chooser = ColumnChooser(self.input_spreadsheet,
+                                     checkable=self.checkable)
         #        layout.addWidget(radio_group)
         layout.addWidget(self.chooser)
 
