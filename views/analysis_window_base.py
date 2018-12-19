@@ -20,7 +20,7 @@ class AnalysisWindow(QWidget):
         font.setPointSize(16)
         self.initUIGeneral()
         self.initUISpecific()
-
+        self.showMaximized()
     def initUIGeneral(self):
         self.setWindowTitle(self.title)
 

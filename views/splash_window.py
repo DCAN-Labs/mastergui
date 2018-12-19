@@ -24,6 +24,7 @@ class SplashWindow(QWidget):
         font = QFont()
         font.setPointSize(16)
         self.initUIGeneral()
+        self.showMaximized()
 
     def initUIGeneral(self):
         self.setWindowTitle("Launch Screen")

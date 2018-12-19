@@ -17,6 +17,7 @@ class OutputBrowserWidget(QWidget):
         self.parentAnalysisWidget = parentAnalysisWidget
         self.selected_batch_name = ""
         self.last_selected_pattern_id = 0
+        self.showMaximized()
         self.initUI()
         self.refreshing_batches = False
 

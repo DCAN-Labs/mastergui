@@ -56,6 +56,7 @@ class MplusAnalysisWindow(AnalysisWindow):
             # source of this stylesheet trick to hide disabled tab:
             # https://stackoverflow.com/questions/34377663/how-to-hide-a-tab-in-qtabwidget-and-show-it-when-a-button-is-pressed
         self.tabs.setStyleSheet("QTabBar::tab::disabled {width: 0; height: 0; margin: 0; padding: 0; border: none;} ")
+        self.showMaximized()
 
     def handle_open_specifically(self, file_contents):
         """for subclass overriding"""

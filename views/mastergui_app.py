@@ -99,8 +99,7 @@ class MasterGuiApp(QMainWindow):
             self.mdi.activateNextSubWindow()
 
             self.splashSubWindow = sub
-
-            sub.showMaximized()
+            
         except Exception as e:
             util.alert(str(e))
             raise e
@@ -125,7 +124,6 @@ class MasterGuiApp(QMainWindow):
         self.mdi.addSubWindow(sub)
 
         self.splashSubWindow.showMinimized()
-
         sub.show()
 
         self.mdi.setActiveSubWindow(sub)

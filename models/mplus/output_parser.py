@@ -206,14 +206,13 @@ class MplusOutput():
 
         self.sections['Estimated_Means'] = means_dict
         for key, value in means_dict.items():
-            #self.sections['STANDARDIZED_MODEL_RESULTS'][key] = value
-            #self.sections['MODEL_RESULTS']['MODEL_RESULTS    ' + key] = value
+            # self.sections['STANDARDIZED_MODEL_RESULTS'][key] = value
+            # self.sections['MODEL_RESULTS']['MODEL_RESULTS    ' + key] = value
             self.data['MODEL_RESULTS_ESTIMATED_MEANS_' + key] = value
 
 
         #print(data)
         print("OHH YEAH")
-
 
 
     def process_model_fit(self, section_lines):
