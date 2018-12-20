@@ -33,8 +33,17 @@ tab_outputselector = 6
 
 
 class MplusAnalysisWindow(AnalysisWindow):
+    """
+    This is the main window for mplus analysis. When starting master gui
+    this will be the window that appears when selecting a new mplus analysis.
+
+    Presently this window needs to be snapped and resized each time an mplus
+    analysis is run. That sucks, I'm trying to fix it, but when I set maximize
+    in the init it seems to get overridden and sized back down.
+
+    """
     def __init__(self, config, analysis=None):
-        self.title = "Mplus Analysis"
+        self.title = "Mplus Analysis SUCKS"
         self.analyzerName = "mplus"
         super(MplusAnalysisWindow, self).__init__(config)
 
@@ -56,7 +65,7 @@ class MplusAnalysisWindow(AnalysisWindow):
             # source of this stylesheet trick to hide disabled tab:
             # https://stackoverflow.com/questions/34377663/how-to-hide-a-tab-in-qtabwidget-and-show-it-when-a-button-is-pressed
         self.tabs.setStyleSheet("QTabBar::tab::disabled {width: 0; height: 0; margin: 0; padding: 0; border: none;} ")
-        self.showMaximized()
+        #self.showMaximized()
 
     def handle_open_specifically(self, file_contents):
         """for subclass overriding"""
