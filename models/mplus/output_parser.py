@@ -59,6 +59,7 @@ class MplusOutput():
         # debug with tests/sample.mplus.modelwarning.out
         self.limited_parse = len(limit_to_keys) > 0
         self.sample_lines = []
+        self.rsquare_lines = []
         self.lines = []
         if self.limited_parse:
             self.limit_to_keys = limit_to_keys
@@ -122,6 +123,7 @@ class MplusOutput():
         # All lines contains the entirety of the output file
         self.lines = all_lines
         self.process_sample_stats(all_lines)
+        self.process_rsquare(all_lines)
 
         if self.terminated_normally:
             if len(self.model_convergence_warnings) > 0:
@@ -206,15 +208,74 @@ class MplusOutput():
 
         self.sections['Estimated_Means'] = means_dict
         for key, value in means_dict.items():
-            #self.sections['STANDARDIZED_MODEL_RESULTS'][key] = value
-            #self.sections['MODEL_RESULTS']['MODEL_RESULTS    ' + key] = value
+            # self.sections['STANDARDIZED_MODEL_RESULTS'][key] = value
+            # self.sections['MODEL_RESULTS']['MODEL_RESULTS    ' + key] = value
             self.data['MODEL_RESULTS_ESTIMATED_MEANS_' + key] = value
 
 
         #print(data)
         print("OHH YEAH")
 
+    def process_rsquare(self, every_friggen_line):
+        """
+        :param every_friggen_line: this is gathered from self.all_lines
+        and is an mplus output/input text file that has been read into a
+        list of strings.
+        :return: Places sample mean statistics into check-menu for output
+        params under the execute tab in mplus analysis.
+        analysis.
+        """
+        # TODO: add in the covariance and other sample statistics into
+        # TODO: the self.data dictionary below
+        lines = every_friggen_line
+        # Headings that we're searching for in the mplus output
+        # We anything that is 2 lines below these headings corresponds
+        # To the variables referenced
 
+        main_heading = 'R-SQUARE'
+        second_heading = ['Variable', 'Estimate', 'S.E.', 'Est./S.E', 'P-Value']
+        end_section = 'QUALITY OF NUMERICAL RESULTS'
+        start_index = None
+        stop_index = None
+        self.store = []
+        # Finding the start and stop of the sample input
+        for index, mplus_line in enumerate(lines):
+            if main_heading in mplus_line:
+                start_index = index
+            if end_section in mplus_line:
+                stop_index = index - 1
+
+        self.rsquare_lines = lines[start_index: stop_index]
+        # I hate this,  the formatting of this mplus output is
+        # all over the place. Every solution is a hacky one.
+        is_second_heading = 0
+        for index, line in enumerate(self.rsquare_lines):
+            if is_second_heading < 5:
+                for each in second_heading:
+                    if each in line:
+                        is_second_heading += 1
+            elif is_second_heading == 5:
+                store_dict = {}
+                variable_dict = {} 
+                var_name = None
+                for line_index, line_content in enumerate(line.split()):
+                    print(line_index, line_content)
+                    if line_index == 0:
+                        var_name = line_content
+                    elif line_index > 0:
+                        variable_dict[second_heading[line_index]] = line_content
+                if var_name:
+                    store_dict[var_name] = variable_dict
+                if store_dict:
+                    self.store.append(store_dict)
+        
+        for each in self.store:
+            for key in each.keys():
+                for k, value in each[key].items():
+                    sub = '/.'
+                    ksub = re.sub(sub, '', k)
+                    keysub = re.sub(sub, '', key)
+                    self.data['STANDARDIZED_MODEL_RESULTS-R-SQUARE_' + str(ksub) + '_' + str(keysub)] = value
 
     def process_model_fit(self, section_lines):
 

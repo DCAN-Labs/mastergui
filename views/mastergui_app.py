@@ -99,8 +99,7 @@ class MasterGuiApp(QMainWindow):
             self.mdi.activateNextSubWindow()
 
             self.splashSubWindow = sub
-
-            sub.showMaximized()
+            
         except Exception as e:
             util.alert(str(e))
             raise e
@@ -112,6 +111,8 @@ class MasterGuiApp(QMainWindow):
     def add_analysiswindow_as_subwindow(self, gw):
 
         sub = QMdiSubWindow()
+        # galassi fixed height here, it still gets over-ridden somewhere.
+        gw.setFixedHeight(900)
         sub.setWidget(gw)
 
         if hasattr(gw, 'title'):
@@ -123,14 +124,13 @@ class MasterGuiApp(QMainWindow):
             sub.setWindowTitle(title)
 
         self.mdi.addSubWindow(sub)
-
         self.splashSubWindow.showMinimized()
-
         sub.show()
-
         self.mdi.setActiveSubWindow(sub)
 
-        aw = self.mdi.activeSubWindow()
+
+        #aw = self.mdi.activeSubWindow()
+
         self.mdi.cascadeSubWindows()
 
     def init_ui(self):
@@ -212,7 +212,7 @@ class MasterGuiApp(QMainWindow):
     def new_mplus_analysis(self, analysis=None):
         # optional variable analysis.  if an existing analysis model instance is not provided,
         # a new one will be created for you withing the MplusAnalysisWindow
-        analysis_window = MplusAnalysisWindow(self.config, analysis)
+        analysis_window = MplusAnalysisWindow(self.config, analysis).showFullScreen()
 
         self.displayNewAnalysis(analysis_window)
 

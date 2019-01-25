@@ -20,6 +20,7 @@ class AnalysisWindow(QWidget):
         font.setPointSize(16)
         self.initUIGeneral()
         self.initUISpecific()
+        #self.showMaximized()
 
     def initUIGeneral(self):
         self.setWindowTitle(self.title)
@@ -73,7 +74,6 @@ class AnalysisWindow(QWidget):
         self.dataPreview.render_dataframe(self.input._data, path)
         if hasattr(self, "analysis"):
             self.analysis.input = self.input
-
 
             # except:
             #    self.alert("Error while opening file " + path)
