@@ -272,7 +272,10 @@ class MplusOutput():
         for each in self.store:
             for key in each.keys():
                 for k, value in each[key].items():
-                    self.data['STANDARDIZED_MODEL_RESULTS-R-SQUARE_' + str(k) + '_' + str(key)] = value
+                    sub = '/.'
+                    ksub = re.sub(sub, '', k)
+                    keysub = re.sub(sub, '', key)
+                    self.data['STANDARDIZED_MODEL_RESULTS-R-SQUARE_' + str(ksub) + '_' + str(keysub)] = value
 
     def process_model_fit(self, section_lines):
 
