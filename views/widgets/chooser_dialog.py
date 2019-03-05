@@ -34,7 +34,7 @@ class ChooserDialog(QDialog):
 
         addButton("OK", layout, self.on_click_ok)
         addButton("Cancel", layout, self.on_click_ok)
-
+#        addButton("Select All", layout, self.on_click_ok)
         self.setLayout(layout)
 
     def on_click_ok(self):

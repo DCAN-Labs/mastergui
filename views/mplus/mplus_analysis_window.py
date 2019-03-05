@@ -43,7 +43,7 @@ class MplusAnalysisWindow(AnalysisWindow):
 
     """
     def __init__(self, config, analysis=None):
-        self.title = "Mplus Analysis SUCKS"
+        self.title = "Mplus Analysis"
         self.analyzerName = "mplus"
         super(MplusAnalysisWindow, self).__init__(config)
 

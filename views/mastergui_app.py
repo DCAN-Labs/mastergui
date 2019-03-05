@@ -112,7 +112,8 @@ class MasterGuiApp(QMainWindow):
 
         sub = QMdiSubWindow()
         # galassi fixed height here, it still gets over-ridden somewhere.
-        gw.setFixedHeight(900)
+        #gw.setFixedHeight(600)
+        gw.showMaximized = True
         sub.setWidget(gw)
 
         if hasattr(gw, 'title'):
