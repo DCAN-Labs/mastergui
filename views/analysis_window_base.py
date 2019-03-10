@@ -82,6 +82,8 @@ class AnalysisWindow(QWidget):
         config_problems = self.analysis.configValidationErrors()
 
         if len(config_problems) > 0:
+
+
             error_msg = "Your configuration file is missing some items that are required for the full functionality.\n"
             for problem in config_problems:
                 # 2-tuples of key, description

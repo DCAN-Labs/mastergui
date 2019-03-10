@@ -213,9 +213,6 @@ class MplusOutput():
             self.data['MODEL_RESULTS_ESTIMATED_MEANS_' + key] = value
 
 
-        #print(data)
-        print("OHH YEAH")
-
     def process_rsquare(self, every_friggen_line):
         """
         :param every_friggen_line: this is gathered from self.all_lines
@@ -423,7 +420,6 @@ class MplusOutput():
 
         self.sections[title] = section_data
         print("SECTION DATA**************************", section_data)
-        print("HURR DURR")
 
     def cleanKey(self, key):
         """replace filename unfriendly characters with _ """

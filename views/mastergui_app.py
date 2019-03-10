@@ -129,8 +129,7 @@ class MasterGuiApp(QMainWindow):
         sub.show()
         self.mdi.setActiveSubWindow(sub)
 
-
-        #aw = self.mdi.activeSubWindow()
+        aw = self.mdi.activeSubWindow()
 
         self.mdi.cascadeSubWindows()
 

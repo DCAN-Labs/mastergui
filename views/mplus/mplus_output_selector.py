@@ -150,6 +150,7 @@ class MplusOutputSelector(OutputBrowserWidget):
                 if isinstance(c.selection, list):
                     for i in c.selection:
                         # @ Darrick test if we can take out checkable
+                        print(type(i), i)
                         i.setCheckable(False)
                         self.parentAnalysisWidget.addOutputParameter(i)
                 else:
