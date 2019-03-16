@@ -33,11 +33,11 @@ class Paths():
             return True
         else:
             try:
-                os.mkdir(p)
+                os.makedirs(p, exist_ok=True)
                 return True
             except Exception as e:
                 raise ValueError(
-                    "Unable to create required 'batches' subdirectory in your choosen output directory %s for this analysis. Check your permissions." % s)
+                    "Unable to create required 'batches' subdirectory in your choosen output directory %s for this analysis. Check your permissions.".format(e))
 
     # @property
     # def batch_output_dir(self):
